@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+<p>{{ account.name }}</p>
+<button type="button" class="btn btn-secondary">
+    <a href="{% url 'money:update_balance' account.id %}">
+        Update Balance</a>
+</button>
+<button type="button" class="btn btn-secondary">
+    <a href="{% url 'money:add_transaction' account.id %}">Add transaction</a>
+</button>
+
+<table class="table">
+    <tr>
+        <th>Date</th>
+        <th>Use For</th>
+        <th>Amount</th>
+        <th>Balance</th>
+    </tr>
+    {% for transaction in account.transaction_set.all|dictsort:"datetime" %}
+    <tr>
+        <td>{{ transaction.datetime.date }}</td>
+        <td>{{ transaction.use_for }}</td>
+        <td>{{ transaction.amount|floatformat:2 }}</td>
+        <td>{{ transaction.balance|floatformat:2 }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<div>
+    <canvas id="myChart"></canvas>
+</div>
+
+{% include 'transaction/transaction_chart.html' %}
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+<p>{{ bank }}</p>
+<ul>
+
+  {% for account in bank.account_set.all %}
+  <li><a href="{% url 'money:account' account.id %}">{{ account.name }}</a></li>
+  {% endfor %}
+</ul>
+{% endblock %}

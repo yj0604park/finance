@@ -1,0 +1,21 @@
+<script>
+    const ctx = document.getElementById('myChart');
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            datasets: [{
+                label: 'Balance',
+                data: {{ data | safe }},
+                borderWidth: 1
+            }]
+        },
+        options : {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>

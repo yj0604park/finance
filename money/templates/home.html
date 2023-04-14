@@ -1,5 +1,30 @@
 {% extends "base.html" %}
+{% load money_tags %}
 
 {% block content %}
-<p>Hi</p>
+<table class="table">
+    <tr>
+        <th>Bank</th>
+        <th>Account</th>
+        <th>Balance</th>
+        <th>Last updated</th>
+        <th>Last transaction</th>
+    </tr>
+    {% for account in account_list %}
+    <tr>
+        <td><a href="{% url 'money:bank' account.bank.id %}">{{ account.bank }}</a></td>
+        <td><a href="{% url 'money:account' account.id %}">{{ account.name }}</a></td>
+        <td align="right">{{ account.amount | print_dollar }}</td>
+        <td>{{ account.last_update | date:"Y-m-d" }}</td>
+        <td>{{ account.last_transaction | date:"Y-m-d" }}</td>
+    </tr>
+    {% endfor %}
+
+    <tr>
+        <td colspan="2">Total</td>
+        <td align="right">{{ sum | print_dollar }}</td>
+        <td></td>
+    </tr>
+</table>
+
 {% endblock %}

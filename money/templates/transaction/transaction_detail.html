@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+
+{% block content %}
+Good
+
+<a href="{% url 'money:add_transaction' transaction.account.id %}?datetime={{ transaction.datetime|date:'Y-m-d' }}">Add
+    another</a>
+{% endblock %}

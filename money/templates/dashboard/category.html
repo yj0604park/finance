@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load money_tags %}
+
+{% block content %}
+<table class="table">
+    {% for summary in summarization %}
+    <tr>
+        <td>{{ summary.type }}</td>
+        <td align="right">{{ summary.total_amount|print_dollar }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<div>
+    <canvas id="myChart" width="500" height="500"></canvas>
+</div>
+
+
+<script>
+    const ctx = document.getElementById('myChart');
+
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ label | safe }},
+            datasets: [{
+                label: 'Category',
+                data: {{ data | safe }}
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            responsive: true
+        }
+    });
+</script>
+{% endblock %}
