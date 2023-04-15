@@ -14,7 +14,13 @@ class AccountAdmin(admin.ModelAdmin):
 
 @admin.register(models.Transaction)
 class TransactionAdmin(admin.ModelAdmin):
-    pass
+    list_display = ["pk", "datetime", "account_name", "use_for"]
+
+    def account_name(self, obj):
+        return obj.account.name
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related("account", "use_for")
 
 
 @admin.register(models.UseFor)

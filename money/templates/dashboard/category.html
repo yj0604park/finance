@@ -2,12 +2,38 @@
 {% load money_tags %}
 
 {% block content %}
+
+<h1>Income</h1>
 <table class="table">
-    {% for summary in summarization %}
+    <thead>
+        <tr>
+            <th>Type</th>
+            <th>Total</th>
+        </tr>
+    </thead>
+    {% for summary in income %}
     <tr>
-        <td>{{ summary.type }}</td>
+        <td><a href="{% url 'money:category_detail' summary.type %}">{{ summary.type }}</a></td>
+        <td align="right">{{ summary.total_amount|abs_filter|print_dollar }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<h1>Spending</h1>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Type</th>
+            <th>Total</th>
+        </tr>
+    </thead>
+    {% for summary in summarization %}
+    {% if summary.total_amount > 0 %}
+    <tr>
+        <td><a href="{% url 'money:category_detail' summary.type %}">{{ summary.type }}</a></td>
         <td align="right">{{ summary.total_amount|print_dollar }}</td>
     </tr>
+    {% endif %}
     {% endfor %}
 </table>
 

@@ -3,13 +3,15 @@
 
 {% block content %}
 <table class="table">
-    <tr>
-        <th>Bank</th>
-        <th>Account</th>
-        <th>Balance</th>
-        <th>Last updated</th>
-        <th>Last transaction</th>
-    </tr>
+    <thead>
+        <tr>
+            <th>Bank</th>
+            <th>Account</th>
+            <th>Balance</th>
+            <th>Last updated</th>
+            <th>Last transaction</th>
+        </tr>
+    </thead>
     {% for account in account_list %}
     <tr>
         <td><a href="{% url 'money:bank' account.bank.id %}">{{ account.bank }}</a></td>

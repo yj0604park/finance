@@ -9,3 +9,8 @@ def print_dollar(value):
     if value < 0:
         return f"-${abs(value):.2f}"
     return f"${value:.2f}"
+
+
+@register.filter
+def abs_filter(value):
+    return abs(value)

@@ -1,6 +1,6 @@
 from django.urls import path
 
-from money import views
+from money import helper, views
 
 app_name = "money"
 
@@ -11,7 +11,7 @@ urlpatterns = [
     path("account/<int:pk>", view=views.account_detail_view, name="account"),
     path(
         "update_balance/<int:account_id>",
-        view=views.updateBalance,
+        view=helper.updateBalance,
         name="update_balance",
     ),
     path("transaction_list", view=views.transaction_list_view, name="transaction_list"),
@@ -29,5 +29,15 @@ urlpatterns = [
         "transaction_category",
         view=views.transaction_category_view,
         name="transaction_category",
+    ),
+    path(
+        "category_detail/<str:category_type>",
+        view=views.category_detail_view,
+        name="category_detail",
+    ),
+    path(
+        "review_transaction",
+        view=views.review_transaction_view,
+        name="review_transaction",
     ),
 ]

@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 
 {% block content %}
-<p>Hello</p>
+<p>Total Balance</p>
 
+<a href="{% url 'money:review_transaction' %}" class="btn btn-success">Review Transactions</a>
 
 <div>
     <canvas id="myChart"></canvas>

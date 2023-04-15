@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load money_tags %}
+
+{% block content %}
+
+<h1>{{ type }}</h1>
+
+<table class="table">
+    <tr>
+        <th>Date</th>
+        <th>Account</th>
+        <th>Use For</th>
+        <th>Amount</th>
+        <th>Is Internal</th>
+        <th>Detail</th>
+        <th>Reviewed</th>
+    </tr>
+    {% for transaction in transactions %}
+    <tr>
+        <td>{{ transaction.datetime | date:"Y-m-d" }}</td>
+        <td>{{ transaction.account }}</td>
+        <td>{{ transaction.use_for }}</td>
+        <td>{{ transaction.amount }}</td>
+        <td>{{ transaction.is_internal }}</td>
+        <td>{{ transaction.requires_detail }}</td>
+        <td>{{ transaction.reviewed }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

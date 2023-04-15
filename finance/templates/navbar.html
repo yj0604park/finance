@@ -14,9 +14,6 @@
             <a class="nav-link" href="{% url 'money:home' %}">Home <span class="visually-hidden">(current)</span></a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'about' %}">About</a>
-          </li>
-          <li class="nav-item">
             <a class="nav-link" href="{% url 'money:bank_list' %}">Bank</a>
           </li>
           <li class="nav-item">
@@ -50,6 +47,9 @@
               Sign In</a>
           </li>
           {% endif %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'about' %}">About</a>
+          </li>
         </ul>
       </div>
     </div>

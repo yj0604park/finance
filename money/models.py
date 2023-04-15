@@ -1,6 +1,5 @@
 from django.db import models
 from django.urls import reverse
-from django.utils import timezone
 
 
 class Bank(models.Model):
@@ -76,6 +75,7 @@ class Transaction(models.Model):
         choices=TransactionCategory.choices,
         default=TransactionCategory.ETC,
     )
+    reviewed = models.BooleanField(default=False)
 
     def __str__(self):
         return f'{self.datetime.strftime("%Y-%m-%d")} {self.account.name}: {self.use_for.name if self.use_for else None}'
