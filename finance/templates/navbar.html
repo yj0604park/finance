@@ -22,6 +22,9 @@
           <li class="nav-item">
             <a class="nav-link" href="{% url 'money:transaction_category' %}">Category</a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'money:retailer_summary' %}">Retailer</a>
+          </li>
           {% if request.user.is_authenticated %}
           <li class="nav-item">
             {# URL provided by django-allauth/account/urls.py #}

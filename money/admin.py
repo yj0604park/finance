@@ -14,15 +14,15 @@ class AccountAdmin(admin.ModelAdmin):
 
 @admin.register(models.Transaction)
 class TransactionAdmin(admin.ModelAdmin):
-    list_display = ["pk", "datetime", "account_name", "use_for"]
+    list_display = ["pk", "datetime", "account_name", "retailer"]
 
     def account_name(self, obj):
         return obj.account.name
 
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related("account", "use_for")
+        return super().get_queryset(request).select_related("account", "retailer")
 
 
-@admin.register(models.UseFor)
-class UseFor(admin.ModelAdmin):
+@admin.register(models.Retailer)
+class Retailer(admin.ModelAdmin):
     pass

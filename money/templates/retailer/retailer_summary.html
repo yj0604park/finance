@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load money_tags %}
+{% block content %}
+
+
+<button type="button" class="btn btn-primary" id="update_retailer_type">
+    Update Retailer Type
+</button>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Retailer</th>
+            <th>Type</th>
+            <th>Category</th>
+            <th>Total Income</th>
+            <th>Total Spent</th>
+        </tr>
+    </thead>
+    {% for retailer in transaction_list %}
+    <tr>
+        <td>
+            {% if retailer.retailer__id %}
+            <a href="{% url 'money:retailer_detail' retailer.retailer__id %}">{{ retailer.retailer__name }}</a>
+            {% else %}
+            {{ retailer.retailer__name }}
+            {% endif %}
+        </td>
+        <td>{{ retailer.retailer__type }}</td>
+        <td>{{ retailer.retailer__category }}</td>
+        <td>{{ retailer.minus_sum|print_dollar }}</td>
+        <td>{{ retailer.plus_sum|print_dollar }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<script>
+    const myButton = document.getElementById("update_retailer_type");
+
+    myButton.addEventListener("click", function () {
+        fetch("{% url 'money:update_retailer_type' %}", {
+            method: "GET"
+        })
+            .then(response => response.json())
+            .then(data => {
+                // handle response
+                myButton.innerHTML = data.success ? "Success" : "Error";
+            })
+            .catch(error => {
+                // handle error
+                console.error(error);
+            })
+            .finally(() => {
+                myButton.disabled = true;
+            })
+    });
+
+</script>
+{% endblock %}

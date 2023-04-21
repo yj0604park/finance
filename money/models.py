@@ -29,7 +29,7 @@ class Account(models.Model):
     last_transaction = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return self.bank.name + ":" + self.name
+        return self.name
 
 
 class TransactionCategory(models.TextChoices):
@@ -51,8 +51,24 @@ class TransactionCategory(models.TextChoices):
     ETC = "ETC", "ETC"
 
 
-class UseFor(models.Model):
+class RetailerType(models.TextChoices):
+    ETC = "ETC"
+    MARKET = "MARKET"
+    PERSON = "PERSON"
+    BANK = "BANK"
+    SERVICE = "SERVICE"
+
+
+class Retailer(models.Model):
     name = models.CharField(max_length=30)
+    type = models.CharField(
+        max_length=20, choices=RetailerType.choices, default=RetailerType.ETC
+    )
+    category = models.CharField(
+        max_length=30,
+        choices=TransactionCategory.choices,
+        default=TransactionCategory.ETC,
+    )
 
     def __str__(self):
         return self.name
@@ -60,8 +76,8 @@ class UseFor(models.Model):
 
 class Transaction(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
-    use_for = models.ForeignKey(
-        UseFor, on_delete=models.SET_NULL, blank=True, null=True
+    retailer = models.ForeignKey(
+        Retailer, on_delete=models.SET_NULL, blank=True, null=True
     )
     amount = models.FloatField()
     balance = models.FloatField(null=True, blank=True)
@@ -78,7 +94,7 @@ class Transaction(models.Model):
     reviewed = models.BooleanField(default=False)
 
     def __str__(self):
-        return f'{self.datetime.strftime("%Y-%m-%d")} {self.account.name}: {self.use_for.name if self.use_for else None}'
+        return f'{self.datetime.strftime("%Y-%m-%d")} {self.account.name}: {self.retailer.name if self.retailer else None}'
 
     def get_absolute_url(self):
         return reverse("money:transaction_detail", kwargs={"pk": self.pk})

@@ -2,8 +2,9 @@ from typing import Any, Dict, Optional, Type
 
 from django import forms
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Sum
+from django.db.models import Prefetch, Sum, Case, When, FloatField
 from django.shortcuts import render
+from django.urls import reverse_lazy
 from django.views.generic import DetailView, ListView, TemplateView, View
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 
@@ -17,7 +18,9 @@ class HomeView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        context["account_list"] = models.Account.objects.all().order_by("name")
+        context["account_list"] = (
+            models.Account.objects.all().prefetch_related("bank").order_by("name")
+        )
 
         sum = 0
         for account in context["account_list"]:
@@ -45,19 +48,36 @@ class BankListView(LoginRequiredMixin, ListView):
 
 bank_list_view = BankListView.as_view()
 
+
 # Account related views
 class AccountDetailView(LoginRequiredMixin, DetailView):
     model = models.Account
     template_name = "account/account_detail.html"
 
     def get_queryset(self):
-        return super().get_queryset().prefetch_related("transaction_set")
+        return (
+            super()
+            .get_queryset()
+            .prefetch_related(
+                Prefetch(
+                    "transaction_set",
+                    queryset=models.Transaction.objects.select_related("retailer"),
+                )
+            )
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context["ordered_transaction_set"] = (
+            context["account"]
+            .transaction_set.all()
+            .prefetch_related("retailer", "account")
+            .order_by("-datetime", "amount")
+        )
 
         context["data"] = helper.get_transaction_chart_data(
-            context["account"].transaction_set.all().order_by("datetime", "-amount")
+            context["ordered_transaction_set"],
+            reverse=True,
         )
 
         return context
@@ -90,10 +110,10 @@ class TransactionCreateView(LoginRequiredMixin, CreateView):
     model = models.Transaction
     form_class = money_forms.TransactionForm
 
-    def form_valid(self, form):
-        # This method is called when valid form data has been POSTed.
-        # It should return an HttpResponse.
-        return super().form_valid(form)
+    def get_success_url(self) -> str:
+        return reverse_lazy(
+            "money:add_transaction", kwargs={"account_id": self.kwargs["account_id"]}
+        )
 
     def get_form(self) -> forms.BaseModelForm:
         form = super().get_form()
@@ -101,7 +121,20 @@ class TransactionCreateView(LoginRequiredMixin, CreateView):
         datetime_default = self.request.GET.get("datetime", None)
         if datetime_default:
             form.initial["datetime"] = datetime_default
+
         return form
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        latest_transaction = models.Transaction.objects.filter(
+            account_id=self.kwargs["account_id"]
+        ).order_by("-datetime", "amount")[0]
+        if latest_transaction:
+            context["form"].initial["datetime"] = latest_transaction.datetime.strftime(
+                "%Y-%m-%d"
+            )
+        context["latest_transaction"] = latest_transaction
+        return context
 
 
 add_transaction_view = TransactionCreateView.as_view()
@@ -147,31 +180,79 @@ class TransactionCategoryView(LoginRequiredMixin, View):
 transaction_category_view = TransactionCategoryView.as_view()
 
 
-class CategoryDetailView(View):
+class CategoryDetailView(LoginRequiredMixin, View):
     template_name = "dashboard/category_detail.html"
 
     def get(self, request, *args, **kwargs):
         print(kwargs)
         category_type = kwargs["category_type"]
-        transaction_list = models.Transaction.objects.filter(
-            type=category_type
-        ).order_by("datetime", "amount")
+        transaction_list = (
+            models.Transaction.objects.filter(type=category_type)
+            .prefetch_related("retailer", "account")
+            .order_by("datetime", "amount")
+        )
         context = {"type": category_type, "transactions": transaction_list}
         return render(request, self.template_name, context)
 
 
 category_detail_view = CategoryDetailView.as_view()
 
+
 # Transaction review related views
-class ReviewTransactionView(ListView):
+class ReviewTransactionView(LoginRequiredMixin, ListView):
     model = models.Transaction
     template_name = "review/review_transaction.html"
     paginate_by = 10
 
     def get_queryset(self):
         qs = super().get_queryset()
-        qs = qs.filter(reviewed=False).order_by("datetime", "amount")
+        qs = (
+            qs.filter(reviewed=False)
+            .order_by("datetime", "amount")
+            .prefetch_related("account")
+        )
         return qs
 
 
 review_transaction_view = ReviewTransactionView.as_view()
+
+
+# Retailer related views
+class RetailerSummaryView(LoginRequiredMixin, ListView):
+    template_name = "retailer/retailer_summary.html"
+    model = models.Retailer
+
+    def get_queryset(self):
+        return (
+            models.Transaction.objects.values(
+                "retailer__id", "retailer__name", "retailer__type", "retailer__category"
+            )
+            .annotate(
+                minus_sum=Sum(
+                    Case(
+                        When(amount__lt=0, then="amount"),
+                        default=0,
+                        output_field=FloatField(),
+                    )
+                ),
+                plus_sum=Sum(
+                    Case(
+                        When(amount__gt=0, then="amount"),
+                        default=0,
+                        output_field=FloatField(),
+                    )
+                ),
+            )
+            .order_by("minus_sum")
+        )
+
+
+retailer_summary_view = RetailerSummaryView.as_view()
+
+
+class RetailerDetailView(LoginRequiredMixin, DetailView):
+    template_name = "retailer/retailer_detail.html"
+    model = models.Retailer
+
+
+retailer_detail_view = RetailerDetailView.as_view()

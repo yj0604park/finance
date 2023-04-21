@@ -1,10 +1,67 @@
 {% extends "base.html" %}
-
+{% load crispy_forms_tags %}
+{% load money_tags %}
 
 {% block content %}
 <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Submit</button>
+    {{ form|crispy }}
+    <div class="form-group">
+        <div class=""><input type="submit" name="submit" value="Submit" class="btn btn-primary" id="submit-id-submit" />
+        </div>
+    </div>
 </form>
+
+
+<h3 style="margin-top: 20px;">Last Transaction</h3>
+<table class="table">
+    <tr>
+        <th>
+            Datetime
+        </th>
+        <td>
+            {{ latest_transaction.datetime|date:"Y-m-d" }}
+        </td>
+    </tr>
+    <tr>
+        <th>
+            Retailer
+        </th>
+        <td>{{ latest_transaction.retailer }}</td>
+    </tr>
+    <tr>
+        <th>
+            Amount
+        </th>
+        <td>{{ latest_transaction.amount|print_dollar }}</td>
+    </tr>
+</table>
+
+<script>
+    const selectField = document.getElementById('id_retailer');
+    const otherField = document.getElementById('id_type');
+
+    selectField.addEventListener('change', (event) => {
+        const selectedOption = event.target.value;
+
+        fetch("/money/get_retailer_type/" + selectedOption, {
+            method: "GET"
+        })
+            .then(response => response.json())
+            .then(data => {
+                otherField.value = data.retailer_category;
+            })
+    });
+
+    const datetimeField = document.getElementById("id_datetime");
+    const incrementButton = document.getElementById("id_increase_date");
+
+    incrementButton.addEventListener("click", function () {
+        const currentDate = new Date(datetimeField.value);
+        const newDate = new Date(currentDate);
+        newDate.setDate(newDate.getDate() + 1);
+        datetimeField.value = newDate.toISOString().slice(0, 10);
+    });
+
+</script>
 {% endblock %}

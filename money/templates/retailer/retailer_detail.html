@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load money_tags %}
+{% block content %}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Retailer</th>
+            <th>Retailer Type</th>
+        </tr>
+    </thead>
+    <tr>
+        <td>{{ retailer.name }}</td>
+        <td>{{ retailer.type }}</td>
+    </tr>
+</table>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Datetime</th>
+            <th>Amount</th>
+            <th>Category</th>
+        </tr>
+    </thead>
+    {% for transaction in retailer.transaction_set.all %}
+    <tr>
+        <td>{{ transaction.datetime|date:"Y-m-d" }}</td>
+        <td>{{ transaction.amount }}</td>
+        <td>{{ transaction.type }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}

@@ -9,7 +9,7 @@
     <tr>
         <th>Date</th>
         <th>Account</th>
-        <th>Use For</th>
+        <th>Retailer</th>
         <th>Amount</th>
         <th>Is Internal</th>
         <th>Detail</th>
@@ -18,8 +18,8 @@
     {% for transaction in transactions %}
     <tr>
         <td>{{ transaction.datetime | date:"Y-m-d" }}</td>
-        <td>{{ transaction.account }}</td>
-        <td>{{ transaction.use_for }}</td>
+        <td>{{ transaction.account.name }}</td>
+        <td>{{ transaction.retailer }}</td>
         <td>{{ transaction.amount }}</td>
         <td>{{ transaction.is_internal }}</td>
         <td>{{ transaction.requires_detail }}</td>

@@ -11,7 +11,7 @@ urlpatterns = [
     path("account/<int:pk>", view=views.account_detail_view, name="account"),
     path(
         "update_balance/<int:account_id>",
-        view=helper.updateBalance,
+        view=helper.update_balance,
         name="update_balance",
     ),
     path("transaction_list", view=views.transaction_list_view, name="transaction_list"),
@@ -39,5 +39,25 @@ urlpatterns = [
         "review_transaction",
         view=views.review_transaction_view,
         name="review_transaction",
+    ),
+    path(
+        "retailer_summary",
+        view=views.retailer_summary_view,
+        name="retailer_summary",
+    ),
+    path(
+        "retailer_detail/<int:pk>",
+        view=views.retailer_detail_view,
+        name="retailer_detail",
+    ),
+    path(
+        "update_retailer_type",
+        view=helper.update_retailer_type,
+        name="update_retailer_type",
+    ),
+    path(
+        "get_retailer_type/<int:retailer_id>",
+        view=helper.get_retailer_type,
+        name="get_retailer_type",
     ),
 ]

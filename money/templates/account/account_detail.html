@@ -3,13 +3,18 @@
 
 {% block content %}
 <p>{{ account.name }}</p>
-<button type="button" class="btn btn-secondary">
-    <a href="{% url 'money:update_balance' account.id %}">
-        Update Balance</a>
+
+<div>
+    <canvas id="myChart"></canvas>
+</div>
+
+<button type="button" class="btn btn-secondary" id="update_button">
+    Update Balance
 </button>
-<button type="button" class="btn btn-secondary">
-    <a href="{% url 'money:add_transaction' account.id %}">Add transaction</a>
-</button>
+<a type="button" class="btn btn-secondary" href="{% url 'money:add_transaction' account.id %}">
+    Add transaction
+</a>
+
 
 <table class="table">
     <thead>
@@ -20,19 +25,40 @@
             <th>Balance</th>
         </tr>
     </thead>
-    {% for transaction in account.transaction_set.all|dictsort:"datetime" %}
+    {% for transaction in ordered_transaction_set %}
     <tr>
         <td>{{ transaction.datetime.date }}</td>
-        <td>{{ transaction.use_for }}</td>
+        <td>{{ transaction.retailer.name }}</td>
         <td>{{ transaction.amount|floatformat:2 }}</td>
         <td>{{ transaction.balance|floatformat:2 }}</td>
     </tr>
     {% endfor %}
 </table>
 
-<div>
-    <canvas id="myChart"></canvas>
-</div>
-
 {% include 'transaction/transaction_chart.html' %}
+
+
+<script>
+    const myButton = document.getElementById("update_button");
+
+    myButton.addEventListener("click", function () {
+        fetch("{% url 'money:update_balance' account.id %}", {
+            method: "GET"
+        })
+            .then(response => response.json())
+            .then(data => {
+                // handle response
+                myButton.innerHTML = data.success ? "Success" : "Error";
+            })
+            .catch(error => {
+                // handle error
+                console.error(error);
+            })
+            .finally(() => {
+                myButton.disabled = true;
+            })
+    });
+
+</script>
+
 {% endblock %}
