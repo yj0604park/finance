@@ -1,7 +1,7 @@
 <script>
-    const ctx = document.getElementById('myChart');
+    const {{ chartId }}_ctx = document.getElementById('{{ chartId }}');
 
-    new Chart(ctx, {
+    new Chart({{ chartId }}_ctx, {
         type: 'line',
         data: {
             datasets: [{

@@ -16,17 +16,18 @@
     <tr>
         <td><a href="{% url 'money:bank' account.bank.id %}">{{ account.bank }}</a></td>
         <td><a href="{% url 'money:account' account.id %}">{{ account.name }}</a></td>
-        <td align="right">{{ account.amount | print_dollar }}</td>
+        <td align="right">{{ account.amount | print_currency:account.currency }}</td>
         <td>{{ account.last_update | date:"Y-m-d" }}</td>
         <td>{{ account.last_transaction | date:"Y-m-d" }}</td>
     </tr>
     {% endfor %}
-
-    <tr>
-        <td colspan="2">Total</td>
-        <td align="right">{{ sum | print_dollar }}</td>
+    {% for currency, sum in sum_list %}
+    <tr style="border-bottom: 2px solid black;border-top: 2px solid black">
+        <td colspan="2">Total {{ currency }}</td>
+        <td align="right">{{ sum | print_currency:currency }}</td>
         <td></td>
     </tr>
+    {% endfor %}
 </table>
 
 {% endblock %}

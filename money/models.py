@@ -17,6 +17,11 @@ class AccountType(models.TextChoices):
     CREDIT_CARD = "CREDIT_CARD", "신용카드"
 
 
+class CurrencyType(models.TextChoices):
+    KRW = "KRW", "원화"
+    USD = "USD", "달러"
+
+
 class Account(models.Model):
     bank = models.ForeignKey(Bank, on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
@@ -27,6 +32,9 @@ class Account(models.Model):
     amount = models.FloatField(default=0)
     last_update = models.DateTimeField(null=True, blank=True)
     last_transaction = models.DateTimeField(null=True, blank=True)
+    currency = models.CharField(
+        max_length=3, choices=CurrencyType.choices, default=CurrencyType.USD
+    )
 
     def __str__(self):
         return self.name
@@ -92,6 +100,10 @@ class Transaction(models.Model):
         default=TransactionCategory.ETC,
     )
     reviewed = models.BooleanField(default=False)
+
+    related_transaction = models.ForeignKey(
+        "self", on_delete=models.SET_NULL, blank=True, null=True
+    )
 
     def __str__(self):
         return f'{self.datetime.strftime("%Y-%m-%d")} {self.account.name}: {self.retailer.name if self.retailer else None}'

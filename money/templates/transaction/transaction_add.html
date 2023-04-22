@@ -12,7 +12,7 @@
     </div>
 </form>
 
-
+{% if latest_transaction %}
 <h3 style="margin-top: 20px;">Last Transaction</h3>
 <table class="table">
     <tr>
@@ -36,6 +36,7 @@
         <td>{{ latest_transaction.amount|print_dollar }}</td>
     </tr>
 </table>
+{% endif %}
 
 <script>
     const selectField = document.getElementById('id_retailer');

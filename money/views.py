@@ -2,7 +2,7 @@ from typing import Any, Dict, Optional, Type
 
 from django import forms
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Prefetch, Sum, Case, When, FloatField
+from django.db.models import Prefetch, Sum, Case, When, FloatField, QuerySet
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import DetailView, ListView, TemplateView, View
@@ -19,13 +19,19 @@ class HomeView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context["account_list"] = (
-            models.Account.objects.all().prefetch_related("bank").order_by("name")
+            models.Account.objects.all()
+            .prefetch_related("bank")
+            .order_by("currency", "name")
         )
 
-        sum = 0
+        sum_dict = {k[0]: 0 for k in models.CurrencyType.choices}
+
         for account in context["account_list"]:
-            sum += account.amount
-        context["sum"] = sum
+            sum_dict[account.currency] += account.amount
+        sum_list = [(k, v) for k, v in sum_dict.items()]
+        sum_list.sort()
+
+        context["sum_list"] = sum_list
         return context
 
 
@@ -94,8 +100,17 @@ class TransactionListView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
 
-        context["data"] = helper.get_transaction_chart_data(
-            models.Transaction.objects.all().order_by("datetime", "-amount"),
+        context["usd_data"] = helper.get_transaction_chart_data(
+            models.Transaction.objects.filter(
+                account__currency=models.CurrencyType.USD
+            ).order_by("datetime", "-amount"),
+            recalculate=True,
+        )
+
+        context["krw_data"] = helper.get_transaction_chart_data(
+            models.Transaction.objects.filter(
+                account__currency=models.CurrencyType.KRW
+            ).order_by("datetime", "-amount"),
             recalculate=True,
         )
 
@@ -126,9 +141,15 @@ class TransactionCreateView(LoginRequiredMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        latest_transaction = models.Transaction.objects.filter(
+        transaction = models.Transaction.objects.filter(
             account_id=self.kwargs["account_id"]
-        ).order_by("-datetime", "amount")[0]
+        ).order_by("-datetime", "amount")
+
+        if len(transaction) > 0:
+            latest_transaction = transaction[0]
+        else:
+            latest_transaction = None
+
         if latest_transaction:
             context["form"].initial["datetime"] = latest_transaction.datetime.strftime(
                 "%Y-%m-%d"
@@ -184,7 +205,6 @@ class CategoryDetailView(LoginRequiredMixin, View):
     template_name = "dashboard/category_detail.html"
 
     def get(self, request, *args, **kwargs):
-        print(kwargs)
         category_type = kwargs["category_type"]
         transaction_list = (
             models.Transaction.objects.filter(type=category_type)
@@ -217,14 +237,50 @@ class ReviewTransactionView(LoginRequiredMixin, ListView):
 review_transaction_view = ReviewTransactionView.as_view()
 
 
+class ReviewInternalTransactionView(LoginRequiredMixin, ListView):
+    model = models.Transaction
+    template_name = "review/review_internal.html"
+    paginate_by = 10
+
+    def get_queryset(self) -> QuerySet[Any]:
+        qs = super().get_queryset()
+
+        qs = (
+            qs.filter(reviewed=False)
+            .filter(type=models.TransactionCategory.TRANSFER)
+            .order_by("datetime", "amount")
+            .prefetch_related("account")
+        )
+
+        if self.request.GET.get("internal_only", False):
+            qs = qs.filter(is_internal=True)
+
+        return qs
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        if self.request.GET.get("internal_only", False):
+            context["internal_only"] = True
+
+        return context
+
+
+review_internal_transaction_view = ReviewInternalTransactionView.as_view()
+
+
 # Retailer related views
 class RetailerSummaryView(LoginRequiredMixin, ListView):
     template_name = "retailer/retailer_summary.html"
     model = models.Retailer
 
     def get_queryset(self):
+        currency = self.request.GET.get("currency", models.CurrencyType.USD)
+
         return (
-            models.Transaction.objects.values(
+            models.Transaction.objects.filter(
+                account__currency=currency, is_internal=False
+            )
+            .values(
                 "retailer__id", "retailer__name", "retailer__type", "retailer__category"
             )
             .annotate(
@@ -246,6 +302,21 @@ class RetailerSummaryView(LoginRequiredMixin, ListView):
             .order_by("minus_sum")
         )
 
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["currency"] = self.request.GET.get("currency", models.CurrencyType.USD)
+        label = []
+        data = []
+
+        for transaction in context["transaction_list"]:
+            if transaction["minus_sum"] < 0:
+                label.append(transaction["retailer__name"])
+                data.append(-transaction["minus_sum"])
+
+        context["label"] = label
+        context["data"] = data
+        return context
+
 
 retailer_summary_view = RetailerSummaryView.as_view()
 
@@ -253,6 +324,13 @@ retailer_summary_view = RetailerSummaryView.as_view()
 class RetailerDetailView(LoginRequiredMixin, DetailView):
     template_name = "retailer/retailer_detail.html"
     model = models.Retailer
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["transactions"] = models.Transaction.objects.filter(
+            retailer_id=self.kwargs["pk"]
+        ).order_by("datetime")
+        return context
 
 
 retailer_detail_view = RetailerDetailView.as_view()

@@ -41,6 +41,16 @@ urlpatterns = [
         name="review_transaction",
     ),
     path(
+        "review_internal",
+        view=views.review_internal_transaction_view,
+        name="review_internal_transaction",
+    ),
+    path(
+        "update_related_trasaction",
+        view=helper.update_related_transaction,
+        name="update_related_transaction",
+    ),
+    path(
         "retailer_summary",
         view=views.retailer_summary_view,
         name="retailer_summary",

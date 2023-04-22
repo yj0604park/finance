@@ -63,3 +63,33 @@ def update_retailer_type(request):
 def get_retailer_type(request, retailer_id):
     retailer = models.Retailer.objects.get(pk=retailer_id)
     return JsonResponse({"retailer_category": retailer.category})
+
+
+@login_required
+def update_related_transaction(request):
+    if request.method == "POST":
+        # Get the form data from the request.POST dictionary
+        updated = {}
+        for item, value in request.POST.items():
+            if item.startswith("name_") and value:
+                source_id = int(item[5:])
+                target_id = int(value)
+
+                source = models.Transaction.objects.get(id=source_id)
+                target = models.Transaction.objects.get(id=target_id)
+
+                if (
+                    source.related_transaction is None
+                    and target.related_transaction is None
+                    and source.is_internal
+                    and target.is_internal
+                    and source_id != target_id
+                ):
+                    if abs(source.amount + target.amount) < 0.01:
+                        source.related_transaction = target
+                        target.related_transaction = source
+
+                        target.save()
+                        source.save()
+                        updated[item] = value
+        return JsonResponse(updated)

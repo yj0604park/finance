@@ -15,6 +15,7 @@ class AccountAdmin(admin.ModelAdmin):
 @admin.register(models.Transaction)
 class TransactionAdmin(admin.ModelAdmin):
     list_display = ["pk", "datetime", "account_name", "retailer"]
+    raw_id_fields = ("related_transaction",)
 
     def account_name(self, obj):
         return obj.account.name

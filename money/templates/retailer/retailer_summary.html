@@ -28,11 +28,36 @@
         </td>
         <td>{{ retailer.retailer__type }}</td>
         <td>{{ retailer.retailer__category }}</td>
-        <td>{{ retailer.minus_sum|print_dollar }}</td>
-        <td>{{ retailer.plus_sum|print_dollar }}</td>
+        <td>{{ retailer.minus_sum | print_currency:currency }}</td>
+        <td>{{ retailer.plus_sum | print_currency:currency }}</td>
     </tr>
     {% endfor %}
 </table>
+
+
+<div>
+    <canvas id="myChart" width="500" height="500"></canvas>
+</div>
+
+
+<script>
+    const ctx = document.getElementById('myChart');
+
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ label | safe }},
+        datasets: [{
+            label: 'Category',
+            data: {{ data | safe }}
+            }]
+        },
+        options: {
+        maintainAspectRatio: false,
+        responsive: true
+    }
+    });
+</script>
 
 <script>
     const myButton = document.getElementById("update_retailer_type");

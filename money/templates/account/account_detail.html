@@ -35,8 +35,9 @@
     {% endfor %}
 </table>
 
+{% with chartId="myChart" %}
 {% include 'transaction/transaction_chart.html' %}
-
+{% endwith %}
 
 <script>
     const myButton = document.getElementById("update_button");

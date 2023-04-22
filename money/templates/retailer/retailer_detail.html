@@ -21,13 +21,15 @@
             <th>Datetime</th>
             <th>Amount</th>
             <th>Category</th>
+            <th>Note</th>
         </tr>
     </thead>
-    {% for transaction in retailer.transaction_set.all %}
+    {% for transaction in transactions %}
     <tr>
         <td>{{ transaction.datetime|date:"Y-m-d" }}</td>
         <td>{{ transaction.amount }}</td>
         <td>{{ transaction.type }}</td>
+        <td>{{ transaction.note }}</td>
     </tr>
     {% endfor %}
 </table>
