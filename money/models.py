@@ -112,8 +112,17 @@ class Transaction(models.Model):
         return reverse("money:transaction_detail", kwargs={"pk": self.pk})
 
 
+class DetailItem(models.Model):
+    name = models.CharField(max_length=30)
+
+    def __str__(self):
+        return self.name
+
+
 class TransactionDetail(models.Model):
     transaction = models.ForeignKey(Transaction, on_delete=models.CASCADE)
+    item = models.ForeignKey(DetailItem, on_delete=models.CASCADE)
 
-    note = models.CharField(max_length=40)
+    note = models.CharField(max_length=40, blank=True, null=True)
     amount = models.FloatField()
+    count = models.IntegerField(default=1)

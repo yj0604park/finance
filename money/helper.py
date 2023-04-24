@@ -3,6 +3,8 @@ from django.contrib.auth.decorators import login_required
 
 from django.db.models import Count
 from django.http import HttpResponse, JsonResponse
+from django.db.models import Q
+
 
 from money import models
 
@@ -93,3 +95,20 @@ def update_related_transaction(request):
                         source.save()
                         updated[item] = value
         return JsonResponse(updated)
+
+
+@login_required
+def set_detail_required(request):
+    objects = (
+        models.Transaction.objects.filter(
+            Q(type=models.TransactionCategory.DAILY_NECESSITY)
+            | Q(type=models.TransactionCategory.GROCERY)
+        )
+        .filter(reviewed=False)
+        .filter(requires_detail=False)
+    )
+
+    for obj in objects:
+        obj.requires_detail = True
+        obj.save()
+    return JsonResponse({"success": True})

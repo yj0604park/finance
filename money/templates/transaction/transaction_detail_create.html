@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load money_tags %}
+
+{% block content %}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Datetime</th>
+            <th>Retailer</th>
+            <th>Amount</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+                {{ transaction.datetime|date:"Y-m-d" }}
+            </td>
+            <td>
+                {{ transaction.retailer }}
+            </td>
+            <td>
+                {{ transaction.amount|print_currency:transaction.account.currency }}
+            </td>
+        </tr>
+    </tbody>
+</table>
+<form method="post">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <div class="form-group">
+        <div class=""><input type="submit" name="submit" value="Submit" class="btn btn-primary" id="submit-id-submit" />
+        </div>
+    </div>
+</form>
+
+<script>
+    function showAdminPopup(triggeringLink, name_regexp, add_popup) {
+        const name = addPopupIndex(triggeringLink.id.replace(name_regexp, ''));
+        const href = new URL(triggeringLink.href);
+        if (add_popup) {
+            href.searchParams.set('_popup', 1);
+        }
+        const win = window.open(href, name, 'height=500,width=800,resizable=yes,scrollbars=yes');
+        relatedWindows.push(win);
+        win.focus();
+        return false;
+    }
+    function openPopup(link) {
+        // Open the pop-up window
+        console.log(link)
+        window.open(link + "?_to_field=id&_popup=1", 'popup', 'height=500,width=800,resizable=yes,scrollbars=yes,modal=yes');
+    }
+
+</script>
+{% endblock %}

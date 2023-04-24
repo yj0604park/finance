@@ -1,12 +1,13 @@
-from typing import Any, Dict, Optional, Type
+from typing import Any, Dict
 
 from django import forms
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Prefetch, Sum, Case, When, FloatField, QuerySet
+from django.db.models import Case, FloatField, Prefetch, QuerySet, Sum, When
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import DetailView, ListView, TemplateView, View
-from django.views.generic.edit import CreateView, DeleteView, UpdateView
+from django.views.generic.edit import CreateView
 
 from money import forms as money_forms
 from money import helper, models
@@ -169,6 +170,47 @@ class TransactionDetailView(LoginRequiredMixin, DetailView):
 transaction_detail_view = TransactionDetailView.as_view()
 
 
+class DetailItemCreateView(LoginRequiredMixin, CreateView):
+    template_name = "detail_item/detail_item_create.html"
+    model = models.DetailItem
+    form_class = money_forms.DetailItemForm
+
+    def get_success_url(self) -> str:
+        return reverse_lazy("money:add_detail_item")
+
+
+detail_item_create_view = DetailItemCreateView.as_view()
+
+
+class TransactionDetailCreateView(LoginRequiredMixin, CreateView):
+    template_name = "transaction/transaction_detail_create.html"
+    model = models.TransactionDetail
+    form_class = money_forms.TransactionDetailForm
+
+    def get_success_url(self) -> str:
+        return reverse_lazy(
+            "money:add_transaction_detail",
+            kwargs={"transaction_id": self.kwargs["transaction_id"]},
+        )
+
+    def form_valid(self, form: forms.BaseModelForm) -> HttpResponse:
+        form.instance.transaction = models.Transaction.objects.get(
+            pk=self.kwargs["transaction_id"]
+        )
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["transaction"] = models.Transaction.objects.select_related(
+            "account", "retailer"
+        ).get(pk=self.kwargs["transaction_id"])
+
+        return context
+
+
+transaction_detail_create_view = TransactionDetailCreateView.as_view()
+
+
 # Transaction category related views
 class TransactionCategoryView(LoginRequiredMixin, View):
     template_name = "dashboard/category.html"
@@ -240,7 +282,7 @@ review_transaction_view = ReviewTransactionView.as_view()
 class ReviewInternalTransactionView(LoginRequiredMixin, ListView):
     model = models.Transaction
     template_name = "review/review_internal.html"
-    paginate_by = 10
+    paginate_by = 20
 
     def get_queryset(self) -> QuerySet[Any]:
         qs = super().get_queryset()
@@ -266,6 +308,27 @@ class ReviewInternalTransactionView(LoginRequiredMixin, ListView):
 
 
 review_internal_transaction_view = ReviewInternalTransactionView.as_view()
+
+
+class ReviewDetailTransactionView(LoginRequiredMixin, ListView):
+    model = models.Transaction
+    template_name = "review/review_detail.html"
+    paginate_by = 20
+
+    def get_queryset(self) -> QuerySet[Any]:
+        return (
+            super()
+            .get_queryset()
+            .filter(requires_detail=True)
+            .prefetch_related("retailer")
+            .order_by("-datetime")
+        )
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        return super().get_context_data(**kwargs)
+
+
+review_detail_transaction_view = ReviewDetailTransactionView.as_view()
 
 
 # Retailer related views

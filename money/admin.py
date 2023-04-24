@@ -25,5 +25,15 @@ class TransactionAdmin(admin.ModelAdmin):
 
 
 @admin.register(models.Retailer)
-class Retailer(admin.ModelAdmin):
+class RetailerAdmin(admin.ModelAdmin):
     pass
+
+
+@admin.register(models.DetailItem)
+class DetailItemAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(models.TransactionDetail)
+class TransactionDetailAdmin(admin.ModelAdmin):
+    raw_id_fields = ("transaction",)
