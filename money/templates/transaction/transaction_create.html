@@ -3,14 +3,10 @@
 {% load money_tags %}
 
 {% block content %}
-<form method="post">
-    {% csrf_token %}
-    {{ form|crispy }}
-    <div class="form-group">
-        <div class=""><input type="submit" name="submit" value="Submit" class="btn btn-primary" id="submit-id-submit" />
-        </div>
-    </div>
-</form>
+
+
+{% crispy form %}
+
 
 {% if latest_transaction %}
 <h3 style="margin-top: 20px;">Last Transaction</h3>
@@ -63,6 +59,11 @@
         newDate.setDate(newDate.getDate() + 1);
         datetimeField.value = newDate.toISOString().slice(0, 10);
     });
+
+    function openPopup(link) {
+        // Open the pop-up window
+        window.open(link + "?_to_field=id&_popup=1", 'popup', 'height=500,width=800,resizable=yes,scrollbars=yes,modal=yes');
+    }
 
 </script>
 {% endblock %}

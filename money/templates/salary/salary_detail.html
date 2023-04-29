@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% load money_tags %}
+
+{% block content %}
+
+<h1>Salary Details</h1>
+
+<table class="table">
+    <tr style="border-bottom: 2px solid black">
+        <th>Date</th>
+        <td align="right">{{ salary.date }}</td>
+    </tr>
+
+    <tr>
+        <th colspan="2">Pay Details</th>
+    </tr>
+
+    {% for key, value in salary.pay_detail.items %}
+    <tr>
+        <td>&nbsp;&emsp;{{ key }}</td>
+        <td align="right">{{ value | print_dollar }}</td>
+    </tr>
+    {% endfor %}
+
+    <tr style="border-bottom: 2px solid black;border-top: 2px solid black" class="table-primary">
+        <th>Gross Pay</th>
+        <td align="right">{{ salary.gross_pay | print_dollar }}</td>
+    </tr>
+
+    <tr>
+        <th colspan="2">Adjustment Details</th>
+    </tr>
+
+    {% for key, value in salary.adjustment_detail.items %}
+    <tr>
+        <td>&nbsp;&emsp;{{ key }}</td>
+        <td align="right">{{ value | print_dollar }}</td>
+    </tr>
+    {% endfor %}
+
+    <tr style="border-bottom: 2px solid black;border-top: 2px solid black" class="table-secondary">
+        <th>Total Adjustment</th>
+        <td align="right">{{ salary.total_adjustment | print_dollar }}</td>
+    </tr>
+
+    <tr style="border-bottom: 2px solid black;border-top: 2px solid black" class="table-secondary">
+        <th>Taxable Earnings</th>
+        <td align="right">{{ salary.gross_pay | add_float:salary.total_adjustment | print_dollar }}</td>
+    </tr>
+
+
+    <tr>
+        <th colspan="2">Tax Details</th>
+    </tr>
+
+    {% for key, value in salary.tax_detail.items %}
+    <tr>
+        <td>&nbsp;&emsp;{{ key }}</td>
+        <td align="right">{{ value | print_dollar }}</td>
+    </tr>
+    {% endfor %}
+
+    <tr style="border-bottom: 2px solid black;border-top: 2px solid black" class="table-secondary">
+        <th>Taxes Withheld</th>
+        <td align="right">{{ salary.total_withheld | print_dollar }}</td>
+    </tr>
+
+    <tr>
+        <th colspan="2">Deduction Details</th>
+    </tr>
+
+    {% for key, value in salary.deduction_detail.items %}
+    <tr>
+        <td>&nbsp;&emsp;{{ key }}</td>
+        <td align="right">{{ value | print_dollar }}</td>
+    </tr>
+    {% endfor %}
+
+    <tr style="border-bottom: 2px solid black;border-top: 2px solid black" class="table-secondary">
+        <th>Total After Tax Deductions</th>
+        <td align="right">{{ salary.total_deduction | print_dollar }}</td>
+    </tr>
+
+    <tr style="border-bottom: 2px solid black;border-top: 2px solid black" class="table-success">
+        <th>Net Pay</th>
+        <td align="right">{{ salary.net_pay|print_dollar }}</td>
+    </tr>
+</table>
+
+
+{% for key, value in validity.items %}
+{% if not value.1 %}
+<h3>{{ key }} is not correct by {{ value.0 }}</h3>
+{% endif %}
+{% endfor %}
+
+{% endblock %}

@@ -1,9 +1,7 @@
 from typing import Any, Dict
 
-from django import forms
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Case, FloatField, Prefetch, QuerySet, Sum, When
-from django.http import HttpResponse
+from django.db.models import Case, FloatField, Prefetch, Sum, When
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import DetailView, ListView, TemplateView, View
@@ -93,154 +91,16 @@ class AccountDetailView(LoginRequiredMixin, DetailView):
 account_detail_view = AccountDetailView.as_view()
 
 
-# Transaction related views
-class TransactionListView(LoginRequiredMixin, ListView):
-    model = models.Transaction
-    template_name = "transaction/transaction_list.html"
-
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        context = super().get_context_data(**kwargs)
-
-        context["usd_data"] = helper.get_transaction_chart_data(
-            models.Transaction.objects.filter(
-                account__currency=models.CurrencyType.USD
-            ).order_by("datetime", "-amount"),
-            recalculate=True,
-        )
-
-        context["krw_data"] = helper.get_transaction_chart_data(
-            models.Transaction.objects.filter(
-                account__currency=models.CurrencyType.KRW
-            ).order_by("datetime", "-amount"),
-            recalculate=True,
-        )
-
-        return context
-
-
-transaction_list_view = TransactionListView.as_view()
-
-
-class TransactionCreateView(LoginRequiredMixin, CreateView):
-    template_name = "transaction/transaction_add.html"
-    model = models.Transaction
-    form_class = money_forms.TransactionForm
-
-    def get_success_url(self) -> str:
-        return reverse_lazy(
-            "money:add_transaction", kwargs={"account_id": self.kwargs["account_id"]}
-        )
-
-    def get_form(self) -> forms.BaseModelForm:
-        form = super().get_form()
-        form.initial["account"] = self.kwargs["account_id"]
-        datetime_default = self.request.GET.get("datetime", None)
-        if datetime_default:
-            form.initial["datetime"] = datetime_default
-
-        return form
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        transaction = models.Transaction.objects.filter(
-            account_id=self.kwargs["account_id"]
-        ).order_by("-datetime", "amount")
-
-        if len(transaction) > 0:
-            latest_transaction = transaction[0]
-        else:
-            latest_transaction = None
-
-        if latest_transaction:
-            context["form"].initial["datetime"] = latest_transaction.datetime.strftime(
-                "%Y-%m-%d"
-            )
-        context["latest_transaction"] = latest_transaction
-        return context
-
-
-add_transaction_view = TransactionCreateView.as_view()
-
-
-class TransactionDetailView(LoginRequiredMixin, DetailView):
-    model = models.Transaction
-    template_name = "transaction/transaction_detail.html"
-
-
-transaction_detail_view = TransactionDetailView.as_view()
-
-
 class DetailItemCreateView(LoginRequiredMixin, CreateView):
     template_name = "detail_item/detail_item_create.html"
     model = models.DetailItem
     form_class = money_forms.DetailItemForm
 
     def get_success_url(self) -> str:
-        return reverse_lazy("money:add_detail_item")
+        return reverse_lazy("money:detail_item_create")
 
 
 detail_item_create_view = DetailItemCreateView.as_view()
-
-
-class TransactionDetailCreateView(LoginRequiredMixin, CreateView):
-    template_name = "transaction/transaction_detail_create.html"
-    model = models.TransactionDetail
-    form_class = money_forms.TransactionDetailForm
-
-    def get_success_url(self) -> str:
-        return reverse_lazy(
-            "money:add_transaction_detail",
-            kwargs={"transaction_id": self.kwargs["transaction_id"]},
-        )
-
-    def form_valid(self, form: forms.BaseModelForm) -> HttpResponse:
-        form.instance.transaction = models.Transaction.objects.get(
-            pk=self.kwargs["transaction_id"]
-        )
-        return super().form_valid(form)
-
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        context = super().get_context_data(**kwargs)
-        context["transaction"] = models.Transaction.objects.select_related(
-            "account", "retailer"
-        ).get(pk=self.kwargs["transaction_id"])
-
-        return context
-
-
-transaction_detail_create_view = TransactionDetailCreateView.as_view()
-
-
-# Transaction category related views
-class TransactionCategoryView(LoginRequiredMixin, View):
-    template_name = "dashboard/category.html"
-
-    def get(self, request, *args, **kwargs):
-        context = {
-            "summarization": models.Transaction.objects.values("type")
-            .annotate(total_amount=-Sum("amount"))
-            .order_by("-total_amount"),
-        }
-
-        label = []
-        data = []
-
-        income = []
-
-        for summary in context["summarization"]:
-            if summary["total_amount"] > 0:
-                label.append(summary["type"])
-                data.append(summary["total_amount"])
-            else:
-                income.append(summary)
-        context["label"] = label
-        context["data"] = data
-        context["income"] = income
-
-        return render(request, self.template_name, context)
-
-
-transaction_category_view = TransactionCategoryView.as_view()
 
 
 class CategoryDetailView(LoginRequiredMixin, View):
@@ -253,82 +113,14 @@ class CategoryDetailView(LoginRequiredMixin, View):
             .prefetch_related("retailer", "account")
             .order_by("datetime", "amount")
         )
-        context = {"type": category_type, "transactions": transaction_list}
+        context = {
+            "type": category_type,
+            "transactions": transaction_list,
+        }
         return render(request, self.template_name, context)
 
 
 category_detail_view = CategoryDetailView.as_view()
-
-
-# Transaction review related views
-class ReviewTransactionView(LoginRequiredMixin, ListView):
-    model = models.Transaction
-    template_name = "review/review_transaction.html"
-    paginate_by = 10
-
-    def get_queryset(self):
-        qs = super().get_queryset()
-        qs = (
-            qs.filter(reviewed=False)
-            .order_by("datetime", "amount")
-            .prefetch_related("account")
-        )
-        return qs
-
-
-review_transaction_view = ReviewTransactionView.as_view()
-
-
-class ReviewInternalTransactionView(LoginRequiredMixin, ListView):
-    model = models.Transaction
-    template_name = "review/review_internal.html"
-    paginate_by = 20
-
-    def get_queryset(self) -> QuerySet[Any]:
-        qs = super().get_queryset()
-
-        qs = (
-            qs.filter(reviewed=False)
-            .filter(type=models.TransactionCategory.TRANSFER)
-            .order_by("datetime", "amount")
-            .prefetch_related("account")
-        )
-
-        if self.request.GET.get("internal_only", False):
-            qs = qs.filter(is_internal=True)
-
-        return qs
-
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        context = super().get_context_data(**kwargs)
-        if self.request.GET.get("internal_only", False):
-            context["internal_only"] = True
-
-        return context
-
-
-review_internal_transaction_view = ReviewInternalTransactionView.as_view()
-
-
-class ReviewDetailTransactionView(LoginRequiredMixin, ListView):
-    model = models.Transaction
-    template_name = "review/review_detail.html"
-    paginate_by = 20
-
-    def get_queryset(self) -> QuerySet[Any]:
-        return (
-            super()
-            .get_queryset()
-            .filter(requires_detail=True)
-            .prefetch_related("retailer")
-            .order_by("-datetime")
-        )
-
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        return super().get_context_data(**kwargs)
-
-
-review_detail_transaction_view = ReviewDetailTransactionView.as_view()
 
 
 # Retailer related views
@@ -397,3 +189,65 @@ class RetailerDetailView(LoginRequiredMixin, DetailView):
 
 
 retailer_detail_view = RetailerDetailView.as_view()
+
+
+class RetailerCreateView(LoginRequiredMixin, CreateView):
+    template_name = "retailer/retailer_create.html"
+    model = models.Retailer
+    form_class = money_forms.RetailerForm
+
+    def get_success_url(self) -> str:
+        return reverse_lazy("money:retailer_create")
+
+
+retailer_create_view = RetailerCreateView.as_view()
+
+
+class SalaryListView(LoginRequiredMixin, ListView):
+    template_name = "salary/salary_list.html"
+    model = models.Salary
+
+
+salary_list_view = SalaryListView.as_view()
+
+
+class SalaryDetailView(LoginRequiredMixin, DetailView):
+    template_name = "salary/salary_detail.html"
+    model = models.Salary
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        salary = context["salary"]
+        valid_check = (
+            ("Gross", salary.gross_pay, salary.pay_detail),
+            ("Adjustment", salary.total_adjustment, salary.adjustment_detail),
+            ("Tax", salary.total_withheld, salary.tax_detail),
+            ("Deduction", salary.total_deduction, salary.deduction_detail),
+        )
+
+        valid = {}
+        for key, total, detail in valid_check:
+            diff = total - sum(detail.values())
+            valid[key] = (diff, abs(diff) < 0.01)
+
+        summary_diff = salary.net_pay - (
+            salary.gross_pay
+            + salary.total_adjustment
+            + salary.total_withheld
+            + salary.total_deduction
+        )
+        valid["Summary"] = (summary_diff, abs(summary_diff) < 0.01)
+        context["validity"] = valid
+        return context
+
+
+salary_detail_view = SalaryDetailView.as_view()
+
+
+class SalaryCreateView(LoginRequiredMixin, CreateView):
+    template_name = "salary/salary_create.html"
+    model = models.Salary
+    form_class = money_forms.SalaryForm
+
+
+salary_create_view = SalaryCreateView.as_view()

@@ -25,12 +25,10 @@
           <li class="nav-item">
             <a class="nav-link" href="{% url 'money:retailer_summary' %}">Retailer</a>
           </li>
-          {% if request.user.is_authenticated %}
           <li class="nav-item">
-            {# URL provided by django-allauth/account/urls.py #}
-            <a class="nav-link" href="{% url 'users:detail' request.user.username  %}">
-              My Profile</a>
+            <a class="nav-link" href="{% url 'money:salary_list' %}">Salary</a>
           </li>
+          {% if request.user.is_authenticated %}
           <li class="nav-item">
             {# URL provided by django-allauth/account/urls.py #}
             <a class="nav-link" href="{% url 'account_logout' %}">
@@ -50,9 +48,6 @@
               Sign In</a>
           </li>
           {% endif %}
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'about' %}">About</a>
-          </li>
         </ul>
       </div>
     </div>

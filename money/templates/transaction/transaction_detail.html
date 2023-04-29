@@ -1,8 +1,24 @@
 {% extends "base.html" %}
 
 {% block content %}
-Good
 
-<a href="{% url 'money:add_transaction' transaction.account.id %}?datetime={{ transaction.datetime|date:'Y-m-d' }}">Add
-    another</a>
+<table class="table">
+    <tr>
+        <td>{{ transaction.datetime }}</td>
+        <td>{{ transaction.amount }}</td>
+        <td>{{ transaction.retailer }}</td>
+    </tr>
+</table>
+
+<h1>Salary</h1>
+{% for salary in transaction.salary_set.all %}
+{{ salary }}
+{% endfor %}
+<h1>Detail</h1>
+{{ transaction.transaction_detail_set.all }}
+
+
+<a href="{% url 'money:transaction_create' transaction.account.id %}?datetime={{ transaction.datetime|date:'Y-m-d' }}">
+    Add another
+</a>
 {% endblock %}

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load money_tags %}
+
+{% block content %}
+
+<a href="{% url 'money:salary_create' %}" class="btn btn-primary">Add Salary</a>
+
+<h1>Salary Summary</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Gross Pay</th>
+            <th>Net Pay</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for salary in salary_list %}
+        <tr>
+            <td>{{ salary.date }}</td>
+            <td>{{ salary.gross_pay|print_dollar }}</td>
+            <td>{{ salary.net_pay|print_dollar }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h1>Salary Breakdown</h1>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Gross Pay</th>
+            <th>Total Adjustment</th>
+            <th>Taxable Earnings</th>
+            <th>Taxes Withheld</th>
+            <th>Total After Tax Deductions</th>
+            <th>Net Pay</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for salary in salary_list %}
+        <tr>
+            <td><a href="{% url 'money:salary_detail' salary.id %}">{{ salary.date }}</a></td>
+            <td>{{ salary.gross_pay | print_dollar }}</td>
+            <td>{{ salary.total_adjustment | print_dollar }}</td>
+            <td>{{ salary.gross_pay | add_float:salary.total_adjustment | print_dollar }}</td>
+            <td>{{ salary.total_withheld | print_dollar }}</td>
+            <td>{{ salary.total_deduction | print_dollar }}
+            </td>
+            <td>{{ salary.net_pay|print_dollar }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

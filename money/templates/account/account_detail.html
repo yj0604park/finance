@@ -11,7 +11,7 @@
 <button type="button" class="btn btn-secondary" id="update_button">
     Update Balance
 </button>
-<a type="button" class="btn btn-secondary" href="{% url 'money:add_transaction' account.id %}">
+<a type="button" class="btn btn-secondary" href="{% url 'money:transaction_create' account.id %}">
     Add transaction
 </a>
 
@@ -19,6 +19,7 @@
 <table class="table">
     <thead>
         <tr>
+            <th>ID</th>
             <th>Date</th>
             <th>Use For</th>
             <th>Amount</th>
@@ -27,6 +28,7 @@
     </thead>
     {% for transaction in ordered_transaction_set %}
     <tr>
+        <td><a href="{% url 'money:transaction_detail' transaction.id %}">{{ transaction.id }}</a></td>
         <td>{{ transaction.datetime.date }}</td>
         <td>{{ transaction.retailer.name }}</td>
         <td>{{ transaction.amount|floatformat:2 }}</td>
@@ -54,6 +56,7 @@
             .catch(error => {
                 // handle error
                 console.error(error);
+                myButton.innerHTML = "Error";
             })
             .finally(() => {
                 myButton.disabled = true;

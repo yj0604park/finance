@@ -3,7 +3,18 @@
 
 {% block content %}
 
-<h1>Income</h1>
+<a href="{% url 'money:transaction_category' %}" class="btn btn-outline-secondary">All</a>
+{% for month in months %}
+<a href="?month={{ month }}" class="btn btn-outline-primary">{{ month }}</a>
+{% endfor %}
+
+{% if selected_month %}
+<h1>{{ selected_month }}</h1>
+{% else %}
+<h1>All Months</h1>
+{% endif %}
+
+<h2>Income</h2>
 <table class="table">
     <thead>
         <tr>
@@ -19,7 +30,7 @@
     {% endfor %}
 </table>
 
-<h1>Spending</h1>
+<h2>Spending</h2>
 <table class="table">
     <thead>
         <tr>
@@ -49,15 +60,15 @@
         type: 'doughnut',
         data: {
             labels: {{ label | safe }},
-            datasets: [{
-                label: 'Category',
-                data: {{ data | safe }}
+        datasets: [{
+            label: 'Category',
+            data: {{ data | safe }}
             }]
         },
         options: {
-            maintainAspectRatio: false,
-            responsive: true
-        }
+        maintainAspectRatio: false,
+        responsive: true
+    }
     });
 </script>
 {% endblock %}

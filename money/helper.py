@@ -1,10 +1,9 @@
 import datetime
+
+from dateutil.rrule import MONTHLY, rrule
 from django.contrib.auth.decorators import login_required
-
-from django.db.models import Count
-from django.http import HttpResponse, JsonResponse
-from django.db.models import Q
-
+from django.db.models import Count, Q
+from django.http import JsonResponse
 
 from money import models
 
@@ -112,3 +111,11 @@ def set_detail_required(request):
         obj.requires_detail = True
         obj.save()
     return JsonResponse({"success": True})
+
+
+def get_month_list(start_date, end_date):
+    months = [
+        dt.strftime("%Y-%m")
+        for dt in rrule(MONTHLY, dtstart=start_date, until=end_date)
+    ]
+    return months

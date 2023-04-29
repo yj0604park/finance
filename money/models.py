@@ -126,3 +126,22 @@ class TransactionDetail(models.Model):
     note = models.CharField(max_length=40, blank=True, null=True)
     amount = models.FloatField()
     count = models.IntegerField(default=1)
+
+
+class Salary(models.Model):
+    date = models.DateField()
+    gross_pay = models.FloatField()
+    total_adjustment = models.FloatField()
+    total_withheld = models.FloatField()
+    total_deduction = models.FloatField()
+    net_pay = models.FloatField()
+
+    pay_detail = models.JSONField()
+    adjustment_detail = models.JSONField()
+    tax_detail = models.JSONField()
+    deduction_detail = models.JSONField()
+
+    transaction = models.ForeignKey(Transaction, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.date}"

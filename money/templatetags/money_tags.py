@@ -1,4 +1,5 @@
 from django import template
+
 from money.models import CurrencyType
 
 register = template.Library()
@@ -11,8 +12,8 @@ def print_dollar(value):
 
     value = round(value, 2)
     if value < 0:
-        return f"-${abs(value):.2f}"
-    return f"${abs(value):.2f}"
+        return f"-${abs(value):,.2f}"
+    return f"${abs(value):,.2f}"
 
 
 @register.filter
@@ -22,8 +23,8 @@ def print_krw(value):
 
     value = round(value)
     if value < 0:
-        return f"-₩{abs(value):.0f}"
-    return f"₩{abs(value):.0f}"
+        return f"-₩{abs(value):,.0f}"
+    return f"₩{abs(value):,.0f}"
 
 
 @register.filter
@@ -39,3 +40,8 @@ def print_currency(value, currency):
 @register.filter
 def abs_filter(value):
     return abs(value)
+
+
+@register.filter
+def add_float(value1, value2):
+    return value1 + value2

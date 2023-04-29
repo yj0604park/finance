@@ -22,7 +22,7 @@
             <td>{{ transaction.account }}</td>
             <td>{{ transaction.retailer }}</td>
             <td>{{ transaction.amount }}</td>
-            <td><a class="btn btn-primary" href="{% url 'money:add_transaction_detail' transaction.id %}">Add
+            <td><a class="btn btn-primary" href="{% url 'money:transaction_detail_create' transaction.id %}">Add
                     Details</a>
             </td>
         </tr>

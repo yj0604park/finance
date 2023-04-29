@@ -37,3 +37,17 @@ class DetailItemAdmin(admin.ModelAdmin):
 @admin.register(models.TransactionDetail)
 class TransactionDetailAdmin(admin.ModelAdmin):
     raw_id_fields = ("transaction",)
+
+
+@admin.register(models.Salary)
+class SalaryAdmin(admin.ModelAdmin):
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "transaction":
+            kwargs["queryset"] = (
+                models.Transaction.objects.filter(
+                    type=models.TransactionCategory.INCOME
+                )
+                .prefetch_related("account", "retailer")
+                .order_by("datetime")
+            )
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)

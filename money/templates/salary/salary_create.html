@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load money_tags %}
+{% load crispy_forms_tags %}
+{% block content %}
+
+{% crispy form %}
+
+<script>
+    const addFieldButton = document.getElementById("add-json-field");
+    const fieldsContainer = document.getElementById("json-fields");
+
+    addFieldButton.addEventListener("click", () => {
+        const field = document.createElement("div");
+        field.classList.add("json-field");
+        field.innerHTML = `
+            <input type="text" name="key[]" placeholder="Key">
+            <input type="text" name="value[]" placeholder="Value">
+        `;
+        fieldsContainer.appendChild(field);
+    });
+</script>
+
+{% endblock %}
