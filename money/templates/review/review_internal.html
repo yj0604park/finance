@@ -26,7 +26,7 @@
                 {% else %}
             <tr>
                 {% endif %}
-                <td>{{ transaction.id }}</td>
+                <td><a href="{% url 'money:transaction_detail' transaction.id %}">{{ transaction.id }}</td>
                 <td>{{ transaction.datetime | date:"Y-m-d" }}</td>
                 <td>{{ transaction.account }}</td>
                 <td>{{ transaction.amount }}</td>
@@ -34,7 +34,8 @@
                 <td>{{ transaction.note }}</td>
                 {% if transaction.is_internal %}
                 {% if transaction.related_transaction %}
-                <td>{{ transaction.related_transaction.id }}</td>
+                <td><a href="{% url 'money:transaction_detail' transaction.related_transaction.id %}">
+                        {{ transaction.related_transaction.id }}</a></td>
                 {% else %}
                 <td><input type="number" id="input_{{ transaction.id }}" name="name_{{ transaction.id }}"></td>
                 {% endif %}

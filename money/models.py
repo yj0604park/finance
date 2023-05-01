@@ -15,6 +15,7 @@ class AccountType(models.TextChoices):
     INSTALLMENT_SAVING = "INSTALLMENT_SAVING", "적금"
     TIME_DEPOSIT = "TIME_DEPOSIT", "예금"
     CREDIT_CARD = "CREDIT_CARD", "신용카드"
+    STOCK = "STOCK", "주식"
 
 
 class CurrencyType(models.TextChoices):
@@ -106,7 +107,7 @@ class Transaction(models.Model):
     )
 
     def __str__(self):
-        return f'{self.datetime.strftime("%Y-%m-%d")} {self.account.name}: {self.retailer.name if self.retailer else None}'
+        return f'{self.id} {self.datetime.strftime("%Y-%m-%d")} {self.account.name}: {self.retailer.name if self.retailer else None}'
 
     def get_absolute_url(self):
         return reverse("money:transaction_detail", kwargs={"pk": self.pk})
@@ -145,3 +146,6 @@ class Salary(models.Model):
 
     def __str__(self):
         return f"{self.date}"
+
+    def get_absolute_url(self):
+        return reverse("money:salary_detail", kwargs={"pk": self.pk})

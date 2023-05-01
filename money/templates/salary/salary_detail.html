@@ -3,7 +3,13 @@
 
 {% block content %}
 
-<h1>Salary Details</h1>
+<h1>Salary Details </h1>
+<h3>
+    - Related with
+    <a href="{% url 'money:transaction_detail' salary.transaction.id %}">
+        Transaction {{ salary.transaction.id }}
+    </a>
+</h3>
 
 <table class="table">
     <tr style="border-bottom: 2px solid black">

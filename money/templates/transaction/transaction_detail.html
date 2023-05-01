@@ -2,23 +2,94 @@
 
 {% block content %}
 
+<h1>Transaction {{ transaction.id }} Detail</h1>
+
 <table class="table">
+
     <tr>
+        <th>Datetime</th>
         <td>{{ transaction.datetime }}</td>
+    </tr>
+
+    <tr>
+        <th>Account</th>
+        <td><a href="{% url 'money:account' transaction.account.id %}">{{ transaction.account }}</a></td>
+    </tr>
+
+    <tr>
+        <th>Amount</th>
         <td>{{ transaction.amount }}</td>
+    </tr>
+
+    <tr>
+        <th>Retailer</th>
         <td>{{ transaction.retailer }}</td>
+    </tr>
+
+    <tr>
+        <th>Detail Required</th>
+        <td>{{ transaction.requires_detail }}</td>
+    </tr>
+
+    <tr>
+        <th>Is Internal</th>
+        <td>{{ transaction.is_internal }}</td>
+    </tr>
+
+    <tr>
+        <th>Is Reviewed</th>
+        <td>{{ transaction.reviewed }}</td>
     </tr>
 </table>
 
-<h1>Salary</h1>
+{% if transaction.salary_set.all %}
+<h1>Related Salary Information</h1>
 {% for salary in transaction.salary_set.all %}
-{{ salary }}
+<a href="{% url 'money:salary_detail' salary.id %}">{{ salary }}</a>
 {% endfor %}
+{% endif %}
+
+{% if transaction.related_transaction %}
+<h1>Related Transaction Information</h1>
+<h3><a href="{% url 'money:transaction_detail' transaction.related_transaction.id %}">
+        Transaction {{ transaction.related_transaction.id }}</a></h3>
+
+<table class="table">
+    <tr>
+        <th>Datetime</th>
+        <td>{{ transaction.related_transaction.datetime }}</td>
+    </tr>
+    <tr>
+        <th>Account</th>
+        <td>{{ transaction.related_transaction.account }}</td>
+    </tr>
+    <tr>
+        <th>Amount</th>
+        <td>{{ transaction.related_transaction.amount }}</td>
+    </tr>
+    <tr>
+        <th>Retailer</th>
+        <td>{{ transaction.related_transaction.retailer }}</td>
+    </tr>
+    <tr>
+        <th>Detail Required</th>
+        <td>{{ transaction.related_transaction.requires_detail }}</td>
+    </tr>
+    <tr>
+        <th>Is Internal</th>
+        <td>{{ transaction.related_transaction.is_internal }}</td>
+    </tr>
+</table>
+{% endif %}
+
+
+{% if transaction.detail_set %}
 <h1>Detail</h1>
 {{ transaction.transaction_detail_set.all }}
+{% endif %}
 
-
+<h1>Add Detail</h1>
 <a href="{% url 'money:transaction_create' transaction.account.id %}?datetime={{ transaction.datetime|date:'Y-m-d' }}">
-    Add another
+    Add detail
 </a>
 {% endblock %}

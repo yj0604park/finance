@@ -51,26 +51,66 @@ class RelatedFieldWidgetCanAdd(widgets.Select):
         return mark_safe("".join(output))
 
 
-class KeyValueJSONWidget(forms.MultiWidget):
-    def __init__(self, attrs=None):
-        widgets = [forms.TextInput, forms.TextInput]
-        super().__init__(widgets, attrs)
+class DynamicKeyValueJSONWidget(forms.Widget):
+    template_name = "widgets/dynamic_key_value_JSON.html"
 
-    def render(self, name, value, attrs=None, renderer=None):
-        output = [super().render(name, value, attrs=attrs, renderer=renderer)]
+    def __init__(self, initialize_value=None, *args, **kwargs):
+        self.subwidget_key_form = kwargs.pop("subwidget_key_form", forms.TextInput)
+        self.subwidget_value_form = kwargs.pop(
+            "subwidget_value_form", forms.NumberInput
+        )
+        self.initialize_value = initialize_value
+        super().__init__(*args, **kwargs)
 
-        output.append('<button type="button" id="add-keyvalue">Add</button>')
-        return mark_safe("".join(output))
+    def get_context(self, name, value, attrs):
+        context_value = value if value else ("",)
 
-    def decompress(self, value):
-        if value and value != "null":
-            return [value, None]
-        return [None, None]
+        if value == "null" and self.initialize_value:
+            context_value = self.initialize_value
+
+        context = super().get_context(name, context_value, attrs)
+        final_attrs = context["widget"]["attrs"]
+        id_ = context["widget"]["attrs"].get("id")
+        context["widget"]["is_none"] = value is None
+
+        subwidgets = []
+        for index, item in enumerate(context["widget"]["value"]):
+            widget_attrs = final_attrs.copy()
+            if id_:
+                widget_attrs["id"] = "{id_}_{index}".format(id_=id_, index=index)
+            widget = (
+                self.subwidget_key_form(),
+                self.subwidget_value_form(attrs={"step": "any"}),
+            )
+            widget[0].is_required = self.is_required
+            widget[1].is_required = self.is_required
+            subwidgets.append(
+                (
+                    widget[0].get_context(name + "_key", item, widget_attrs)["widget"],
+                    widget[1].get_context(name + "_value", item, widget_attrs)[
+                        "widget"
+                    ],
+                )
+            )
+
+        context["widget"]["subwidgets"] = subwidgets
+        return context
 
     def value_from_datadict(self, data, files, name):
-        value = super().value_from_datadict(data, files, name)
+        try:
+            getter = data.getlist
+            key_list = [value for value in getter(name + "_key")]
+            value_list = [float(value) for value in getter(name + "_value")]
 
-        return json.dumps(value)
+            return json.dumps({k: v for k, v in zip(key_list, value_list) if v != 0})
+        except AttributeError:
+            return data.get(name)
+
+    def value_omitted_from_data(self, data, files, name):
+        return False
+
+    def format_value(self, value):
+        return value or {}
 
 
 class TransactionForm(forms.ModelForm):
@@ -151,33 +191,63 @@ class RetailerForm(forms.ModelForm):
 
 
 class SalaryForm(forms.ModelForm):
-    transaction_id = forms.IntegerField()
-
     class Meta:
         model = models.Salary
-        fields = (
-            "date",
-            "gross_pay",
-            "total_adjustment",
-            "total_withheld",
-            "total_deduction",
-        )
-        # exclude = ("transaction",)
-        # widgets = {"pay_detail": KeyValueJSONWidget()}
+        fields = "__all__"
+        widgets = {
+            "pay_detail": DynamicKeyValueJSONWidget(("Regular HRS",)),
+            "adjustment_detail": DynamicKeyValueJSONWidget(
+                ("401(K)", "Disability ins", "Healthcare FSA deduction")
+            ),
+            "tax_detail": DynamicKeyValueJSONWidget(
+                ("Federal income tax", "Social security tax", "Medicare tax")
+            ),
+            "deduction_detail": DynamicKeyValueJSONWidget(
+                (
+                    "ESPP",
+                    "Legal Plan",
+                    "Disability ins",
+                    "Dependent life ins",
+                    "Ad&d family ins",
+                )
+            ),
+        }
+
+    def is_valid(self) -> bool:
+        return super().is_valid()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.fields["transaction"].choices = [
+            (transaction.id, str(transaction))
+            for transaction in models.Transaction.objects.filter(
+                type=models.TransactionCategory.INCOME
+            )
+            .filter(reviewed=False)
+            .order_by("datetime")
+        ]
+
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Row(
-                Column("date", css_class="form-group col-md-6 mb-0"),
-                Column("gross_pay", css_class="form-group col-md-6 mb-0"),
+                Column("date", css_class="form-group col-md-4 mb-0"),
+                Column("gross_pay", css_class="form-group col-md-4 mb-0"),
+                Column("total_adjustment", css_class="form-group col-md-4 mb-0"),
             ),
             Row(
-                Column("total_adjustment", css_class="form-group col-md-4 mb-0"),
                 Column("total_withheld", css_class="form-group col-md-4 mb-0"),
                 Column("total_deduction", css_class="form-group col-md-4 mb-0"),
+                Column("net_pay", css_class="form-group col-md-4 mb-0"),
             ),
+            Row(
+                Column("pay_detail", css_class="form-group col-md-6 mb-0"),
+                Column("adjustment_detail", css_class="form-group col-md-6 mb-0"),
+            ),
+            Row(
+                Column("tax_detail", css_class="form-group col-md-6 mb-0"),
+                Column("deduction_detail", css_class="form-group col-md-6 mb-0"),
+            ),
+            Column("transaction"),
             Submit("submit", "Submit"),
         )

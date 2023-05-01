@@ -18,13 +18,17 @@
     <tbody>
         {% for salary in salary_list %}
         <tr>
-            <td>{{ salary.date }}</td>
-            <td>{{ salary.gross_pay|print_dollar }}</td>
-            <td>{{ salary.net_pay|print_dollar }}</td>
+            <td><a href="{% url 'money:salary_detail' salary.id %}">{{ salary.date }}</a></td>
+            <td align="right">{{ salary.gross_pay|print_dollar }}</td>
+            <td align="right">{{ salary.net_pay|print_dollar }}</td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
+
+<div>
+    <canvas id="SalaryChart"></canvas>
+</div>
 
 <h1>Salary Breakdown</h1>
 
@@ -44,16 +48,38 @@
         {% for salary in salary_list %}
         <tr>
             <td><a href="{% url 'money:salary_detail' salary.id %}">{{ salary.date }}</a></td>
-            <td>{{ salary.gross_pay | print_dollar }}</td>
-            <td>{{ salary.total_adjustment | print_dollar }}</td>
-            <td>{{ salary.gross_pay | add_float:salary.total_adjustment | print_dollar }}</td>
-            <td>{{ salary.total_withheld | print_dollar }}</td>
-            <td>{{ salary.total_deduction | print_dollar }}
-            </td>
-            <td>{{ salary.net_pay|print_dollar }}</td>
+            <td align="right">{{ salary.gross_pay | print_dollar }}</td>
+            <td align="right">{{ salary.total_adjustment | print_dollar }}</td>
+            <td align="right">{{ salary.gross_pay | add_float:salary.total_adjustment | print_dollar }}</td>
+            <td align="right">{{ salary.total_withheld | print_dollar }}</td>
+            <td align="right">{{ salary.total_deduction | print_dollar }}</td>
+            <td align="right">{{ salary.net_pay|print_dollar }}</td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
+
+<script>
+    const SalaryChart_ctx = document.getElementById('SalaryChart');
+
+    new Chart(SalaryChart_ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ labels | safe }},
+            datasets: [{
+                label: 'Salary',
+                data: {{ data | safe }},
+                borderWidth: 1
+            }]
+        },
+        options : {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
 
 {% endblock %}

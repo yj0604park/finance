@@ -207,6 +207,21 @@ class SalaryListView(LoginRequiredMixin, ListView):
     template_name = "salary/salary_list.html"
     model = models.Salary
 
+    def get_queryset(self):
+        return super().get_queryset().order_by("date")
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        data = []
+        labels = []
+        for salary in context["salary_list"]:
+            labels.append(salary.date.strftime("%Y-%m-%d"))
+            data.append(salary.net_pay)
+
+        context["labels"] = labels
+        context["data"] = data
+        return context
+
 
 salary_list_view = SalaryListView.as_view()
 
@@ -237,6 +252,10 @@ class SalaryDetailView(LoginRequiredMixin, DetailView):
             + salary.total_deduction
         )
         valid["Summary"] = (summary_diff, abs(summary_diff) < 0.01)
+        valid["Transaction"] = (
+            salary.transaction.amount - salary.net_pay,
+            abs(salary.transaction.amount - salary.net_pay) < 0.01,
+        )
         context["validity"] = valid
         return context
 
