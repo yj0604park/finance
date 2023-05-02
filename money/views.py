@@ -77,7 +77,7 @@ class AccountDetailView(LoginRequiredMixin, DetailView):
             context["account"]
             .transaction_set.all()
             .prefetch_related("retailer", "account")
-            .order_by("-datetime", "amount")
+            .order_by("-date", "amount")
         )
 
         context["data"] = helper.get_transaction_chart_data(
@@ -107,16 +107,30 @@ class CategoryDetailView(LoginRequiredMixin, View):
     template_name = "dashboard/category_detail.html"
 
     def get(self, request, *args, **kwargs):
+        context = {}
         category_type = kwargs["category_type"]
+
+        selected_month = request.GET.get("month")
+
         transaction_list = (
             models.Transaction.objects.filter(type=category_type)
             .prefetch_related("retailer", "account")
-            .order_by("datetime", "amount")
+            .order_by("date", "amount")
         )
-        context = {
-            "type": category_type,
-            "transactions": transaction_list,
-        }
+
+        if selected_month:
+            selected_month_split = selected_month.split("-")
+            context["selected_month"] = (
+                selected_month,
+                f"{selected_month_split[0]}년 {selected_month_split[1]}월",
+            )
+            transaction_list = transaction_list.filter(
+                date__year=selected_month_split[0]
+            ).filter(date__month=selected_month_split[1])
+
+        context["type"] = category_type
+        context["transactions"] = transaction_list
+
         return render(request, self.template_name, context)
 
 
@@ -160,6 +174,7 @@ class RetailerSummaryView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context["currency"] = self.request.GET.get("currency", models.CurrencyType.USD)
+        context["category"] = models.TransactionCategory.choices
         label = []
         data = []
 
@@ -184,11 +199,29 @@ class RetailerDetailView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context["transactions"] = models.Transaction.objects.filter(
             retailer_id=self.kwargs["pk"]
-        ).order_by("datetime")
+        ).order_by("date")
         return context
 
 
 retailer_detail_view = RetailerDetailView.as_view()
+
+
+class RetailerCategoryView(LoginRequiredMixin, ListView):
+    template_name = "retailer/retailer_category.html"
+    model = models.Retailer
+
+    def get_queryset(self):
+        return super().get_queryset().filter(category=self.kwargs["category"])
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["category"] = self.kwargs["category"]
+        context["category_list"] = models.TransactionCategory.choices
+
+        return context
+
+
+retailer_category_view = RetailerCategoryView.as_view()
 
 
 class RetailerCreateView(LoginRequiredMixin, CreateView):
@@ -212,14 +245,22 @@ class SalaryListView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        data = []
+        net_pay = []
+        gross_pay = []
         labels = []
         for salary in context["salary_list"]:
             labels.append(salary.date.strftime("%Y-%m-%d"))
-            data.append(salary.net_pay)
+            gross_pay.append(salary.gross_pay)
+            net_pay.append(salary.net_pay)
 
         context["labels"] = labels
-        context["data"] = data
+        context["datasets"] = {
+            "labels": labels,
+            "datasets": [
+                {"label": "gross_pay", "data": gross_pay, "borderWidth": 1},
+                {"label": "net_pay", "data": net_pay, "borderWidth": 1},
+            ],
+        }
         return context
 
 

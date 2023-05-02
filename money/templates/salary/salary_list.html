@@ -64,14 +64,7 @@
 
     new Chart(SalaryChart_ctx, {
         type: 'bar',
-        data: {
-            labels: {{ labels | safe }},
-            datasets: [{
-                label: 'Salary',
-                data: {{ data | safe }},
-                borderWidth: 1
-            }]
-        },
+        data: {{ datasets | safe }},
         options : {
             scales: {
                 y: {

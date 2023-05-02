@@ -120,7 +120,7 @@ class TransactionForm(forms.ModelForm):
             "account",
             "retailer",
             "type",
-            "datetime",
+            "date",
             "amount",
             "is_internal",
             "requires_detail",
@@ -131,7 +131,7 @@ class TransactionForm(forms.ModelForm):
             "retailer": RelatedFieldWidgetCanAdd(
                 models.Retailer, "money:retailer_create"
             ),
-            "datetime": DateTimePickerWidget(attrs={"class": "form-control"}),
+            "date": DateTimePickerWidget(attrs={"class": "form-control"}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -139,7 +139,7 @@ class TransactionForm(forms.ModelForm):
         self.fields["retailer"].choices = sorted(
             self.fields["retailer"].choices, key=lambda x: x[1].lower()
         )
-        self.fields["datetime"].initial = date.today()
+        self.fields["date"].initial = date.today()
 
         for field_key, field in self.fields.items():
             if field_key in ("is_internal", "requires_detail"):
@@ -155,7 +155,7 @@ class TransactionForm(forms.ModelForm):
             ),
             Row(
                 Column("type", css_class="form-group col-md-4 mb-0"),
-                Column("datetime", css_class="form-group col-md-4 mb-0"),
+                Column("date", css_class="form-group col-md-4 mb-0"),
                 Column("amount", css_class="form-group col-md-4 mb-0"),
             ),
             Row(
@@ -225,7 +225,7 @@ class SalaryForm(forms.ModelForm):
                 type=models.TransactionCategory.INCOME
             )
             .filter(reviewed=False)
-            .order_by("datetime")
+            .order_by("date")
         ]
 
         self.helper = FormHelper()

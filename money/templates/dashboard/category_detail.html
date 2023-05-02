@@ -5,8 +5,19 @@
 
 <h1>{{ type }}</h1>
 
+{% if selected_month %}
+<h2>{{ selected_month.1 }}</h2>
+{% else %}
+<h2>All Months</h2>
+{% endif %}
+
+{% for month in months %}
+<a href="?month={{ month }}" class="btn btn-outline-primary">{{ month }}</a>
+{% endfor %}
+
 <table class="table">
     <tr>
+        <th>ID</th>
         <th>Date</th>
         <th>Account</th>
         <th>Retailer</th>
@@ -14,16 +25,19 @@
         <th>Is Internal</th>
         <th>Detail</th>
         <th>Reviewed</th>
+        <th>Note</th>
     </tr>
     {% for transaction in transactions %}
     <tr>
-        <td>{{ transaction.datetime | date:"Y-m-d" }}</td>
+        <td><a href="{% url 'money:transaction_detail' transaction.id %}">{{ transaction.id }}</a></td>
+        <td>{{ transaction.date | date:"Y-m-d" }}</td>
         <td>{{ transaction.account.name }}</td>
         <td>{{ transaction.retailer }}</td>
         <td>{{ transaction.amount }}</td>
         <td>{{ transaction.is_internal }}</td>
         <td>{{ transaction.requires_detail }}</td>
         <td>{{ transaction.reviewed }}</td>
+        <td>{{ transaction.note }}</td>
     </tr>
     {% endfor %}
 </table>

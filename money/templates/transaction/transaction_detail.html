@@ -7,8 +7,8 @@
 <table class="table">
 
     <tr>
-        <th>Datetime</th>
-        <td>{{ transaction.datetime }}</td>
+        <th>Date</th>
+        <td>{{ transaction.date }}</td>
     </tr>
 
     <tr>
@@ -56,8 +56,8 @@
 
 <table class="table">
     <tr>
-        <th>Datetime</th>
-        <td>{{ transaction.related_transaction.datetime }}</td>
+        <th>Date</th>
+        <td>{{ transaction.related_transaction.date }}</td>
     </tr>
     <tr>
         <th>Account</th>
@@ -89,7 +89,7 @@
 {% endif %}
 
 <h1>Add Detail</h1>
-<a href="{% url 'money:transaction_create' transaction.account.id %}?datetime={{ transaction.datetime|date:'Y-m-d' }}">
+<a href="{% url 'money:transaction_detail_create' transaction.account.id %}">
     Add detail
 </a>
 {% endblock %}

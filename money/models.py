@@ -32,7 +32,7 @@ class Account(models.Model):
     )
     amount = models.FloatField(default=0)
     last_update = models.DateTimeField(null=True, blank=True)
-    last_transaction = models.DateTimeField(null=True, blank=True)
+    last_transaction = models.DateField(null=True, blank=True)
     currency = models.CharField(
         max_length=3, choices=CurrencyType.choices, default=CurrencyType.USD
     )
@@ -82,6 +82,9 @@ class Retailer(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        ordering = ["name"]
+
 
 class Transaction(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
@@ -90,7 +93,7 @@ class Transaction(models.Model):
     )
     amount = models.FloatField()
     balance = models.FloatField(null=True, blank=True)
-    datetime = models.DateTimeField()
+    date = models.DateField()
     note = models.TextField(null=True, blank=True)
     is_internal = models.BooleanField(default=False)
     requires_detail = models.BooleanField(default=False)
@@ -107,7 +110,7 @@ class Transaction(models.Model):
     )
 
     def __str__(self):
-        return f'{self.id} {self.datetime.strftime("%Y-%m-%d")} {self.account.name}: {self.retailer.name if self.retailer else None}'
+        return f'{self.id} {self.date.strftime("%Y-%m-%d")} {self.account.name}: {self.retailer.name if self.retailer else None}'
 
     def get_absolute_url(self):
         return reverse("money:transaction_detail", kwargs={"pk": self.pk})

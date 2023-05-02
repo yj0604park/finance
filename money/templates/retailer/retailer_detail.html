@@ -7,18 +7,21 @@
         <tr>
             <th>Retailer</th>
             <th>Retailer Type</th>
+            <th>Retailer Category</th>
         </tr>
     </thead>
     <tr>
         <td>{{ retailer.name }}</td>
         <td>{{ retailer.type }}</td>
+        <td>{{ retailer.category }}</td>
     </tr>
 </table>
 
 <table class="table">
     <thead>
         <tr>
-            <th>Datetime</th>
+            <th>ID</th>
+            <th>Date</th>
             <th>Amount</th>
             <th>Category</th>
             <th>Note</th>
@@ -26,7 +29,8 @@
     </thead>
     {% for transaction in transactions %}
     <tr>
-        <td>{{ transaction.datetime|date:"Y-m-d" }}</td>
+        <td><a href="{% url 'money:transaction_detail' transaction.id %}">{{ transaction.id }}</a></td>
+        <td>{{ transaction.date|date:"Y-m-d" }}</td>
         <td>{{ transaction.amount }}</td>
         <td>{{ transaction.type }}</td>
         <td>{{ transaction.note }}</td>

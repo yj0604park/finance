@@ -13,10 +13,10 @@
 <table class="table">
     <tr>
         <th>
-            Datetime
+            Date
         </th>
         <td>
-            {{ latest_transaction.datetime|date:"Y-m-d" }}
+            {{ latest_transaction.date|date:"Y-m-d" }}
         </td>
     </tr>
     <tr>
@@ -50,14 +50,14 @@
             })
     });
 
-    const datetimeField = document.getElementById("id_datetime");
+    const dateField = document.getElementById("id_date");
     const incrementButton = document.getElementById("id_increase_date");
 
     incrementButton.addEventListener("click", function () {
-        const currentDate = new Date(datetimeField.value);
+        const currentDate = new Date(dateField.value);
         const newDate = new Date(currentDate);
         newDate.setDate(newDate.getDate() + 1);
-        datetimeField.value = newDate.toISOString().slice(0, 10);
+        dateField.value = newDate.toISOString().slice(0, 10);
     });
 
     function openPopup(link) {

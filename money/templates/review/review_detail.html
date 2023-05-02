@@ -18,7 +18,7 @@
     <tbody>
         {% for transaction in transaction_list %}
         <tr>
-            <td>{{ transaction.datetime | date:"Y-m-d" }}</td>
+            <td>{{ transaction.date | date:"Y-m-d" }}</td>
             <td>{{ transaction.account }}</td>
             <td>{{ transaction.retailer }}</td>
             <td>{{ transaction.amount }}</td>

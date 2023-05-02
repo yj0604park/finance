@@ -24,14 +24,14 @@ class TransactionListView(LoginRequiredMixin, ListView):
         context["usd_data"] = helper.get_transaction_chart_data(
             models.Transaction.objects.filter(
                 account__currency=models.CurrencyType.USD
-            ).order_by("datetime", "-amount"),
+            ).order_by("date", "-amount"),
             recalculate=True,
         )
 
         context["krw_data"] = helper.get_transaction_chart_data(
             models.Transaction.objects.filter(
                 account__currency=models.CurrencyType.KRW
-            ).order_by("datetime", "-amount"),
+            ).order_by("date", "-amount"),
             recalculate=True,
         )
 
@@ -54,9 +54,9 @@ class TransactionCreateView(LoginRequiredMixin, CreateView):
     def get_form(self) -> forms.BaseModelForm:
         form = super().get_form()
         form.initial["account"] = self.kwargs["account_id"]
-        datetime_default = self.request.GET.get("datetime", None)
-        if datetime_default:
-            form.initial["datetime"] = datetime_default
+        date_default = self.request.GET.get("date", None)
+        if date_default:
+            form.initial["date"] = date_default
 
         return form
 
@@ -64,7 +64,7 @@ class TransactionCreateView(LoginRequiredMixin, CreateView):
         context = super().get_context_data(**kwargs)
         transaction = models.Transaction.objects.filter(
             account_id=self.kwargs["account_id"]
-        ).order_by("-datetime", "amount")
+        ).order_by("-date", "amount")
 
         if len(transaction) > 0:
             latest_transaction = transaction[0]
@@ -72,7 +72,7 @@ class TransactionCreateView(LoginRequiredMixin, CreateView):
             latest_transaction = None
 
         if latest_transaction:
-            context["form"].initial["datetime"] = latest_transaction.datetime.strftime(
+            context["form"].initial["date"] = latest_transaction.date.strftime(
                 "%Y-%m-%d"
             )
         context["latest_transaction"] = latest_transaction
@@ -131,10 +131,13 @@ class TransactionCategoryView(LoginRequiredMixin, View):
         context = {}
 
         if selected_month:
-            selected_month = selected_month.split("-")
-            context["selected_month"] = f"{selected_month[0]}년 {selected_month[1]}월"
-            query = query.filter(datetime__year=selected_month[0]).filter(
-                datetime__month=selected_month[1]
+            selected_month_split = selected_month.split("-")
+            context["selected_month"] = (
+                selected_month,
+                f"{selected_month_split[0]}년 {selected_month_split[1]}월",
+            )
+            query = query.filter(date__year=selected_month_split[0]).filter(
+                date__month=selected_month_split[1]
             )
 
         context["summarization"] = query.annotate(total_amount=-Sum("amount")).order_by(
@@ -155,11 +158,9 @@ class TransactionCategoryView(LoginRequiredMixin, View):
         context["data"] = data
         context["income"] = income
 
-        datetime_range = models.Transaction.objects.aggregate(
-            Min("datetime"), Max("datetime")
-        )
+        date_range = models.Transaction.objects.aggregate(Min("date"), Max("date"))
         context["months"] = helper.get_month_list(
-            datetime_range["datetime__min"], datetime_range["datetime__max"]
+            date_range["date__min"], date_range["date__max"]
         )
 
         return render(request, self.template_name, context)
@@ -178,7 +179,7 @@ class ReviewTransactionView(LoginRequiredMixin, ListView):
         qs = super().get_queryset()
         qs = (
             qs.filter(reviewed=False)
-            .order_by("datetime", "amount")
+            .order_by("date", "amount")
             .prefetch_related("account")
         )
         return qs
@@ -198,7 +199,7 @@ class ReviewInternalTransactionView(LoginRequiredMixin, ListView):
         qs = (
             qs.filter(reviewed=False)
             .filter(type=models.TransactionCategory.TRANSFER)
-            .order_by("datetime", "amount")
+            .order_by("date", "amount")
             .prefetch_related("account")
         )
 
@@ -229,7 +230,7 @@ class ReviewDetailTransactionView(LoginRequiredMixin, ListView):
             .get_queryset()
             .filter(requires_detail=True)
             .prefetch_related("retailer")
-            .order_by("-datetime")
+            .order_by("-date")
         )
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:

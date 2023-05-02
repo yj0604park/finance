@@ -9,7 +9,7 @@
 {% endfor %}
 
 {% if selected_month %}
-<h1>{{ selected_month }}</h1>
+<h1>{{ selected_month.1 }}</h1>
 {% else %}
 <h1>All Months</h1>
 {% endif %}
@@ -24,7 +24,9 @@
     </thead>
     {% for summary in income %}
     <tr>
-        <td><a href="{% url 'money:category_detail' summary.type %}">{{ summary.type }}</a></td>
+        <td>
+            <a href="{% url 'money:category_detail' summary.type %}?month={{ selected_month.0 }}">{{ summary.type }}</a>
+        </td>
         <td align="right">{{ summary.total_amount|abs_filter|print_dollar }}</td>
     </tr>
     {% endfor %}
@@ -41,7 +43,8 @@
     {% for summary in summarization %}
     {% if summary.total_amount > 0 %}
     <tr>
-        <td><a href="{% url 'money:category_detail' summary.type %}">{{ summary.type }}</a></td>
+        <td><a href="{% url 'money:category_detail' summary.type %}?month={{ selected_month.0 }}">{{ summary.type }}</a>
+        </td>
         <td align="right">{{ summary.total_amount|print_dollar }}</td>
     </tr>
     {% endif %}

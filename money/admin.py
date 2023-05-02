@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django import forms
 from money import models
 
 
@@ -12,9 +13,16 @@ class AccountAdmin(admin.ModelAdmin):
     list_display = ["name", "bank"]
 
 
+class TransactionAdminForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        sorted_choices = models.Retailer.objects.all().order_by("name").values("name")
+        self.fields["retailer"].choices = sorted_choices
+
+
 @admin.register(models.Transaction)
 class TransactionAdmin(admin.ModelAdmin):
-    list_display = ["pk", "datetime", "account_name", "retailer"]
+    list_display = ["pk", "date", "account_name", "retailer"]
     raw_id_fields = ("related_transaction",)
 
     def account_name(self, obj):
@@ -48,6 +56,6 @@ class SalaryAdmin(admin.ModelAdmin):
                     type=models.TransactionCategory.INCOME
                 )
                 .prefetch_related("account", "retailer")
-                .order_by("datetime")
+                .order_by("date")
             )
         return super().formfield_for_foreignkey(db_field, request, **kwargs)

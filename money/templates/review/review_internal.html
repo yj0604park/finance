@@ -27,7 +27,7 @@
             <tr>
                 {% endif %}
                 <td><a href="{% url 'money:transaction_detail' transaction.id %}">{{ transaction.id }}</td>
-                <td>{{ transaction.datetime | date:"Y-m-d" }}</td>
+                <td>{{ transaction.date | date:"Y-m-d" }}</td>
                 <td>{{ transaction.account }}</td>
                 <td>{{ transaction.amount }}</td>
                 <td>{{ transaction.is_internal }}</td>

@@ -55,6 +55,11 @@ urlpatterns = [
         view=helper.get_retailer_type,
         name="get_retailer_type",
     ),
+    path(
+        "retailer_category/<str:category>",
+        view=views.retailer_category_view,
+        name="retailer_category",
+    ),
     path("retailer_create", view=views.retailer_create_view, name="retailer_create"),
     path("salary_list", view=views.salary_list_view, name="salary_list"),
     path("salary_detail/<int:pk>", view=views.salary_detail_view, name="salary_detail"),

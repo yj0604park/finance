@@ -7,7 +7,7 @@
 <table class="table">
     <thead>
         <tr>
-            <th>Datetime</th>
+            <th>Date</th>
             <th>Retailer</th>
             <th>Amount</th>
         </tr>
@@ -15,7 +15,7 @@
     <tbody>
         <tr>
             <td>
-                {{ transaction.datetime|date:"Y-m-d" }}
+                {{ transaction.date|date:"Y-m-d" }}
             </td>
             <td>
                 {{ transaction.retailer }}

@@ -15,7 +15,7 @@ def get_transaction_chart_data(transaction_list, recalculate=False, reverse=Fals
         sum += transaction.amount
         chart_dict.append(
             {
-                "x": transaction.datetime.strftime("%Y-%m-%d"),
+                "x": transaction.date.strftime("%Y-%m-%d"),
                 "y": transaction.balance if not recalculate else sum,
             }
         )
@@ -27,14 +27,14 @@ def get_transaction_chart_data(transaction_list, recalculate=False, reverse=Fals
 @login_required
 def update_balance(request, account_id):
     account = models.Account.objects.get(pk=account_id)
-    transactions = account.transaction_set.all().order_by("datetime", "-amount")
+    transactions = account.transaction_set.all().order_by("date", "-amount")
 
     sum = 0
     for transaction in transactions:
         sum += transaction.amount
         transaction.balance = sum
         transaction.save()
-        account.last_transaction = transaction.datetime
+        account.last_transaction = transaction.date
 
     account.amount = sum
     account.last_update = datetime.datetime.now()

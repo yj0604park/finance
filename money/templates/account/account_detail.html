@@ -24,15 +24,17 @@
             <th>Use For</th>
             <th>Amount</th>
             <th>Balance</th>
+            <th>Note</th>
         </tr>
     </thead>
     {% for transaction in ordered_transaction_set %}
     <tr>
         <td><a href="{% url 'money:transaction_detail' transaction.id %}">{{ transaction.id }}</a></td>
-        <td>{{ transaction.datetime.date }}</td>
+        <td>{{ transaction.date }}</td>
         <td>{{ transaction.retailer.name }}</td>
         <td>{{ transaction.amount|floatformat:2 }}</td>
         <td>{{ transaction.balance|floatformat:2 }}</td>
+        <td>{{ transaction.note }}</td>
     </tr>
     {% endfor %}
 </table>
