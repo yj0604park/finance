@@ -119,3 +119,12 @@ def get_month_list(start_date, end_date):
         for dt in rrule(MONTHLY, dtstart=start_date, until=end_date)
     ]
     return months
+
+
+@login_required
+def toggle_reviewed(request, transaction_id):
+    transaction = models.Transaction.objects.get(pk=transaction_id)
+    transaction.reviewed = not transaction.reviewed
+    transaction.save()
+
+    return JsonResponse({"success": True, "transaction_id": transaction_id})

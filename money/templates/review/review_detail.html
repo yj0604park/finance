@@ -21,13 +21,9 @@
     <tbody>
         {% for transaction in transaction_list %}
         <tr>
+            {% with add_detail=True %}
             {% include 'transaction/transaction_cell.html' %}
-
-            <td>
-                <a class="btn btn-primary" href="{% url 'money:transaction_detail_create' transaction.id %}">
-                    Add Details
-                </a>
-            </td>
+            {% endwith %}
         </tr>
         {% endfor %}
     </tbody>

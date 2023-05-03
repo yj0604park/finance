@@ -9,6 +9,7 @@
 <h1>All Months</h1>
 {% endif %}
 
+
 <div class="btn-group p-3" role="group" aria-label="Basic button group">
     <a href="{% url 'money:transaction_category' %}" class="btn btn-outline-secondary">All</a>
 
@@ -18,57 +19,85 @@
 </div>
 
 <h2>Income</h2>
-<table class="table">
+<table class="table table-hover">
     <thead>
         <tr>
+            <th>Currency</th>
             <th>Type</th>
             <th>Total</th>
         </tr>
     </thead>
-    {% for summary in income %}
+    {% for currency, summary_list in income %}
+    {% for summary in summary_list %}
     <tr>
-        <td>
-            <a href="{% url 'money:category_detail' summary.type %}?month={{ selected_month.0 }}">{{ summary.type }}</a>
+        {% if forloop.first %}
+        <td rowspan="{{ summary_list | length }}">
+            {{ currency }}
         </td>
-        <td align="right">{{ summary.total_amount|abs_filter|print_dollar }}</td>
+        {% endif %}
+        <td>
+            <a href="{% url 'money:category_detail' summary.type %}?month={{ selected_month.0 }}">
+                {{ summary.type }}
+            </a>
+        </td>
+        <td align="right">
+            {{ summary.total_amount|abs_filter|print_currency:currency }}
+        </td>
     </tr>
+    {% endfor %}
     {% endfor %}
 </table>
 
 <h2>Spending</h2>
-<table class="table">
+<table class="table table-hover">
     <thead>
         <tr>
+            <th>Currency</th>
             <th>Type</th>
             <th>Total</th>
         </tr>
     </thead>
-    {% for summary in summarization %}
-    {% if summary.total_amount > 0 %}
+
+    {% for currency, summary_list in spent %}
+    {% for summary in summary_list %}
     <tr>
-        <td><a href="{% url 'money:category_detail' summary.type %}?month={{ selected_month.0 }}">{{ summary.type }}</a>
+        {% if forloop.first %}
+        <td rowspan="{{ summary_list | length }}">
+            {{ currency }}
         </td>
-        <td align="right">{{ summary.total_amount|print_dollar }}</td>
+        {% endif %}
+        <td>
+            <a href="{% url 'money:category_detail' summary.type %}?month={{ selected_month.0 }}">
+                {{ summary.type }}
+            </a>
+        </td>
+        <td>
+            {{ summary.account__currency }}
+        </td>
+        <td align="right">{{ summary.total_amount|print_currency:currency }}</td>
     </tr>
-    {% endif %}
+    {% endfor %}
     {% endfor %}
 </table>
 
+
+{% for currency in currencies %}
+{% if data|get_value:currency %}
+
+<h1>Spending chart for {{ currency }}</h1>
 <div>
-    <canvas id="myChart" width="500" height="500"></canvas>
+    <canvas id="myChart_{{ currency }}" width="500" height="500"></canvas>
 </div>
-
-
 <script>
-    const ctx = document.getElementById('myChart');
+    const ctx_{{ currency }} = document.getElementById('myChart_{{ currency }}');
 
-    new Chart(ctx, {
+    new Chart(ctx_{{ currency }}, {
         type: 'doughnut',
         data: {
-            labels: {{ label | safe }},
+            labels: {{ label | get_value:currency | safe }},
         datasets: [{
             label: 'Category',
-            data: {{ data | safe }}
+            data: {{ data | get_value:currency | safe }}
             }]
         },
         options: {
@@ -77,4 +106,6 @@
     }
     });
 </script>
+{% endif %}
+{% endfor %}
 {% endblock %}

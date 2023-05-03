@@ -23,7 +23,7 @@
 </a>
 {% endif %}
 
-{% with transaction_list=ordered_transaction_set %}
+{% with transaction_list=ordered_transaction_set print_flags=True print_balance=True %}
 {% include 'transaction/transaction_table.html' %}
 {% endwith %}
 

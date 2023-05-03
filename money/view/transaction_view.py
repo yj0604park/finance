@@ -1,3 +1,4 @@
+from collections import defaultdict
 from typing import Any, Dict
 
 from django import forms
@@ -174,7 +175,7 @@ class TransactionCategoryView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         selected_month = request.GET.get("month")
 
-        query = models.Transaction.objects.values("type")
+        query = models.Transaction.objects.values("type", "account__currency")
 
         context = {}
 
@@ -189,27 +190,34 @@ class TransactionCategoryView(LoginRequiredMixin, View):
             )
 
         context["summarization"] = query.annotate(total_amount=-Sum("amount")).order_by(
-            "-total_amount"
+            "account__currency", "-total_amount"
         )
-        label = []
-        data = []
 
-        income = []
+        label_per_currency = {k[0]: [] for k in models.CurrencyType.choices}
+        data_per_currency = {k[0]: [] for k in models.CurrencyType.choices}
+        income_per_currency = {k[0]: [] for k in models.CurrencyType.choices}
+        spent_per_currency = {k[0]: [] for k in models.CurrencyType.choices}
 
         for summary in context["summarization"]:
             if summary["total_amount"] > 0:
-                label.append(summary["type"])
-                data.append(summary["total_amount"])
+                label_per_currency[summary["account__currency"]].append(summary["type"])
+                data_per_currency[summary["account__currency"]].append(
+                    summary["total_amount"]
+                )
+                spent_per_currency[summary["account__currency"]].append(summary)
             else:
-                income.append(summary)
-        context["label"] = label
-        context["data"] = data
-        context["income"] = income
+                income_per_currency[summary["account__currency"]].append(summary)
+
+        context["label"] = label_per_currency
+        context["data"] = data_per_currency
+        context["income"] = sorted([(k, v) for k, v in income_per_currency.items()])
+        context["spent"] = sorted([(k, v) for k, v in spent_per_currency.items()])
 
         date_range = models.Transaction.objects.aggregate(Min("date"), Max("date"))
         context["months"] = helper.get_month_list(
             date_range["date__min"], date_range["date__max"]
         )
+        context["currencies"] = [k[0] for k in models.CurrencyType.choices]
 
         return render(request, self.template_name, context)
 
@@ -339,7 +347,7 @@ class AmazonListView(LoginRequiredMixin, ListView):
                 .get_queryset()
                 .filter(retailer=amazon[0])
                 .prefetch_related("account")
-            )
+            ).order_by("-date")
         else:
             return None
 

@@ -22,8 +22,17 @@ class TransactionAdminForm(forms.Form):
 
 @admin.register(models.Transaction)
 class TransactionAdmin(admin.ModelAdmin):
-    list_display = ["pk", "date", "account_name", "amount", "retailer", "type"]
+    list_display = [
+        "pk",
+        "date",
+        "account_name",
+        "amount",
+        "retailer",
+        "type",
+        "reviewed",
+    ]
     raw_id_fields = ("related_transaction",)
+    list_filter = ["account"]
 
     def account_name(self, obj):
         return obj.account.name
@@ -39,7 +48,18 @@ class RetailerAdmin(admin.ModelAdmin):
 
 @admin.register(models.DetailItem)
 class DetailItemAdmin(admin.ModelAdmin):
-    pass
+    list_display = ["id", "name", "category"]
+    list_filter = ["category"]
+
+    def formfield_for_choice_field(self, db_field, request, **kwargs):
+        if db_field.name == "category":
+            # Get the existing choices.
+            choices = models.DetailItemCategory.choices
+
+            # Sort the choices in lexicographic order.
+            kwargs["choices"] = sorted(choices, key=lambda x: x[1])
+
+        return super().formfield_for_choice_field(db_field, request, **kwargs)
 
 
 @admin.register(models.TransactionDetail)

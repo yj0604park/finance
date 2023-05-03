@@ -18,7 +18,7 @@ def print_dollar(value):
 
 @register.filter
 def print_krw(value):
-    if not value:
+    if not value and value != 0:
         return value
 
     value = round(value)
@@ -50,3 +50,9 @@ def add_float(value1, value2):
 @register.filter
 def multiply(value, arg):
     return value * arg
+
+
+@register.filter
+def get_value(value, arg):
+    print("value", value)
+    return value[arg]

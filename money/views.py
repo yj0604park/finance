@@ -1,3 +1,4 @@
+import datetime
 from typing import Any, Dict
 
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -11,8 +12,10 @@ from django.db.models import (
     QuerySet,
     Sum,
     When,
+    Count,
 )
 from django.db.models.functions import TruncMonth
+from django.db.models.query import QuerySet
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import DetailView, ListView, TemplateView, View
@@ -34,14 +37,45 @@ class HomeView(LoginRequiredMixin, TemplateView):
             .order_by("currency", "bank", "name")
         )
 
-        sum_dict = {k[0]: 0 for k in models.CurrencyType.choices}
+        sum_dict = {
+            k[0]: {"current": 0, "prev": 0} for k in models.CurrencyType.choices
+        }
 
+        currency_map = {}
         for account in context["account_list"]:
-            sum_dict[account.currency] += account.amount
+            currency_map[account.id] = account.currency
+            sum_dict[account.currency]["current"] += account.amount
+
+        last_prev_month_day = datetime.date.today().replace(day=1) - datetime.timedelta(
+            days=1
+        )
+
+        prev_transaction_list_per_account = (
+            models.Transaction.objects.filter(
+                date__month__lte=last_prev_month_day.month,
+                date__year__lte=last_prev_month_day.year,
+            )
+            .values("account")
+            .annotate(last_date=Max("date"))
+        )
+
+        for account in prev_transaction_list_per_account:
+            balance = (
+                models.Transaction.objects.filter(account__id=account["account"])
+                .filter(date=account["last_date"])
+                .order_by("-balance")[0]
+                .balance
+            )
+            sum_dict[currency_map[account["account"]]]["prev"] += balance
+
         sum_list = [(k, v) for k, v in sum_dict.items()]
+        for k, v in sum_list:
+            v["diff"] = v["current"] - v["prev"]
+            v["ratio"] = round(v["diff"] / v["prev"] * 100, 2)
         sum_list.sort()
 
         context["sum_list"] = sum_list
+
         return context
 
 
@@ -60,6 +94,9 @@ bank_detail_view = BankDetailView.as_view()
 class BankListView(LoginRequiredMixin, ListView):
     model = models.Bank
     template_name = "bank/bank_list.html"
+
+    def get_queryset(self) -> QuerySet[Any]:
+        return super().get_queryset().annotate(count=Count("account"))
 
 
 bank_list_view = BankListView.as_view()
@@ -162,17 +199,19 @@ class CategoryDetailView(LoginRequiredMixin, View):
         else:
             month_detail = (
                 transaction_list.annotate(month=TruncMonth("date"))
-                .values("month")
+                .values("month", "account__currency")
                 .annotate(total_amount=Sum("amount"))
                 .order_by("month")
             )
 
-            month_label = []
-            month_data = []
+            month_label = {k[0]: [] for k in models.CurrencyType.choices}
+            month_data = {k[0]: [] for k in models.CurrencyType.choices}
 
             for month in month_detail:
-                month_label.append(f"{month['month'].year}년 {month['month'].month}월")
-                month_data.append(month["total_amount"])
+                month_label[month["account__currency"]].append(
+                    f"{month['month'].year}년 {month['month'].month}월"
+                )
+                month_data[month["account__currency"]].append(month["total_amount"])
 
             context["month_detail"] = month_detail
             context["month_label"] = month_label
@@ -182,17 +221,19 @@ class CategoryDetailView(LoginRequiredMixin, View):
         context["transactions"] = transaction_list
 
         context["retailer_detail"] = (
-            transaction_list.values("retailer__id", "retailer__name")
+            transaction_list.values(
+                "retailer__id", "retailer__name", "account__currency"
+            )
             .annotate(Sum("amount"))
             .order_by("amount__sum")
         )
 
-        label = []
-        data = []
+        label = {k[0]: [] for k in models.CurrencyType.choices}
+        data = {k[0]: [] for k in models.CurrencyType.choices}
 
         for retailer in context["retailer_detail"]:
-            label.append(str(retailer["retailer__name"]))
-            data.append(retailer["amount__sum"])
+            label[retailer["account__currency"]].append(str(retailer["retailer__name"]))
+            data[retailer["account__currency"]].append(retailer["amount__sum"])
 
         context["label"] = label
         context["data"] = data
@@ -202,6 +243,7 @@ class CategoryDetailView(LoginRequiredMixin, View):
         context["months"] = helper.get_month_list(
             date_range["date__min"], date_range["date__max"]
         )
+        context["currencies"] = [k[0] for k in models.CurrencyType.choices]
 
         return render(request, self.template_name, context)
 

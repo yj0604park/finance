@@ -3,9 +3,18 @@
 
 {% block content %}
 <p>Bank Lists</p>
-<ul>
+<table class="table table-hover">
+  <thead>
+    <tr>
+      <th>은행명</th>
+      <th>계좌수</th>
+    </tr>
+  </thead>
   {% for bank in bank_list %}
-  <li><a href="{% url 'money:bank_detail' bank.id %}">{{ bank }}</a></li>
+  <tr>
+    <td><a href="{% url 'money:bank_detail' bank.id %}">{{ bank }}</a></td>
+    <td>{{ bank.count }}</td>
+  </tr>
   {% endfor %}
-</ul>
+</table>
 {% endblock %}

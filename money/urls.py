@@ -13,30 +13,15 @@ urlpatterns = [
         "account_detail/<int:pk>", view=views.account_detail_view, name="account_detail"
     ),
     path(
-        "update_balance/<int:account_id>",
-        view=helper.update_balance,
-        name="update_balance",
-    ),
-    path(
         "category_detail/<str:category_type>",
         view=views.category_detail_view,
         name="category_detail",
-    ),
-    path(
-        "set_detail_required",
-        view=helper.set_detail_required,
-        name="set_detail_required",
     ),
     path("detail_item_list", view=views.detail_item_list_view, name="detail_item_list"),
     path(
         "detail_item_create",
         view=views.detail_item_create_view,
         name="detail_item_create",
-    ),
-    path(
-        "update_related_trasaction",
-        view=helper.update_related_transaction,
-        name="update_related_transaction",
     ),
     path(
         "retailer_summary",
@@ -47,16 +32,6 @@ urlpatterns = [
         "retailer_detail/<int:pk>",
         view=views.retailer_detail_view,
         name="retailer_detail",
-    ),
-    path(
-        "update_retailer_type",
-        view=helper.update_retailer_type,
-        name="update_retailer_type",
-    ),
-    path(
-        "get_retailer_type/<int:retailer_id>",
-        view=helper.get_retailer_type,
-        name="get_retailer_type",
     ),
     path("retailer_create", view=views.retailer_create_view, name="retailer_create"),
     path("salary_list", view=views.salary_list_view, name="salary_list"),
@@ -116,4 +91,34 @@ urlpatterns = [
         name="stock_transaction_detail",
     ),
     path("amazon_list", view=transaction_view.amazon_list_view, name="amazon_list"),
+    path(
+        "update_balance/<int:account_id>",
+        view=helper.update_balance,
+        name="update_balance",
+    ),
+    path(
+        "set_detail_required",
+        view=helper.set_detail_required,
+        name="set_detail_required",
+    ),
+    path(
+        "update_related_trasaction",
+        view=helper.update_related_transaction,
+        name="update_related_transaction",
+    ),
+    path(
+        "update_retailer_type",
+        view=helper.update_retailer_type,
+        name="update_retailer_type",
+    ),
+    path(
+        "get_retailer_type/<int:retailer_id>",
+        view=helper.get_retailer_type,
+        name="get_retailer_type",
+    ),
+    path(
+        "transaction/toggle_reviewed/<int:transaction_id>",
+        view=helper.toggle_reviewed,
+        name="toggle_reviewed",
+    ),
 ]

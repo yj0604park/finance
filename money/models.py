@@ -36,6 +36,7 @@ class Account(models.Model):
     currency = models.CharField(
         max_length=3, choices=CurrencyType.choices, default=CurrencyType.USD
     )
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.name
@@ -163,6 +164,16 @@ class DetailItemCategory(models.TextChoices):
     BREAD = "BREAD", "빵"
     DRUG = "DRUG", "약"
     TAX = "TAX", "TAX"
+    SEAFOOD = "SEAFOOD", "해산물"
+    INGREDIENT = "INGREDIENT", "식재료"
+    APPLIANCE = "APPLIANCE", "가전"
+    STATIONERY = "STATIONERY", "문구류"
+    BATH = "BATH", "욕실용품"
+    BABY = "BABY", "육아용품"
+    COOKER = "COOKER", "주방용품"
+    FOOD = "FOOD", "식품"
+    CLOTHING = "CLOTHING", "의류"
+    UNK = "UNK", "Unknown"
 
 
 class DetailItem(models.Model):
@@ -183,7 +194,7 @@ class TransactionDetail(models.Model):
 
     note = models.CharField(max_length=40, blank=True, null=True)
     amount = models.FloatField()
-    count = models.IntegerField(default=1)
+    count = models.FloatField(default=1)
 
 
 class Salary(models.Model):

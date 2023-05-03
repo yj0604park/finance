@@ -8,6 +8,9 @@
             {% endif %}
             <th>Account</th>
             <th>Amount</th>
+            {% if print_balance %}
+            <th>Balance</th>
+            {% endif %}
             {% if not ignore_category %}
             <th>Category</th>
             {% endif %}
@@ -25,4 +28,7 @@
     </tr>
     {% endfor %}
 
+    {% if add_detail %}
+    <tr>Add details</tr>
+    {% endif %}
 </table>
