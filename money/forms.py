@@ -167,6 +167,25 @@ class TransactionForm(forms.ModelForm):
         )
 
 
+class StockTransactionForm(forms.ModelForm):
+    class Meta:
+        model = models.StockTransaction
+        exclude = ["related_transaction", "amount"]
+        widgets = {
+            "date": DateTimePickerWidget(attrs={"class": "form-control"}),
+            "stock": RelatedFieldWidgetCanAdd(models.Stock, "money:stock_create"),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["account"].choices = [
+            (account.id, str(account))
+            for account in models.Account.objects.filter(
+                type=models.AccountType.STOCK
+            ).order_by("name")
+        ]
+
+
 class TransactionDetailForm(forms.ModelForm):
     class Meta:
         model = models.TransactionDetail
@@ -176,6 +195,12 @@ class TransactionDetailForm(forms.ModelForm):
                 models.DetailItem, "money:detail_item_create"
             ),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["item"].choices = sorted(
+            self.fields["item"].choices, key=lambda x: x[1].lower()
+        )
 
 
 class DetailItemForm(forms.ModelForm):
@@ -251,3 +276,9 @@ class SalaryForm(forms.ModelForm):
             Column("transaction"),
             Submit("submit", "Submit"),
         )
+
+
+class StockForm(forms.ModelForm):
+    class Meta:
+        model = models.Stock
+        fields = "__all__"

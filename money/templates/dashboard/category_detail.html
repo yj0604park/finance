@@ -3,7 +3,17 @@
 
 {% block content %}
 
-<h1>{{ type }}</h1>
+<h1>Retailer Category {{ category }}</h1>
+
+
+<div class="grid gap-0 row-gap-3">
+    <div class="btn-group p-3" role="group" aria-label="Basic button group">
+        {% for cat in category_list %}
+        <a class="btn btn-outline-primary" href="{% url 'money:category_detail' cat.0 %}">{{ cat.1 }}</a>
+        {% endfor %}
+    </div>
+</div>
+
 
 {% if selected_month %}
 <h2>{{ selected_month.1 }}</h2>
@@ -11,34 +21,101 @@
 <h2>All Months</h2>
 {% endif %}
 
-{% for month in months %}
-<a href="?month={{ month }}" class="btn btn-outline-primary">{{ month }}</a>
-{% endfor %}
+<div class="btn-group p-3" role="group" aria-label="Basic button group">
+    <a href="{% url 'money:category_detail' category %}" class="btn btn-outline-secondary">All</a>
+
+    {% for month in months %}
+    <a href="?month={{ month }}" class="btn btn-outline-primary">{{ month }}</a>
+    {% endfor %}
+</div>
+
+{% if month_detail %}
+<div>
+    <canvas id="month_detail" width="500" height="500"></canvas>
+</div>
 
 <table class="table">
+    <thead>
+        <tr>
+            <th>월</th>
+            <th>금액</th>
+        </tr>
+    </thead>
+    {% for month in month_detail %}
     <tr>
-        <th>ID</th>
-        <th>Date</th>
-        <th>Account</th>
-        <th>Retailer</th>
-        <th>Amount</th>
-        <th>Is Internal</th>
-        <th>Detail</th>
-        <th>Reviewed</th>
-        <th>Note</th>
-    </tr>
-    {% for transaction in transactions %}
-    <tr>
-        <td><a href="{% url 'money:transaction_detail' transaction.id %}">{{ transaction.id }}</a></td>
-        <td>{{ transaction.date | date:"Y-m-d" }}</td>
-        <td>{{ transaction.account.name }}</td>
-        <td>{{ transaction.retailer }}</td>
-        <td>{{ transaction.amount }}</td>
-        <td>{{ transaction.is_internal }}</td>
-        <td>{{ transaction.requires_detail }}</td>
-        <td>{{ transaction.reviewed }}</td>
-        <td>{{ transaction.note }}</td>
+        <td>{{ month.month.year }}년 {{ month.month.month }}월</td>
+        <td>{{ month.total_amount|print_dollar }}</td>
     </tr>
     {% endfor %}
 </table>
+{% endif %}
+
+
+<h1>Retailer Summary</h1>
+<div>
+    <canvas id="myChart" width="500" height="500"></canvas>
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Amount</th>
+        </tr>
+    </thead>
+    {% for retailer in retailer_detail %}
+    <tr>
+        {% if retailer.retailer__id %}
+        <td><a href="{% url 'money:retailer_detail' retailer.retailer__id %}">{{ retailer.retailer__name }}</a></td>
+        {% else %}
+        <td>None</td>
+        {% endif %}
+        <td align="right">{{ retailer.amount__sum|print_dollar }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<h1>Transactions</h1>
+{% with transaction_list=transactions print_flags=True %}
+{% include 'transaction/transaction_table.html' %}
+{% endwith %}
+
+<script>
+    const ctx = document.getElementById('myChart');
+
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ label | safe }},
+        datasets: [{
+            label: 'Category',
+            data: {{ data | safe }}
+                }]
+        },
+        options: {
+        maintainAspectRatio: false,
+        responsive: true
+    }
+    });
+
+
+    {% if month_detail %}
+    const month_ctx = document.getElementById('month_detail');
+
+    new Chart(month_ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ month_label | safe }},
+        datasets: [{
+            label: 'Amount',
+            data: {{ month_data | safe }}
+                }]
+        },
+        options: {
+        maintainAspectRatio: false,
+        responsive: true
+    }
+    });
+    {% endif %}
+</script>
 {% endblock %}

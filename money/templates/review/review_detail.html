@@ -8,22 +8,25 @@
 <table class="table table-striped">
     <thead>
         <tr>
+            <th>ID</th>
             <th>Date</th>
-            <th>Account</th>
             <th>Retailer</th>
+            <th>Account</th>
             <th>Amount</th>
+            <th>Category</th>
+            <th>Note</th>
             <th>Add Detail</th>
         </tr>
     </thead>
     <tbody>
         {% for transaction in transaction_list %}
         <tr>
-            <td>{{ transaction.date | date:"Y-m-d" }}</td>
-            <td>{{ transaction.account }}</td>
-            <td>{{ transaction.retailer }}</td>
-            <td>{{ transaction.amount }}</td>
-            <td><a class="btn btn-primary" href="{% url 'money:transaction_detail_create' transaction.id %}">Add
-                    Details</a>
+            {% include 'transaction/transaction_cell.html' %}
+
+            <td>
+                <a class="btn btn-primary" href="{% url 'money:transaction_detail_create' transaction.id %}">
+                    Add Details
+                </a>
             </td>
         </tr>
         {% endfor %}

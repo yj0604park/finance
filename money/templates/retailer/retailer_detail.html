@@ -17,25 +17,26 @@
     </tr>
 </table>
 
+<h1>월별 사용량</h1>
 <table class="table">
     <thead>
         <tr>
-            <th>ID</th>
-            <th>Date</th>
-            <th>Amount</th>
-            <th>Category</th>
-            <th>Note</th>
+            <td>월</td>
+            <td>금액</td>
         </tr>
     </thead>
-    {% for transaction in transactions %}
+    {% for month in transactions_by_month %}
     <tr>
-        <td><a href="{% url 'money:transaction_detail' transaction.id %}">{{ transaction.id }}</a></td>
-        <td>{{ transaction.date|date:"Y-m-d" }}</td>
-        <td>{{ transaction.amount }}</td>
-        <td>{{ transaction.type }}</td>
-        <td>{{ transaction.note }}</td>
+        <td>{{ month.month.year }}년 {{ month.month.month }}월</td>
+        <td align="right">{{ month.total_amount|print_dollar }}</td>
     </tr>
     {% endfor %}
 </table>
+
+<h1>상세내역</h1>
+
+{% with transaction_list=transactions ignore_retailer=True %}
+{% include 'transaction/transaction_table.html' %}
+{% endwith %}
 
 {% endblock %}

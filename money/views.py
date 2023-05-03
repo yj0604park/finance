@@ -1,7 +1,18 @@
 from typing import Any, Dict
 
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Case, FloatField, Prefetch, Sum, When
+from django.contrib.postgres.aggregates import ArrayAgg
+from django.db.models import (
+    Case,
+    FloatField,
+    Max,
+    Min,
+    Prefetch,
+    QuerySet,
+    Sum,
+    When,
+)
+from django.db.models.functions import TruncMonth
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import DetailView, ListView, TemplateView, View
@@ -20,7 +31,7 @@ class HomeView(LoginRequiredMixin, TemplateView):
         context["account_list"] = (
             models.Account.objects.all()
             .prefetch_related("bank")
-            .order_by("currency", "name")
+            .order_by("currency", "bank", "name")
         )
 
         sum_dict = {k[0]: 0 for k in models.CurrencyType.choices}
@@ -91,6 +102,27 @@ class AccountDetailView(LoginRequiredMixin, DetailView):
 account_detail_view = AccountDetailView.as_view()
 
 
+class DetailItemListView(LoginRequiredMixin, ListView):
+    template_name = "detail_item/detail_item_list.html"
+    model = models.DetailItem
+
+    def get_queryset(self) -> QuerySet[Any]:
+        group_by_category = (
+            models.DetailItem.objects.all()
+            .values("category")
+            .annotate(name_array=ArrayAgg("name", distinct=False))
+            .order_by("category")
+        )
+
+        for v in group_by_category:
+            list.sort(v["name_array"])
+
+        return group_by_category
+
+
+detail_item_list_view = DetailItemListView.as_view()
+
+
 class DetailItemCreateView(LoginRequiredMixin, CreateView):
     template_name = "detail_item/detail_item_create.html"
     model = models.DetailItem
@@ -127,9 +159,49 @@ class CategoryDetailView(LoginRequiredMixin, View):
             transaction_list = transaction_list.filter(
                 date__year=selected_month_split[0]
             ).filter(date__month=selected_month_split[1])
+        else:
+            month_detail = (
+                transaction_list.annotate(month=TruncMonth("date"))
+                .values("month")
+                .annotate(total_amount=Sum("amount"))
+                .order_by("month")
+            )
 
-        context["type"] = category_type
+            month_label = []
+            month_data = []
+
+            for month in month_detail:
+                month_label.append(f"{month['month'].year}년 {month['month'].month}월")
+                month_data.append(month["total_amount"])
+
+            context["month_detail"] = month_detail
+            context["month_label"] = month_label
+            context["month_data"] = month_data
+
+        context["category"] = category_type
         context["transactions"] = transaction_list
+
+        context["retailer_detail"] = (
+            transaction_list.values("retailer__id", "retailer__name")
+            .annotate(Sum("amount"))
+            .order_by("amount__sum")
+        )
+
+        label = []
+        data = []
+
+        for retailer in context["retailer_detail"]:
+            label.append(str(retailer["retailer__name"]))
+            data.append(retailer["amount__sum"])
+
+        context["label"] = label
+        context["data"] = data
+        context["category_list"] = models.TransactionCategory.choices
+
+        date_range = models.Transaction.objects.aggregate(Min("date"), Max("date"))
+        context["months"] = helper.get_month_list(
+            date_range["date__min"], date_range["date__max"]
+        )
 
         return render(request, self.template_name, context)
 
@@ -174,7 +246,7 @@ class RetailerSummaryView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context["currency"] = self.request.GET.get("currency", models.CurrencyType.USD)
-        context["category"] = models.TransactionCategory.choices
+        context["category_list"] = models.TransactionCategory.choices
         label = []
         data = []
 
@@ -197,31 +269,21 @@ class RetailerDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        context["transactions"] = models.Transaction.objects.filter(
+        trnasactions = models.Transaction.objects.filter(
             retailer_id=self.kwargs["pk"]
         ).order_by("date")
+        transactions_by_month = (
+            trnasactions.annotate(month=TruncMonth("date"))
+            .values("month")
+            .annotate(total_amount=Sum("amount"))
+            .order_by("month")
+        )
+        context["transactions"] = trnasactions
+        context["transactions_by_month"] = transactions_by_month
         return context
 
 
 retailer_detail_view = RetailerDetailView.as_view()
-
-
-class RetailerCategoryView(LoginRequiredMixin, ListView):
-    template_name = "retailer/retailer_category.html"
-    model = models.Retailer
-
-    def get_queryset(self):
-        return super().get_queryset().filter(category=self.kwargs["category"])
-
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        context = super().get_context_data(**kwargs)
-        context["category"] = self.kwargs["category"]
-        context["category_list"] = models.TransactionCategory.choices
-
-        return context
-
-
-retailer_category_view = RetailerCategoryView.as_view()
 
 
 class RetailerCreateView(LoginRequiredMixin, CreateView):
@@ -311,3 +373,20 @@ class SalaryCreateView(LoginRequiredMixin, CreateView):
 
 
 salary_create_view = SalaryCreateView.as_view()
+
+
+class StockCreateView(LoginRequiredMixin, CreateView):
+    template_name = "stock/stock_create.html"
+    model = models.Stock
+    form_class = money_forms.StockForm
+
+
+stock_create_view = StockCreateView.as_view()
+
+
+class StockDetailView(LoginRequiredMixin, DetailView):
+    template_name = "stock/stock_detail.html"
+    model = models.Stock
+
+
+stock_detail_view = StockDetailView.as_view()

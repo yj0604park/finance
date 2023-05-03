@@ -3,26 +3,9 @@
 {% block content %}
 <h1>Unreviewed Transactions</h1>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Date</th>
-            <th>Account</th>
-            <th>Amount</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for transaction in transaction_list %}
-        <tr>
-            <td><a href="{% url 'money:transaction_detail' transaction.id %}">{{ transaction.id }}</a></td>
-            <td>{{ transaction.date | date:"Y-m-d" }}</td>
-            <td>{{ transaction.account }}</td>
-            <td>{{ transaction.amount }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+{% with print_flags=True %}
+{% include 'transaction/transaction_cell.html' %}
+{% endwith %}
 
 <div class="pagination">
     <span class="step-links">

@@ -10,7 +10,7 @@ class BankAdmin(admin.ModelAdmin):
 
 @admin.register(models.Account)
 class AccountAdmin(admin.ModelAdmin):
-    list_display = ["name", "bank"]
+    list_display = ["name", "bank", "currency"]
 
 
 class TransactionAdminForm(forms.Form):
@@ -22,7 +22,7 @@ class TransactionAdminForm(forms.Form):
 
 @admin.register(models.Transaction)
 class TransactionAdmin(admin.ModelAdmin):
-    list_display = ["pk", "date", "account_name", "retailer"]
+    list_display = ["pk", "date", "account_name", "amount", "retailer", "type"]
     raw_id_fields = ("related_transaction",)
 
     def account_name(self, obj):
@@ -59,3 +59,13 @@ class SalaryAdmin(admin.ModelAdmin):
                 .order_by("date")
             )
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+@admin.register(models.Stock)
+class StockAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(models.StockTransaction)
+class StockTransactionAdmin(admin.ModelAdmin):
+    pass

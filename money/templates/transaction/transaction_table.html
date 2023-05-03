@@ -1,0 +1,28 @@
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Date</th>
+            {% if not ignore_retailer %}
+            <th>Retailer</th>
+            {% endif %}
+            <th>Account</th>
+            <th>Amount</th>
+            {% if not ignore_category %}
+            <th>Category</th>
+            {% endif %}
+            <th>Note</th>
+            {% if print_flags %}
+            <th>Is Internal</th>
+            <th>Requires Detail</th>
+            <th>Reviewed</th>
+            {% endif %}
+        </tr>
+    </thead>
+    {% for transaction in transaction_list %}
+    <tr>
+        {% include 'transaction/transaction_cell.html' %}
+    </tr>
+    {% endfor %}
+
+</table>

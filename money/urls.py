@@ -7,9 +7,11 @@ app_name = "money"
 
 urlpatterns = [
     path("", view=views.home_view, name="home"),
-    path("bank/<int:pk>", view=views.bank_detail_view, name="bank"),
+    path("bank_detail/<int:pk>", view=views.bank_detail_view, name="bank_detail"),
     path("bank_list", view=views.bank_list_view, name="bank_list"),
-    path("account/<int:pk>", view=views.account_detail_view, name="account"),
+    path(
+        "account_detail/<int:pk>", view=views.account_detail_view, name="account_detail"
+    ),
     path(
         "update_balance/<int:account_id>",
         view=helper.update_balance,
@@ -25,6 +27,7 @@ urlpatterns = [
         view=helper.set_detail_required,
         name="set_detail_required",
     ),
+    path("detail_item_list", view=views.detail_item_list_view, name="detail_item_list"),
     path(
         "detail_item_create",
         view=views.detail_item_create_view,
@@ -54,11 +57,6 @@ urlpatterns = [
         "get_retailer_type/<int:retailer_id>",
         view=helper.get_retailer_type,
         name="get_retailer_type",
-    ),
-    path(
-        "retailer_category/<str:category>",
-        view=views.retailer_category_view,
-        name="retailer_category",
     ),
     path("retailer_create", view=views.retailer_create_view, name="retailer_create"),
     path("salary_list", view=views.salary_list_view, name="salary_list"),
@@ -105,4 +103,17 @@ urlpatterns = [
         view=transaction_view.transaction_detail_create_view,
         name="transaction_detail_create",
     ),
+    path("stock_create", view=views.stock_create_view, name="stock_create"),
+    path("stock_detail/<int:pk>", view=views.stock_detail_view, name="stock_detail"),
+    path(
+        "stock_transaction_create/<int:account_id>",
+        view=transaction_view.stock_transaction_create_view,
+        name="stock_transaction_create",
+    ),
+    path(
+        "stock_transaction_detail/<int:pk>",
+        view=transaction_view.stock_transaction_detail_view,
+        name="stock_transaction_detail",
+    ),
+    path("amazon_list", view=transaction_view.amazon_list_view, name="amazon_list"),
 ]

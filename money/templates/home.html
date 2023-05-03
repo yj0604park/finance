@@ -14,8 +14,8 @@
     </thead>
     {% for account in account_list %}
     <tr>
-        <td><a href="{% url 'money:bank' account.bank.id %}">{{ account.bank }}</a></td>
-        <td><a href="{% url 'money:account' account.id %}">{{ account.name }}</a></td>
+        <td><a href="{% url 'money:bank_detail' account.bank.id %}">{{ account.bank }}</a></td>
+        <td><a href="{% url 'money:account_detail' account.id %}">{{ account.name }}</a></td>
         <td align="right">{{ account.amount | print_currency:account.currency }}</td>
         <td>{{ account.last_update | date:"Y-m-d" }}</td>
         <td>{{ account.last_transaction | date:"Y-m-d" }}</td>

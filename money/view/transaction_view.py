@@ -2,7 +2,8 @@ from typing import Any, Dict
 
 from django import forms
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Max, Min, QuerySet, Sum
+from django.db.models import Max, Min, Prefetch, QuerySet, Sum
+from django.db.models.query import QuerySet
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
@@ -75,7 +76,9 @@ class TransactionCreateView(LoginRequiredMixin, CreateView):
             context["form"].initial["date"] = latest_transaction.date.strftime(
                 "%Y-%m-%d"
             )
+
         context["latest_transaction"] = latest_transaction
+        context["account"] = models.Account.objects.get(pk=self.kwargs["account_id"])
         return context
 
 
@@ -85,6 +88,41 @@ transaction_create_view = TransactionCreateView.as_view()
 class TransactionDetailView(LoginRequiredMixin, DetailView):
     model = models.Transaction
     template_name = "transaction/transaction_detail.html"
+
+    def get_queryset(self) -> QuerySet[Any]:
+        return (
+            super()
+            .get_queryset()
+            .select_related(
+                "account",
+                "related_transaction",
+                "related_transaction__retailer",
+                "retailer",
+            )
+            .prefetch_related(
+                Prefetch(
+                    "transactiondetail_set",
+                    queryset=models.TransactionDetail.objects.all().select_related(
+                        "item"
+                    ),
+                )
+            )
+        )
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        transaction = context["transaction"]
+        detail_sum = 0
+
+        for detail in transaction.transactiondetail_set.all():
+            detail_sum += detail.amount * detail.count
+        context["detail_sum"] = detail_sum
+
+        if abs(transaction.amount + detail_sum) < 0.01:
+            transaction.reviewed = True
+            transaction.save()
+
+        return context
 
 
 transaction_detail_view = TransactionDetailView.as_view()
@@ -109,10 +147,20 @@ class TransactionDetailCreateView(LoginRequiredMixin, CreateView):
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        context["transaction"] = models.Transaction.objects.select_related(
+        transaction = models.Transaction.objects.select_related(
             "account", "retailer"
         ).get(pk=self.kwargs["transaction_id"])
+        context["transaction"] = transaction
 
+        leftover = -transaction.amount
+
+        details = transaction.transactiondetail_set.all().select_related("item")
+
+        for detail in details:
+            leftover -= detail.count * detail.amount
+
+        context["details"] = details
+        context["leftover"] = leftover
         return context
 
 
@@ -229,6 +277,7 @@ class ReviewDetailTransactionView(LoginRequiredMixin, ListView):
             super()
             .get_queryset()
             .filter(requires_detail=True)
+            .filter(reviewed=False)
             .prefetch_related("retailer")
             .order_by("-date")
         )
@@ -238,3 +287,61 @@ class ReviewDetailTransactionView(LoginRequiredMixin, ListView):
 
 
 review_detail_transaction_view = ReviewDetailTransactionView.as_view()
+
+
+class StockTransactionCreateView(LoginRequiredMixin, CreateView):
+    template_name = "stock/stock_transaction_create.html"
+    model = models.StockTransaction
+    form_class = money_forms.StockTransactionForm
+
+    def get_success_url(self) -> str:
+        return reverse_lazy(
+            "money:stock_transaction_create",
+            kwargs={"account_id": self.kwargs["account_id"]},
+        )
+
+    def get_form(self) -> forms.BaseModelForm:
+        form = super().get_form()
+        form.initial["account"] = self.kwargs["account_id"]
+
+        date_default = self.request.GET.get("date", None)
+        if date_default:
+            form.initial["date"] = date_default
+
+        return form
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        account_id = self.kwargs["account_id"]
+
+        return super().get_context_data(**kwargs)
+
+
+stock_transaction_create_view = StockTransactionCreateView.as_view()
+
+
+class StockTransactionView(LoginRequiredMixin, DetailView):
+    template_name = "stock/stock_transaction_detail.html"
+    model = models.StockTransaction
+
+
+stock_transaction_detail_view = StockTransactionView.as_view()
+
+
+class AmazonListView(LoginRequiredMixin, ListView):
+    template_name = "transaction/amazon_list.html"
+    model = models.Transaction
+
+    def get_queryset(self) -> QuerySet[Any]:
+        amazon = models.Retailer.objects.filter(name="Amazon")
+        if amazon:
+            return (
+                super()
+                .get_queryset()
+                .filter(retailer=amazon[0])
+                .prefetch_related("account")
+            )
+        else:
+            return None
+
+
+amazon_list_view = AmazonListView.as_view()

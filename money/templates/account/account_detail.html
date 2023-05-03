@@ -2,7 +2,9 @@
 
 
 {% block content %}
-<p>{{ account.name }}</p>
+<h1>{{ account.name }} Details</h1>
+
+<a href="{% url 'money:bank_detail' account.bank.id %}" class="btn btn-outline-secondary">{{ account.bank.name }}</a>
 
 <div>
     <canvas id="myChart"></canvas>
@@ -15,29 +17,15 @@
     Add transaction
 </a>
 
+{% if account.type == "STOCK" %}
+<a type="button" class="btn btn-secondary" href="{% url 'money:stock_transaction_create' account.id %}">
+    Add stock transaction
+</a>
+{% endif %}
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Date</th>
-            <th>Use For</th>
-            <th>Amount</th>
-            <th>Balance</th>
-            <th>Note</th>
-        </tr>
-    </thead>
-    {% for transaction in ordered_transaction_set %}
-    <tr>
-        <td><a href="{% url 'money:transaction_detail' transaction.id %}">{{ transaction.id }}</a></td>
-        <td>{{ transaction.date }}</td>
-        <td>{{ transaction.retailer.name }}</td>
-        <td>{{ transaction.amount|floatformat:2 }}</td>
-        <td>{{ transaction.balance|floatformat:2 }}</td>
-        <td>{{ transaction.note }}</td>
-    </tr>
-    {% endfor %}
-</table>
+{% with transaction_list=ordered_transaction_set %}
+{% include 'transaction/transaction_table.html' %}
+{% endwith %}
 
 {% with chartId="myChart" %}
 {% include 'transaction/transaction_chart.html' %}

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% load money_tags %}
+
+<h1>Amazon transactions</h1>
+
+{% with ignore_retailer=True %}
+{% include "transaction/transaction_table.html" %}
+{% endwith %}
+
+{% endblock %}

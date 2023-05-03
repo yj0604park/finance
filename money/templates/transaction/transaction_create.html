@@ -4,6 +4,7 @@
 
 {% block content %}
 
+<a href="{% url 'money:account_detail' account.id %}" class="btn btn-outline-secondary">{{ account }}</a>
 
 {% crispy form %}
 
@@ -50,20 +51,11 @@
             })
     });
 
-    const dateField = document.getElementById("id_date");
-    const incrementButton = document.getElementById("id_increase_date");
-
-    incrementButton.addEventListener("click", function () {
-        const currentDate = new Date(dateField.value);
-        const newDate = new Date(currentDate);
-        newDate.setDate(newDate.getDate() + 1);
-        dateField.value = newDate.toISOString().slice(0, 10);
-    });
-
     function openPopup(link) {
         // Open the pop-up window
         window.open(link + "?_to_field=id&_popup=1", 'popup', 'height=500,width=800,resizable=yes,scrollbars=yes,modal=yes');
     }
-
 </script>
+
+{% include 'widgets/increase_by_one.html' %}
 {% endblock %}

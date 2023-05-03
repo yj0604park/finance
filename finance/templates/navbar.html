@@ -26,7 +26,13 @@
             <a class="nav-link" href="{% url 'money:retailer_summary' %}">Retailer</a>
           </li>
           <li class="nav-item">
+            <a class="nav-link" href="{% url 'money:detail_item_list' %}">Item</a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link" href="{% url 'money:salary_list' %}">Salary</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'money:amazon_list' %}">Amazon</a>
           </li>
           {% if request.user.is_authenticated %}
           <li class="nav-item">

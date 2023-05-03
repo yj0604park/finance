@@ -5,7 +5,7 @@
 <p>Bank Lists</p>
 <ul>
   {% for bank in bank_list %}
-  <li><a href="{% url 'money:bank' bank.id %}">{{ bank }}</a></li>
+  <li><a href="{% url 'money:bank_detail' bank.id %}">{{ bank }}</a></li>
   {% endfor %}
 </ul>
 {% endblock %}

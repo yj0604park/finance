@@ -3,16 +3,19 @@
 
 {% block content %}
 
-<a href="{% url 'money:transaction_category' %}" class="btn btn-outline-secondary">All</a>
-{% for month in months %}
-<a href="?month={{ month }}" class="btn btn-outline-primary">{{ month }}</a>
-{% endfor %}
-
 {% if selected_month %}
 <h1>{{ selected_month.1 }}</h1>
 {% else %}
 <h1>All Months</h1>
 {% endif %}
+
+<div class="btn-group p-3" role="group" aria-label="Basic button group">
+    <a href="{% url 'money:transaction_category' %}" class="btn btn-outline-secondary">All</a>
+
+    {% for month in months %}
+    <a href="?month={{ month }}" class="btn btn-outline-primary">{{ month }}</a>
+    {% endfor %}
+</div>
 
 <h2>Income</h2>
 <table class="table">

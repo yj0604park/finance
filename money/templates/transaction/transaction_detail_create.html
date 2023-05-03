@@ -4,28 +4,26 @@
 
 {% block content %}
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Date</th>
-            <th>Retailer</th>
-            <th>Amount</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-                {{ transaction.date|date:"Y-m-d" }}
-            </td>
-            <td>
-                {{ transaction.retailer }}
-            </td>
-            <td>
-                {{ transaction.amount|print_currency:transaction.account.currency }}
-            </td>
-        </tr>
-    </tbody>
-</table>
+<div class="p-3">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Date</th>
+                <th>Retailer</th>
+                <th>Account</th>
+                <th>Amount</th>
+                <th>Category</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                {% include 'transaction/transaction_cell.html' %}
+            </tr>
+        </tbody>
+    </table>
+</div>
+
 <form method="post">
     {% csrf_token %}
     {{ form|crispy }}
@@ -34,6 +32,33 @@
         </div>
     </div>
 </form>
+
+<div class="p-3">
+    <h3>남은 금액 {{ leftover | print_dollar }}</h3>
+
+    {% if details %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>항목</th>
+                <th>단가</th>
+                <th>갯수</th>
+                <th>금액</th>
+                <th>노트</th>
+            </tr>
+        </thead>
+        {% for detail in details %}
+        <tr>
+            <td>{{ detail.item.name }}</td>
+            <td>{{ detail.amount | print_dollar }}</td>
+            <td>{{ detail.count }}</td>
+            <td>{{ detail.amount | multiply:detail.count | print_dollar }}</td>
+            <td>{% if detail.note %}{{ detail.note }}{% endif %}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endif %}
 
 <script>
     function openPopup(link) {

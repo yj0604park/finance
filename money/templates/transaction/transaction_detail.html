@@ -1,46 +1,124 @@
 {% extends "base.html" %}
 
 {% block content %}
-
+{% load money_tags %}
 <h1>Transaction {{ transaction.id }} Detail</h1>
 
+{% with related=transaction.related_transaction %}
 <table class="table">
+    <thead>
+        <tr>
+            <th>Property</th>
+            <th>Value</th>
+            {% if related %}
+            <th>Related Value</th>
+            {% endif %}
+        </tr>
+    </thead>
+
+    <tr>
+        <th>ID</th>
+        <td>{{ transaction.id }}</td>
+        {% if related %}
+        <td>
+            <a href="{% url 'money:transaction_detail' transaction.related_transaction.id %}">
+                {{ transaction.related_transaction.id }}
+            </a>
+        </td>
+        {% endif %}
+    </tr>
 
     <tr>
         <th>Date</th>
         <td>{{ transaction.date }}</td>
-    </tr>
-
-    <tr>
-        <th>Account</th>
-        <td><a href="{% url 'money:account' transaction.account.id %}">{{ transaction.account }}</a></td>
-    </tr>
-
-    <tr>
-        <th>Amount</th>
-        <td>{{ transaction.amount }}</td>
+        {% if related %}
+        <td>{{ related.date }}</td>
+        {% endif %}
     </tr>
 
     <tr>
         <th>Retailer</th>
-        <td>{{ transaction.retailer }}</td>
+        <td>
+            {% if transaction.retailer %}
+            <a href="{% url 'money:retailer_detail' transaction.retailer.id %}">{{ transaction.retailer }}</a>
+            {% endif %}
+        </td>
+        {% if related %}
+        <td>
+            {% if related.retailer %}
+            <a href="{% url 'money:retailer_detail' related.retailer.id %}">{{ related.retailer }}</a>
+            {% endif %}
+        </td>
+        {% endif %}
+    </tr>
+
+    <tr>
+        <th>Account</th>
+        <td><a href="{% url 'money:account_detail' transaction.account.id %}">{{ transaction.account }}</a></td>
+        {% if related %}
+        <td><a href="{% url 'money:account_detail' related.account.id %}">{{ related.account }}</a></td>
+        {% endif %}
+    </tr>
+
+    <tr>
+        <th>Amount</th>
+        <td>{{ transaction.amount | print_dollar }}</td>
+        {% if related %}
+        <td>
+            {{ related.amount | print_dollar }}
+        </td>
+        {% endif %}
+    </tr>
+
+    <tr>
+        <th>Category</th>
+        <td><a href="{% url 'money:category_detail' transaction.type %}">{{ transaction.type }}</a></td>
+        {% if related %}
+        <td><a href="{% url 'money:category_detail' related.type %}">{{ related.type }}</a></td>
+        {% endif %}
+    </tr>
+
+    <tr>
+        <th>Note</th>
+        <td>{{ transaction.note }}</td>
+        {% if related %}
+        <td>
+            {{ related.note }}
+        </td>
+        {% endif %}
     </tr>
 
     <tr>
         <th>Detail Required</th>
         <td>{{ transaction.requires_detail }}</td>
+        {% if related %}
+        <td>
+            {{ related.requires_detail }}
+        </td>
+        {% endif %}
     </tr>
 
     <tr>
         <th>Is Internal</th>
         <td>{{ transaction.is_internal }}</td>
+        {% if related %}
+        <td>
+            {{ related.is_internal }}
+        </td>
+        {% endif %}
     </tr>
 
     <tr>
         <th>Is Reviewed</th>
         <td>{{ transaction.reviewed }}</td>
+        {% if related %}
+        <td>
+            {{ related.reviewed }}
+        </td>
+        {% endif %}
     </tr>
 </table>
+{% endwith %}
 
 {% if transaction.salary_set.all %}
 <h1>Related Salary Information</h1>
@@ -49,47 +127,37 @@
 {% endfor %}
 {% endif %}
 
-{% if transaction.related_transaction %}
-<h1>Related Transaction Information</h1>
-<h3><a href="{% url 'money:transaction_detail' transaction.related_transaction.id %}">
-        Transaction {{ transaction.related_transaction.id }}</a></h3>
+{% if transaction.transactiondetail_set.all %}
+<h1>Detail</h1>
+
+<h3>Total: {{ detail_sum|print_dollar }}, Diff: {{ transaction.amount|add_float:detail_sum|print_dollar }}</h3>
 
 <table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>품목</th>
+            <th>단가</th>
+            <th>갯수</th>
+            <th>금액</th>
+            <th>노트</th>
+        </tr>
+    </thead>
+    {% for detail in transaction.transactiondetail_set.all %}
     <tr>
-        <th>Date</th>
-        <td>{{ transaction.related_transaction.date }}</td>
+        <td>{{ detail.id }}</td>
+        <td>{{ detail.item }}</td>
+        <td>{{ detail.amount|print_dollar }}</td>
+        <td>{{ detail.count }}</td>
+        <td>{{ detail.amount|multiply:detail.count|print_dollar }}</td>
+        <td>{% if detail.note %}{{ detail.note }}{% endif %}</td>
     </tr>
-    <tr>
-        <th>Account</th>
-        <td>{{ transaction.related_transaction.account }}</td>
-    </tr>
-    <tr>
-        <th>Amount</th>
-        <td>{{ transaction.related_transaction.amount }}</td>
-    </tr>
-    <tr>
-        <th>Retailer</th>
-        <td>{{ transaction.related_transaction.retailer }}</td>
-    </tr>
-    <tr>
-        <th>Detail Required</th>
-        <td>{{ transaction.related_transaction.requires_detail }}</td>
-    </tr>
-    <tr>
-        <th>Is Internal</th>
-        <td>{{ transaction.related_transaction.is_internal }}</td>
-    </tr>
+    {% endfor %}
 </table>
 {% endif %}
 
-
-{% if transaction.detail_set %}
-<h1>Detail</h1>
-{{ transaction.transaction_detail_set.all }}
-{% endif %}
-
 <h1>Add Detail</h1>
-<a href="{% url 'money:transaction_detail_create' transaction.account.id %}">
+<a href="{% url 'money:transaction_detail_create' transaction.id %}">
     Add detail
 </a>
 {% endblock %}

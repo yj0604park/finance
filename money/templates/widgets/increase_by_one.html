@@ -1,0 +1,11 @@
+<script>
+    const dateField = document.getElementById("id_date");
+    const incrementButton = document.getElementById("id_increase_date");
+
+    incrementButton.addEventListener("click", function () {
+        const currentDate = new Date(dateField.value);
+        const newDate = new Date(currentDate);
+        newDate.setDate(newDate.getDate() + 1);
+        dateField.value = newDate.toISOString().slice(0, 10);
+    });
+</script>

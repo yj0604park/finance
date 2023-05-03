@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load money_tags %}
+
+{% block content %}
+
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th>품명</th>
+        </tr>
+    </thead>
+    {% for category in object_list %}
+    {% for item in category.name_array %}
+    <tr>
+        {% if forloop.first %}
+        <td rowspan="{{ category.name_array|length }}">{{ category.category }}</td>
+        {% endif %}
+        <td>{{ item }}</td>
+    </tr>
+    {% endfor %}
+    {% endfor %}
+</table>
+
+{% endblock %}

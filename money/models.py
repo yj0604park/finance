@@ -62,7 +62,7 @@ class TransactionCategory(models.TextChoices):
 
 class RetailerType(models.TextChoices):
     ETC = "ETC"
-    MARKET = "MARKET"
+    STORE = "STORE"
     PERSON = "PERSON"
     BANK = "BANK"
     SERVICE = "SERVICE"
@@ -116,8 +116,62 @@ class Transaction(models.Model):
         return reverse("money:transaction_detail", kwargs={"pk": self.pk})
 
 
+class Stock(models.Model):
+    name = models.CharField(max_length=20)
+    ticker = models.CharField(max_length=10, null=True, blank=True)
+
+    def get_absolute_url(self):
+        return reverse("money:stock_detail", kwargs={"pk": self.pk})
+
+    def __str__(self):
+        return f"{self.ticker}: {self.name}"
+
+    class Meta:
+        ordering = ["ticker"]
+
+
+class StockTransaction(models.Model):
+    date = models.DateField()
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
+    related_transaction = models.ForeignKey(
+        Transaction, on_delete=models.SET_NULL, null=True, blank=True
+    )
+
+    price = models.FloatField()
+    shares = models.FloatField()
+    amount = models.FloatField()
+
+    note = models.TextField(null=True, blank=True, default="")
+
+    def get_absolute_url(self):
+        return reverse("money:stock_transaction_detail", kwargs={"pk": self.pk})
+
+
+class DetailItemCategory(models.TextChoices):
+    ETC = "ETC", "ETC"
+    FRUIT = "FRUIT", "과일"
+    ALCOHOL = "ALCOHOL", "주류"
+    DRINK = "DRINK", "음료"
+    SAUCE = "SAUCE", "소스"
+    MEAT = "MEAT", "육류"
+    VEGETABLE = "VEGETABLE", "채소"
+    DAIRY = "DAIRY", "유제품"
+    WRAP = "WRAP", "포장지"
+    SNACK = "SNACK", "스낵"
+    NOODLE = "NOODLE", "면"
+    BREAD = "BREAD", "빵"
+    DRUG = "DRUG", "약"
+    TAX = "TAX", "TAX"
+
+
 class DetailItem(models.Model):
     name = models.CharField(max_length=30)
+    category = models.CharField(
+        max_length=10,
+        choices=DetailItemCategory.choices,
+        default=DetailItemCategory.ETC,
+    )
 
     def __str__(self):
         return self.name

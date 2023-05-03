@@ -11,12 +11,14 @@
             <tr>
                 <th>ID</th>
                 <th>Date</th>
+                <th>Retailer</th>
                 <th>Account</th>
                 <th>Amount</th>
-                <th>Internal</th>
                 <th>Note</th>
+                <th>Is Internal</th>
+                <th>Requires Detail</th>
+                <th>Reviewed</th>
                 <th>Link</th>
-                <th>Retailer</th>
             </tr>
         </thead>
         <tbody>
@@ -26,12 +28,9 @@
                 {% else %}
             <tr>
                 {% endif %}
-                <td><a href="{% url 'money:transaction_detail' transaction.id %}">{{ transaction.id }}</td>
-                <td>{{ transaction.date | date:"Y-m-d" }}</td>
-                <td>{{ transaction.account }}</td>
-                <td>{{ transaction.amount }}</td>
-                <td>{{ transaction.is_internal }}</td>
-                <td>{{ transaction.note }}</td>
+                {% with print_flags=True ignore_category=True %}
+                {% include 'transaction/transaction_cell.html' %}
+                {% endwith %}
                 {% if transaction.is_internal %}
                 {% if transaction.related_transaction %}
                 <td><a href="{% url 'money:transaction_detail' transaction.related_transaction.id %}">
@@ -42,7 +41,6 @@
                 {% else %}
                 <td>Not applicable</td>
                 {% endif %}
-                <th>{{ transaction.retailer.name }}</th>
             </tr>
             {% endfor %}
         </tbody>

@@ -7,7 +7,7 @@ register = template.Library()
 
 @register.filter
 def print_dollar(value):
-    if not value:
+    if not value and value != 0:
         return value
 
     value = round(value, 2)
@@ -45,3 +45,8 @@ def abs_filter(value):
 @register.filter
 def add_float(value1, value2):
     return value1 + value2
+
+
+@register.filter
+def multiply(value, arg):
+    return value * arg
