@@ -1,12 +1,23 @@
 {% extends "base.html" %}
-
+{% load money_tags %}
 
 {% block content %}
-<p>{{ bank }}</p>
-<ul>
+<h1>{{ bank }}</h1>
+<table class="table">
 
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Account</th>
+      <th>Balance</th>
+    </tr>
+  </thead>
   {% for account in bank.account_set.all %}
-  <li><a href="{% url 'money:account_detail' account.id %}">{{ account.name }}</a></li>
+  <tr>
+    <td>{{ account.id }}</td>
+    <td><a href="{% url 'money:account_detail' account.id %}">{{ account.name }}</a></td>
+    <td align="right">{{ account.amount | print_currency:account.currency }}</td>
+  </tr>
   {% endfor %}
-</ul>
+</table>
 {% endblock %}

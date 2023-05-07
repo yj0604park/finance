@@ -69,7 +69,7 @@ class HomeView(LoginRequiredMixin, TemplateView):
             sum_dict[currency_map[account["account"]]]["prev"] += balance
 
         sum_list = [(k, v) for k, v in sum_dict.items()]
-        for k, v in sum_list:
+        for _, v in sum_list:
             v["diff"] = v["current"] - v["prev"]
             v["ratio"] = round(v["diff"] / v["prev"] * 100, 2)
         sum_list.sort()

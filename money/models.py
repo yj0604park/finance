@@ -217,3 +217,15 @@ class Salary(models.Model):
 
     def get_absolute_url(self):
         return reverse("money:salary_detail", kwargs={"pk": self.pk})
+
+
+class AmazonOrder(models.Model):
+    date = models.DateField()
+    item = models.TextField()
+    is_returned = models.BooleanField(default=False)
+    transaction = models.ForeignKey(
+        Transaction, null=True, blank=True, on_delete=models.SET_NULL
+    )
+
+    def __str__(self):
+        return f"{self.date.strftime('%Y-%m-%d')} {self.item}"

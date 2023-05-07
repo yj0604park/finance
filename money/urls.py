@@ -92,6 +92,11 @@ urlpatterns = [
     ),
     path("amazon_list", view=transaction_view.amazon_list_view, name="amazon_list"),
     path(
+        "amazon_order_list",
+        view=transaction_view.amazon_order_list_view,
+        name="amazon_order_list",
+    ),
+    path(
         "update_balance/<int:account_id>",
         view=helper.update_balance,
         name="update_balance",

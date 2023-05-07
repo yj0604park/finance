@@ -20,6 +20,9 @@
             <th>Requires Detail</th>
             <th>Reviewed</th>
             {% endif %}
+            {% if add_detail %}
+            <th>Add details</th>
+            {% endif %}
         </tr>
     </thead>
     {% for transaction in transaction_list %}
@@ -28,7 +31,4 @@
     </tr>
     {% endfor %}
 
-    {% if add_detail %}
-    <tr>Add details</tr>
-    {% endif %}
 </table>

@@ -5,7 +5,9 @@
 
 <h1>Amazon transactions</h1>
 
-{% with ignore_retailer=True %}
+<a href="{% url 'money:amazon_order_list' %}" class="btn btn-primary">Amazon Orders</a>
+
+{% with ignore_retailer=True add_detail=True %}
 {% include "transaction/transaction_table.html" %}
 {% endwith %}
 

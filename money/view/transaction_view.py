@@ -144,6 +144,10 @@ class TransactionDetailCreateView(LoginRequiredMixin, CreateView):
         form.instance.transaction = models.Transaction.objects.get(
             pk=self.kwargs["transaction_id"]
         )
+        if form.cleaned_data["amount"] == 0:
+            form.add_error("amount", "Value must not be 0.")
+            return self.form_invalid(form)
+
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
@@ -236,7 +240,7 @@ class ReviewTransactionView(LoginRequiredMixin, ListView):
         qs = (
             qs.filter(reviewed=False)
             .order_by("date", "amount")
-            .prefetch_related("account")
+            .prefetch_related("account", "retailer")
         )
         return qs
 
@@ -256,7 +260,7 @@ class ReviewInternalTransactionView(LoginRequiredMixin, ListView):
             qs.filter(reviewed=False)
             .filter(type=models.TransactionCategory.TRANSFER)
             .order_by("date", "amount")
-            .prefetch_related("account")
+            .prefetch_related("account", "retailer", "related_transaction")
         )
 
         if self.request.GET.get("internal_only", False):
@@ -286,7 +290,7 @@ class ReviewDetailTransactionView(LoginRequiredMixin, ListView):
             .get_queryset()
             .filter(requires_detail=True)
             .filter(reviewed=False)
-            .prefetch_related("retailer")
+            .prefetch_related("account", "retailer")
             .order_by("-date")
         )
 
@@ -353,3 +357,19 @@ class AmazonListView(LoginRequiredMixin, ListView):
 
 
 amazon_list_view = AmazonListView.as_view()
+
+
+class AmazonOrderListView(LoginRequiredMixin, ListView):
+    template_name = "transaction/amazon_order_list.html"
+    model = models.AmazonOrder
+
+    def get_queryset(self) -> QuerySet[Any]:
+        return (
+            super()
+            .get_queryset()
+            .order_by("date", "id")
+            .prefetch_related("transaction")
+        )
+
+
+amazon_order_list_view = AmazonOrderListView.as_view()

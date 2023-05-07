@@ -66,6 +66,8 @@ class DetailItemAdmin(admin.ModelAdmin):
 class TransactionDetailAdmin(admin.ModelAdmin):
     raw_id_fields = ("transaction",)
 
+    list_display = ("id", "item", "amount", "count")
+
 
 @admin.register(models.Salary)
 class SalaryAdmin(admin.ModelAdmin):
@@ -89,3 +91,9 @@ class StockAdmin(admin.ModelAdmin):
 @admin.register(models.StockTransaction)
 class StockTransactionAdmin(admin.ModelAdmin):
     pass
+
+
+@admin.register(models.AmazonOrder)
+class AmazonOrderAdmin(admin.ModelAdmin):
+    list_display = ["item", "date", "is_returned", "transaction"]
+    raw_id_fields = ("transaction",)

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% load money_tags %}
+
+<h1>Amazon order transactions</h1>
+
+<a href="{% url 'money:amazon_list' %}" class="btn btn-primary">Amazon Transactions</a>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Date</th>
+            <th>Item</th>
+            <th>Is Returned</th>
+            <th>Related Transaction</th>
+        </tr>
+    </thead>
+
+    {% for order in amazonorder_list %}
+    <tr>
+        <td>{{ order.id }}</td>
+        <td>{{ order.date }}</td>
+        <td>{{ order.item }}</td>
+        <td>{{ order.is_returned }}</td>
+        <td>{{ order.transaction }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}
