@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load money_tags %}
+
+{% block content %}
+
+<form method="post">
+    {% csrf_token %}
+    {{ form | crispy }}
+    <input type="submit" value="Submit" class="btn btn-primary">
+</form>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Item</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>{{ prev_order.date }}</td>
+            <td>{{ prev_order.item }}</td>
+        </tr>
+    </tbody>
+</table>
+
+
+{% endblock %}

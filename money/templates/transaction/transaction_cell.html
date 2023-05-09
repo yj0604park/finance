@@ -11,11 +11,14 @@
 </td>
 {% endif %}
 
+{% if not ignore_account %}
 <td><a href="{% url 'money:account_detail' transaction.account.id %}">{{ transaction.account }}</a></td>
-<td align="right">{{ transaction.amount|print_currency:transaction.account.currency }}</td>
+{% endif %}
+
+<td align="right">{{ transaction.amount | print_currency:transaction.account.currency | safe }}</td>
 
 {% if print_balance %}
-<td>{{ transaction.balance | print_currency:transaction.account.currency }}</td>
+<td>{{ transaction.balance | print_currency:transaction.account.currency | safe }}</td>
 {% endif %}
 
 {% if not ignore_category %}

@@ -30,7 +30,7 @@
         <th>
             Amount
         </th>
-        <td>{{ latest_transaction.amount|print_currency:account.currency }}</td>
+        <td>{{ latest_transaction.amount|print_currency:account.currency | safe }}</td>
     </tr>
 </table>
 {% endif %}

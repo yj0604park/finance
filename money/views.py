@@ -3,8 +3,10 @@ from typing import Any, Dict
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.postgres.aggregates import ArrayAgg
+from django.core.paginator import Paginator
 from django.db.models import (
     Case,
+    Count,
     FloatField,
     Max,
     Min,
@@ -12,7 +14,7 @@ from django.db.models import (
     QuerySet,
     Sum,
     When,
-    Count,
+    Q,
 )
 from django.db.models.functions import TruncMonth
 from django.db.models.query import QuerySet
@@ -34,7 +36,10 @@ class HomeView(LoginRequiredMixin, TemplateView):
         context["account_list"] = (
             models.Account.objects.all()
             .prefetch_related("bank")
-            .order_by("currency", "bank", "name")
+            .order_by("currency", "bank", "last_transaction")
+            .annotate(
+                null_count=Count(Case(When(transaction__balance__isnull=True, then=1)))
+            )
         )
 
         sum_dict = {
@@ -46,6 +51,7 @@ class HomeView(LoginRequiredMixin, TemplateView):
             currency_map[account.id] = account.currency
             sum_dict[account.currency]["current"] += account.amount
 
+        # compare with last month
         last_prev_month_day = datetime.date.today().replace(day=1) - datetime.timedelta(
             days=1
         )
@@ -56,7 +62,9 @@ class HomeView(LoginRequiredMixin, TemplateView):
                 date__year__lte=last_prev_month_day.year,
             )
             .values("account")
-            .annotate(last_date=Max("date"))
+            .annotate(
+                last_date=Max("date"),
+            )
         )
 
         for account in prev_transaction_list_per_account:
@@ -66,7 +74,9 @@ class HomeView(LoginRequiredMixin, TemplateView):
                 .order_by("-balance")[0]
                 .balance
             )
-            sum_dict[currency_map[account["account"]]]["prev"] += balance
+
+            if balance:
+                sum_dict[currency_map[account["account"]]]["prev"] += balance
 
         sum_list = [(k, v) for k, v in sum_dict.items()]
         for _, v in sum_list:
@@ -106,9 +116,10 @@ bank_list_view = BankListView.as_view()
 class AccountDetailView(LoginRequiredMixin, DetailView):
     model = models.Account
     template_name = "account/account_detail.html"
+    objects_per_page = 100
 
     def get_queryset(self):
-        return (
+        qs = (
             super()
             .get_queryset()
             .prefetch_related(
@@ -119,17 +130,39 @@ class AccountDetailView(LoginRequiredMixin, DetailView):
             )
         )
 
+        return qs
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["ordered_transaction_set"] = (
+
+        ordered_transaction_set = (
             context["account"]
             .transaction_set.all()
             .prefetch_related("retailer", "account")
             .order_by("-date", "amount")
         )
 
+        context["additional_get_query"] = ""
+        filter_reviewed = self.request.GET.get("reviewed")
+        if filter_reviewed:
+            ordered_transaction_set = ordered_transaction_set.filter(
+                reviewed=filter_reviewed
+            )
+            context["additional_get_query"] += f"&reviewed={filter_reviewed}"
+
+        paginator = Paginator(ordered_transaction_set, self.objects_per_page)
+
+        # get the current page number from the request query parameters
+        page_number = self.request.GET.get("page")
+
+        # get the Page object for the current page number
+        page = paginator.get_page(page_number)
+
+        # pass the Page object to the template context
+        context["page"] = page
+
         context["data"] = helper.get_transaction_chart_data(
-            context["ordered_transaction_set"],
+            ordered_transaction_set,
             reverse=True,
         )
 
@@ -282,7 +315,7 @@ class RetailerSummaryView(LoginRequiredMixin, ListView):
                     )
                 ),
             )
-            .order_by("minus_sum")
+            .order_by("retailer__name")
         )
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:

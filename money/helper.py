@@ -4,21 +4,34 @@ from dateutil.rrule import MONTHLY, rrule
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Q
 from django.http import JsonResponse
+from collections import defaultdict
 
 from money import models
 
 
-def get_transaction_chart_data(transaction_list, recalculate=False, reverse=False):
+def get_transaction_chart_data(
+    transaction_list,
+    recalculate=False,
+    reverse=False,
+    sample_threshold=1000,
+    sample_ratio=50,
+):
     chart_dict = []
     sum = 0
+
+    sampling = transaction_list.count() > sample_threshold
+    count = 0
     for transaction in transaction_list:
+        count += 1
         sum += transaction.amount
-        chart_dict.append(
-            {
-                "x": transaction.date.strftime("%Y-%m-%d"),
-                "y": transaction.balance if not recalculate else sum,
-            }
-        )
+
+        if not sampling or count % sample_ratio == 0:
+            chart_dict.append(
+                {
+                    "x": transaction.date.strftime("%Y-%m-%d"),
+                    "y": transaction.balance if not recalculate else sum,
+                }
+            )
     if reverse:
         chart_dict.reverse()
     return chart_dict
@@ -115,10 +128,14 @@ def set_detail_required(request):
 
 def get_month_list(start_date, end_date):
     months = [
-        dt.strftime("%Y-%m")
+        (dt.year, dt.strftime("%Y-%m"))
         for dt in rrule(MONTHLY, dtstart=start_date, until=end_date)
     ]
-    return months
+    month_per_year = defaultdict(list)
+
+    for year, month in months:
+        month_per_year[year].append(month)
+    return month_per_year
 
 
 @login_required

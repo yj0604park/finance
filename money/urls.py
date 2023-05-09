@@ -49,6 +49,11 @@ urlpatterns = [
         name="transaction_create",
     ),
     path(
+        "transaction_update/<int:pk>",
+        view=transaction_view.transaction_update_view,
+        name="transaction_update",
+    ),
+    path(
         "transaction_detail/<int:pk>",
         view=transaction_view.transaction_detail_view,
         name="transaction_detail",
@@ -95,6 +100,16 @@ urlpatterns = [
         "amazon_order_list",
         view=transaction_view.amazon_order_list_view,
         name="amazon_order_list",
+    ),
+    path(
+        "amazon_order_create",
+        view=transaction_view.amazon_order_create_view,
+        name="amazon_order_create",
+    ),
+    path(
+        "amazon_order_detail/<int:pk>",
+        view=transaction_view.amazon_order_detail_view,
+        name="amazon_order_detail",
     ),
     path(
         "update_balance/<int:account_id>",

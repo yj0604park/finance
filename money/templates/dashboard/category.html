@@ -41,7 +41,7 @@
             </a>
         </td>
         <td align="right">
-            {{ summary.total_amount|abs_filter|print_currency:currency }}
+            {{ summary.total_amount|abs_filter|print_currency:currency | safe }}
         </td>
     </tr>
     {% endfor %}
@@ -74,7 +74,7 @@
         <td>
             {{ summary.account__currency }}
         </td>
-        <td align="right">{{ summary.total_amount|print_currency:currency }}</td>
+        <td align="right">{{ summary.total_amount|print_currency:currency | safe }}</td>
     </tr>
     {% endfor %}
     {% endfor %}

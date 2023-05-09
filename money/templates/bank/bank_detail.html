@@ -16,7 +16,7 @@
   <tr>
     <td>{{ account.id }}</td>
     <td><a href="{% url 'money:account_detail' account.id %}">{{ account.name }}</a></td>
-    <td align="right">{{ account.amount | print_currency:account.currency }}</td>
+    <td align="right">{{ account.amount | print_currency:account.currency | safe }}</td>
   </tr>
   {% endfor %}
 </table>

@@ -16,9 +16,10 @@
     <tr>
         <td><a href="{% url 'money:bank_detail' account.bank.id %}">{{ account.bank }}</a></td>
         <td><a href="{% url 'money:account_detail' account.id %}">{{ account.name }}</a></td>
-        <td align="right">{{ account.amount | print_currency:account.currency }}</td>
+        <td align="right">{{ account.amount | print_currency:account.currency | safe }}</td>
         <td>{{ account.last_update | date:"Y-m-d" }}</td>
         <td>{{ account.last_transaction | date:"Y-m-d" }}</td>
+        <td>{{ account.null_count }}</td>
     </tr>
     {% endfor %}
     <tr style="border-bottom: 2px solid black;border-top: 2px solid black">
@@ -31,9 +32,9 @@
     {% for currency, sum in sum_list %}
     <tr>
         <td>Total {{ currency }}</td>
-        <td align="right">{{ sum.current | print_currency:currency }}</td>
-        <td align="right">{{ sum.prev | print_currency:currency }}</td>
-        <td align="right">{{ sum.diff | print_currency:currency }}</td>
+        <td align="right">{{ sum.current | print_currency:currency | safe }}</td>
+        <td align="right">{{ sum.prev | print_currency:currency | safe }}</td>
+        <td align="right">{{ sum.diff | print_currency:currency | safe }}</td>
         <td>{{ sum.ratio }}%</td>
     </tr>
     {% endfor %}

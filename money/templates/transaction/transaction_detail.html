@@ -4,6 +4,8 @@
 {% load money_tags %}
 <h1>Transaction {{ transaction.id }} Detail</h1>
 
+<a href="{% url 'money:transaction_update' transaction.id %}" class="btn btn-primary">Edit</a>
+
 {% with related=transaction.related_transaction %}
 <table class="table">
     <thead>
@@ -62,10 +64,10 @@
 
     <tr>
         <th>Amount</th>
-        <td>{{ transaction.amount | print_dollar }}</td>
+        <td>{{ transaction.amount | print_dollar | safe }}</td>
         {% if related %}
         <td>
-            {{ related.amount | print_dollar }}
+            {{ related.amount | print_dollar | safe }}
         </td>
         {% endif %}
     </tr>

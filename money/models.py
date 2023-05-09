@@ -229,3 +229,21 @@ class AmazonOrder(models.Model):
 
     def __str__(self):
         return f"{self.date.strftime('%Y-%m-%d')} {self.item}"
+
+    def get_absolute_url(self):
+        return reverse("money:amazon_order_detail", kwargs={"pk": self.pk})
+
+
+class Exchange(models.Model):
+    date = models.DateField()
+
+    from_transaction = models.ForeignKey(
+        Transaction, related_name="exchange_from", on_delete=models.CASCADE
+    )
+    to_transaction = models.ForeignKey(
+        Transaction, related_name="exchange_to", on_delete=models.CASCADE
+    )
+    from_amount = models.FloatField()
+    to_amount = models.FloatField()
+    from_currency = models.CharField(max_length=3, choices=CurrencyType.choices)
+    to_currency = models.CharField(max_length=3, choices=CurrencyType.choices)

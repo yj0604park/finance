@@ -12,7 +12,7 @@ def print_dollar(value):
 
     value = round(value, 2)
     if value < 0:
-        return f"-${abs(value):,.2f}"
+        return f"&#8209;${abs(value):,.2f}"
     return f"${abs(value):,.2f}"
 
 
@@ -23,7 +23,7 @@ def print_krw(value):
 
     value = round(value)
     if value < 0:
-        return f"-₩{abs(value):,.0f}"
+        return f"&#8209;₩{abs(value):,.0f}"
     return f"₩{abs(value):,.0f}"
 
 
@@ -54,5 +54,4 @@ def multiply(value, arg):
 
 @register.filter
 def get_value(value, arg):
-    print("value", value)
     return value[arg]

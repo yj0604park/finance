@@ -5,7 +5,10 @@
 
 <h1>Amazon order transactions</h1>
 
-<a href="{% url 'money:amazon_list' %}" class="btn btn-primary">Amazon Transactions</a>
+<div class="btn-group p-3" role="group" aria-label="Basic button group">
+    <a href="{% url 'money:amazon_list' %}" class="btn btn-primary">Amazon Transactions</a>
+    <a href="{% url 'money:amazon_order_create' %}" class="btn btn-secondary">Create New</a>
+</div>
 
 <table class="table table-striped">
     <thead>

@@ -21,17 +21,21 @@
 <h2>All Months</h2>
 {% endif %}
 
-<div class="btn-group p-3" role="group" aria-label="Basic button group">
-    <a href="{% url 'money:category_detail' category %}" class="btn btn-outline-secondary">All</a>
-
-    {% for month in months %}
+<div class="btn-group p-1" role="group">
+<a href="{% url 'money:category_detail' category %}" class="btn btn-outline-secondary">All</a>
+</div>
+<br/>
+{% for year in months %}
+<div class="btn-group p-1" role="group" aria-label="Basic button group">
+    {% for month in months|get_value:year %}
     <a href="?month={{ month }}" class="btn btn-outline-primary">{{ month }}</a>
     {% endfor %}
 </div>
+{% endfor %}
 
 {% if month_detail %}
 {% for currency in currencies %}
-{% if month_data|get_value:currency %}
+{% if data|get_value:currency %}
 <div>
     <canvas id="month_detail_{{ currency }}" width="250" height="500"></canvas>
 </div>
@@ -50,7 +54,7 @@
     <tr>
         <td>{{ month.account__currency }}</td>
         <td>{{ month.month.year }}년 {{ month.month.month }}월</td>
-        <td>{{ month.total_amount|print_currency:month.account__currency }}</td>
+        <td>{{ month.total_amount|print_currency:month.account__currency | safe }}</td>
     </tr>
     {% endfor %}
 </table>
@@ -60,7 +64,7 @@
 <h1>Retailer Summary</h1>
 
 {% for currency in currencies %}
-{% if month_data|get_value:currency %}
+{% if data|get_value:currency %}
 <div>
     <canvas id="myChart_{{ currency }}" width="500" height="500"></canvas>
 </div>
@@ -83,7 +87,7 @@
         {% else %}
         <td>None</td>
         {% endif %}
-        <td align="right">{{ retailer.amount__sum|print_currency:retailer.account__currency }}</td>
+        <td align="right">{{ retailer.amount__sum|print_currency:retailer.account__currency | safe }}</td>
     </tr>
     {% endfor %}
 </table>
@@ -95,7 +99,7 @@
 
 {% for currency in currencies %}
 <script>
-{% if data|get_value:currency %}
+    {% if data|get_value:currency %}
     const ctx_{{ currency }} = document.getElementById('myChart_{{ currency }}');
 
     new Chart(ctx_{{ currency }}, {
@@ -115,7 +119,7 @@
     {% endif %}
 
     {% if month_detail %}
-    {% if month_data|get_value:currency %}
+    {% if data|get_value:currency %}
     const month_{{ currency }}_ctx = document.getElementById('month_detail_{{ currency }}');
 
     new Chart(month_{{ currency }}_ctx, {
@@ -124,7 +128,7 @@
             labels: {{ month_label | get_value:currency | safe }},
         datasets: [{
             label: 'Amount',
-            data: {{ month_data | get_value:currency | safe }}
+            data: {{ data | get_value:currency | safe }}
                 }]
         },
         options: {

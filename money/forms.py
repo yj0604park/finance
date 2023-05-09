@@ -282,3 +282,16 @@ class StockForm(forms.ModelForm):
     class Meta:
         model = models.Stock
         fields = "__all__"
+
+
+class AmazonOrderForm(forms.ModelForm):
+    class Meta:
+        model = models.AmazonOrder
+        exclude = ("transaction",)
+        widgets = {
+            "date": DateTimePickerWidget(attrs={"class": "form-control"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["date"].initial = date.today()

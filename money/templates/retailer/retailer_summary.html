@@ -43,8 +43,8 @@
         </td>
         <td>{{ retailer.retailer__type }}</td>
         <td>{{ retailer.retailer__category }}</td>
-        <td>{{ retailer.minus_sum | print_currency:currency }}</td>
-        <td>{{ retailer.plus_sum | print_currency:currency }}</td>
+        <td>{{ retailer.minus_sum | print_currency:currency | safe }}</td>
+        <td>{{ retailer.plus_sum | print_currency:currency | safe }}</td>
     </tr>
     {% endfor %}
 </table>

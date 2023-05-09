@@ -1,14 +1,13 @@
-from collections import defaultdict
 from typing import Any, Dict
 
 from django import forms
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Max, Min, Prefetch, QuerySet, Sum
+from django.db.models import Max, Min, Prefetch, QuerySet, Sum, Count
 from django.db.models.query import QuerySet
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
-from django.views.generic import DetailView, ListView, View
+from django.views.generic import DetailView, ListView, UpdateView, View
 from django.views.generic.edit import CreateView
 
 from money import forms as money_forms
@@ -66,7 +65,7 @@ class TransactionCreateView(LoginRequiredMixin, CreateView):
         context = super().get_context_data(**kwargs)
         transaction = models.Transaction.objects.filter(
             account_id=self.kwargs["account_id"]
-        ).order_by("-date", "amount")
+        ).order_by("-date", "amount", "balance")
 
         if len(transaction) > 0:
             latest_transaction = transaction[0]
@@ -84,6 +83,15 @@ class TransactionCreateView(LoginRequiredMixin, CreateView):
 
 
 transaction_create_view = TransactionCreateView.as_view()
+
+
+class TransactionUpdateView(UpdateView):
+    template_name = "transaction/transaction_update.html"
+    model = models.Transaction
+    form_class = money_forms.TransactionForm
+
+
+transaction_update_view = TransactionUpdateView.as_view()
 
 
 class TransactionDetailView(LoginRequiredMixin, DetailView):
@@ -239,7 +247,7 @@ class ReviewTransactionView(LoginRequiredMixin, ListView):
         qs = super().get_queryset()
         qs = (
             qs.filter(reviewed=False)
-            .order_by("date", "amount")
+            .order_by("-date", "amount")
             .prefetch_related("account", "retailer")
         )
         return qs
@@ -259,7 +267,7 @@ class ReviewInternalTransactionView(LoginRequiredMixin, ListView):
         qs = (
             qs.filter(reviewed=False)
             .filter(type=models.TransactionCategory.TRANSFER)
-            .order_by("date", "amount")
+            .order_by("-date", "amount")
             .prefetch_related("account", "retailer", "related_transaction")
         )
 
@@ -351,7 +359,9 @@ class AmazonListView(LoginRequiredMixin, ListView):
                 .get_queryset()
                 .filter(retailer=amazon[0])
                 .prefetch_related("account")
-            ).order_by("-date")
+                .order_by("-date")
+                .annotate(order_count=Count("amazonorder"))
+            )
         else:
             return None
 
@@ -368,8 +378,46 @@ class AmazonOrderListView(LoginRequiredMixin, ListView):
             super()
             .get_queryset()
             .order_by("date", "id")
-            .prefetch_related("transaction")
+            .prefetch_related(
+                "transaction",
+                Prefetch(
+                    "transaction__account",
+                    queryset=models.Account.objects.all(),
+                ),
+                Prefetch(
+                    "transaction__retailer",
+                    queryset=models.Retailer.objects.all(),
+                ),
+            )
         )
 
 
 amazon_order_list_view = AmazonOrderListView.as_view()
+
+
+class AmazonOrderCreateView(LoginRequiredMixin, CreateView):
+    template_name = "transaction/amazon_create.html"
+    model = models.AmazonOrder
+    form_class = money_forms.AmazonOrderForm
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        prev_order = models.AmazonOrder.objects.last()
+
+        if prev_order:
+            context["form"].initial["date"] = prev_order.date
+
+        context["prev_order"] = prev_order
+
+        return context
+
+
+amazon_order_create_view = AmazonOrderCreateView.as_view()
+
+
+class AmazonOrderDetailView(LoginRequiredMixin, DetailView):
+    template_name = "transaction/amazon_order_detail.html"
+    model = models.AmazonOrder
+
+
+amazon_order_detail_view = AmazonOrderDetailView.as_view()
