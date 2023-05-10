@@ -1,0 +1,43 @@
+{% load money_tags %}
+
+<script>
+    {% if data|get_value:currency %}
+    const ctx_{{ currency }} = document.getElementById('myChart_{{ currency }}');
+
+    new Chart(ctx_{{ currency }}, {
+        type: 'doughnut',
+        data: {
+            labels: {{ label | get_value:currency | safe }},
+        datasets: [{
+            label: 'Category',
+            data: {{ data | get_value:currency | safe }}
+                }]
+        },
+        options: {
+        maintainAspectRatio: false,
+        responsive: true
+    }
+    });
+    {% endif %}
+
+    {% if month_detail %}
+    {% if data|get_value:currency %}
+    const month_{{ currency }}_ctx = document.getElementById('month_detail_{{ currency }}');
+
+    new Chart(month_{{ currency }}_ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ month_label | get_value:currency | safe }},
+        datasets: [{
+            label: 'Amount',
+            data: {{ data | get_value:currency | safe }}
+                }]
+        },
+        options: {
+        maintainAspectRatio: false,
+        responsive: true
+    }
+    });
+    {% endif %}
+    {% endif %}
+</script>

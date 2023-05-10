@@ -1,0 +1,9 @@
+{% load money_tags %}
+
+{% for year in months %}
+<div class="btn-group p-1" role="group" aria-label="Basic button group">
+    {% for month in months|get_value:year %}
+    <a href="?month={{ month }}" class="btn btn-outline-primary">{{ month }}</a>
+    {% endfor %}
+</div>
+{% endfor %}

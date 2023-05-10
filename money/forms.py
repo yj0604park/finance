@@ -167,6 +167,47 @@ class TransactionForm(forms.ModelForm):
         )
 
 
+class TransactionUpdateForm(TransactionForm):
+    class Meta:
+        model = models.Transaction
+        fields = [
+            "account",
+            "retailer",
+            "type",
+            "date",
+            "amount",
+            "is_internal",
+            "requires_detail",
+            "note",
+            "reviewed",
+        ]
+
+        widgets = TransactionForm.Meta.widgets
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Row(
+                Column("account", css_class="form-group col-md-6 mb-0"),
+                Column("retailer", css_class="form-group col-md-6 mb-0"),
+            ),
+            Row(
+                Column("type", css_class="form-group col-md-4 mb-0"),
+                Column("date", css_class="form-group col-md-4 mb-0"),
+                Column("amount", css_class="form-group col-md-4 mb-0"),
+            ),
+            Row(
+                Column("is_internal", css_class="form-group col-md-4 mb-0"),
+                Column("requires_detail", css_class="form-group col-md-4 mb-0"),
+                Column("reviewed", css_class="form-group col-md-4 mb-0"),
+            ),
+            Column("note", css_class="form-group col-md-12"),
+            Submit("submit", "Submit"),
+        )
+
+
 class StockTransactionForm(forms.ModelForm):
     class Meta:
         model = models.StockTransaction

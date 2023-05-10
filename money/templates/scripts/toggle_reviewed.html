@@ -1,0 +1,30 @@
+<script>
+    function updateBalanceButton(buttonElement) {
+
+        buttonElement.addEventListener('click', () => {
+            fetch(buttonElement.dataset.arg, {
+                method: "GET"
+            })
+                .then(response => response.json())
+                .then(data => {
+                    // handle response
+                    buttonElement.innerHTML = data.success ? "Success" : "Error";
+                })
+                .catch(error => {
+                    // handle error
+                    console.error(error);
+                    buttonElement.innerHTML = "Error";
+                })
+                .finally(() => {
+                    buttonElement.disabled = true;
+                })
+        }
+        )
+    }
+
+    document.querySelectorAll(".toggle-reviewed-button").forEach(
+        (buttonElement) => {
+            updateBalanceButton(buttonElement)
+        }
+    );
+</script>

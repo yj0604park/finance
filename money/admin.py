@@ -10,7 +10,8 @@ class BankAdmin(admin.ModelAdmin):
 
 @admin.register(models.Account)
 class AccountAdmin(admin.ModelAdmin):
-    list_display = ["id", "name", "bank", "currency"]
+    list_display = ["id", "name", "bank", "currency", "is_active"]
+    list_filter = ["is_active"]
 
 
 class TransactionAdminForm(forms.Form):

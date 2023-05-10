@@ -1,10 +1,9 @@
 import datetime
+from collections import defaultdict
 
 from dateutil.rrule import MONTHLY, rrule
-from django.contrib.auth.decorators import login_required
-from django.db.models import Count, Q
-from django.http import JsonResponse
-from collections import defaultdict
+from django.db.models import Max, Q, Sum
+from django.db.models.functions import TruncMonth
 
 from money import models
 
@@ -37,93 +36,70 @@ def get_transaction_chart_data(
     return chart_dict
 
 
-@login_required
-def update_balance(request, account_id):
-    account = models.Account.objects.get(pk=account_id)
-    transactions = account.transaction_set.all().order_by("date", "-amount")
+def filter_month(request, query_set):
+    # month should given as YYYY-mm
+    selected_month = request.GET.get("month")
 
-    sum = 0
-    for transaction in transactions:
-        sum += transaction.amount
-        transaction.balance = sum
-        transaction.save()
-        account.last_transaction = transaction.date
+    if selected_month:
+        selected_month_split = selected_month.split("-")
 
-    account.amount = sum
-    account.last_update = datetime.datetime.now()
-    account.save()
-
-    return JsonResponse({"success": True})
-
-
-@login_required
-def update_retailer_type(request):
-    result = (
-        models.Transaction.objects.values("type", "retailer__id")
-        .annotate(count=Count("type"))
-        .order_by("retailer__id", "count")
-    )
-    for retailer in result:
-        if retailer["retailer__id"]:
-            retailer_model = models.Retailer.objects.get(pk=retailer["retailer__id"])
-            retailer_model.category = retailer["type"]
-            retailer_model.type = models.RetailerType.ETC
-            retailer_model.save()
-
-    return JsonResponse({"success": True})
-
-
-@login_required
-def get_retailer_type(request, retailer_id):
-    retailer = models.Retailer.objects.get(pk=retailer_id)
-    return JsonResponse({"retailer_category": retailer.category})
-
-
-@login_required
-def update_related_transaction(request):
-    if request.method == "POST":
-        # Get the form data from the request.POST dictionary
-        updated = {}
-        for item, value in request.POST.items():
-            if item.startswith("name_") and value:
-                source_id = int(item[5:])
-                target_id = int(value)
-
-                source = models.Transaction.objects.get(id=source_id)
-                target = models.Transaction.objects.get(id=target_id)
-
-                if (
-                    source.related_transaction is None
-                    and target.related_transaction is None
-                    and source.is_internal
-                    and target.is_internal
-                    and source_id != target_id
-                ):
-                    if abs(source.amount + target.amount) < 0.01:
-                        source.related_transaction = target
-                        target.related_transaction = source
-
-                        target.save()
-                        source.save()
-                        updated[item] = value
-        return JsonResponse(updated)
-
-
-@login_required
-def set_detail_required(request):
-    objects = (
-        models.Transaction.objects.filter(
-            Q(type=models.TransactionCategory.DAILY_NECESSITY)
-            | Q(type=models.TransactionCategory.GROCERY)
+        query_set = query_set.filter(
+            date__year=selected_month_split[0], date__month=selected_month_split[1]
         )
-        .filter(reviewed=False)
-        .filter(requires_detail=False)
-    )
+    return query_set
 
-    for obj in objects:
-        obj.requires_detail = True
-        obj.save()
-    return JsonResponse({"success": True})
+
+def update_month_info(request, context, start_date, end_date):
+    # update context, selected month info and return query set
+
+    selected_month = request.GET.get("month")
+
+    if selected_month:
+        selected_month_split = selected_month.split("-")
+
+        context["selected_month"] = (
+            selected_month,
+            f"{selected_month_split[0]}년 {selected_month_split[1]}월",
+        )
+
+    context["months"] = get_month_list(start_date, end_date)
+
+
+def update_month_summary(request, context, query_set):
+    # get monthly summary of transactions if month is not specified
+    selected_month = request.GET.get("month")
+    if not selected_month:
+        month_detail = (
+            query_set.annotate(month=TruncMonth("date"))
+            .values("month", "account__currency")
+            .annotate(total_amount=Sum("amount"))
+            .order_by("month")
+        )
+
+        month_label = {k[0]: [] for k in models.CurrencyType.choices}
+        month_data = {k[0]: [] for k in models.CurrencyType.choices}
+
+        for month in month_detail:
+            month_label[month["account__currency"]].append(
+                f"{month['month'].year}년 {month['month'].month}월"
+            )
+            month_data[month["account__currency"]].append(month["total_amount"])
+
+        context["month_detail"] = month_detail
+        context["month_label"] = month_label
+        context["month_data"] = month_data
+
+
+def update_retailer_summary(context, retailer_list):
+    label = {k[0]: [] for k in models.CurrencyType.choices}
+    data = {k[0]: [] for k in models.CurrencyType.choices}
+
+    for retailer in retailer_list:
+        label[retailer["account__currency"]].append(str(retailer["retailer__name"]))
+        data[retailer["account__currency"]].append(retailer["amount__sum"])
+
+    context["label"] = label
+    context["data"] = data
 
 
 def get_month_list(start_date, end_date):
@@ -138,10 +114,56 @@ def get_month_list(start_date, end_date):
     return month_per_year
 
 
-@login_required
-def toggle_reviewed(request, transaction_id):
-    transaction = models.Transaction.objects.get(pk=transaction_id)
-    transaction.reviewed = not transaction.reviewed
-    transaction.save()
+def get_transaction_summary(account_list):
+    sum_dict = {k[0]: {"current": 0, "prev": 0} for k in models.CurrencyType.choices}
 
-    return JsonResponse({"success": True, "transaction_id": transaction_id})
+    currency_map = {}
+    for account in account_list:
+        currency_map[account.id] = account.currency
+        sum_dict[account.currency]["current"] += account.amount
+
+    # compare with last month
+    last_prev_month_day = datetime.date.today().replace(day=1) - datetime.timedelta(
+        days=1
+    )
+
+    prev_transaction_list_per_account = (
+        models.Transaction.objects.filter(
+            Q(
+                date__month__lte=last_prev_month_day.month,
+                date__year=last_prev_month_day.year,
+            )
+            | Q(date__year__lt=last_prev_month_day.year)
+        )
+        .filter(account__id__in=currency_map.keys())
+        .values("account")
+        .annotate(
+            last_date=Max("date"),
+        )
+    )
+
+    for account in prev_transaction_list_per_account:
+        balance = (
+            models.Transaction.objects.filter(account__id=account["account"])
+            .filter(date=account["last_date"])
+            .order_by("-balance")[0]
+            .balance
+        )
+
+        if balance:
+            sum_dict[currency_map[account["account"]]]["prev"] += balance
+
+    sum_list = [(k, v) for k, v in sum_dict.items()]
+    for _, v in sum_list:
+        v["diff"] = v["current"] - v["prev"]
+        v["ratio"] = round(v["diff"] / (v["prev"] if v["prev"] else 1) * 100, 2)
+    sum_list.sort()
+
+    return sum_list
+
+
+def filter_by_get(request, query_set, get_key_name, query_key_name):
+    filter_value = request.GET.get(get_key_name)
+    if filter_value:
+        query_set = query_set.filter(**{query_key_name: filter_value})
+    return query_set

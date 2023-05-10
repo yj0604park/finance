@@ -1,0 +1,9 @@
+<div class="btn-group p-3" role="group" aria-label="Basic button group">
+    {% for option in option_list %}
+    {% if add_link %}
+    <a class="btn btn-outline-primary" href="{% url link option.0 %}">{{ option.1 }}</a>
+    {% else %}
+    <a class="btn btn-outline-primary" href="?{{ option_name }}={{ option.0 }}">{{ option.1 }}</a>
+    {% endif %}
+    {% endfor %}
+</div>

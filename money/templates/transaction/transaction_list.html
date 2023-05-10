@@ -1,28 +1,14 @@
 {% extends "base.html" %}
 
 {% block content %}
+<h1>Transactions</h1>
 
-<a href="{% url 'money:review_transaction' %}" class="btn btn-success">Review Transactions</a>
+{% include "shared/month_selector.html" %}
 
-<a href="{% url 'money:review_internal_transaction' %}" class="btn btn-success">Review Internal Transactions</a>
-
-<a href="{% url 'money:review_detail_transaction' %}" class="btn btn-success">Review Detail Transactions</a>
-
-<h1>USD Chart</h1>
-<div>
-    <canvas id="USDChart"></canvas>
-</div>
-
-<h1>KRW Chart</h1>
-<div>
-    <canvas id="KRWChart"></canvas>
-</div>
-
-{% with data=usd_data chartId="USDChart" %}
-{% include 'transaction/transaction_chart.html' %}
+{% with print_flags=True %}
+{% include 'transaction/transaction_table.html' %}
 {% endwith %}
 
-{% with data=krw_data chartId="KRWChart" %}
-{% include 'transaction/transaction_chart.html' %}
-{% endwith %}
+{% include 'shared/simple_pagination.html' %}
+
 {% endblock %}

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+<a href="{% url 'money:transaction_list' %}" class="btn btn-primary">Transaction List</a>
+
+<div class="btn-group p-3" role="group" aria-label="Basic button group">
+    <a href="{% url 'money:review_transaction' %}" class="btn btn-outline-success">Review Transactions</a>
+
+    <a href="{% url 'money:review_internal_transaction' %}" class="btn btn-outline-success">Review Internal
+        Transactions</a>
+
+    <a href="{% url 'money:review_detail_transaction' %}" class="btn btn-outline-success">Review Detail Transactions</a>
+
+</div>
+
+<h1>USD Chart</h1>
+<div>
+    <canvas id="USDChart"></canvas>
+</div>
+
+<h1>KRW Chart</h1>
+<div>
+    <canvas id="KRWChart"></canvas>
+</div>
+
+{% with data=usd_data chartId="USDChart" %}
+{% include 'transaction/transaction_chart.html' %}
+{% endwith %}
+
+{% with data=krw_data chartId="KRWChart" %}
+{% include 'transaction/transaction_chart.html' %}
+{% endwith %}
+{% endblock %}

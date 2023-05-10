@@ -1,4 +1,3 @@
-import datetime
 from typing import Any, Dict
 
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -14,7 +13,6 @@ from django.db.models import (
     QuerySet,
     Sum,
     When,
-    Q,
 )
 from django.db.models.functions import TruncMonth
 from django.db.models.query import QuerySet
@@ -33,58 +31,22 @@ class HomeView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        context["account_list"] = (
-            models.Account.objects.all()
+
+        account_list = (
+            models.Account.objects.filter(is_active=True)
             .prefetch_related("bank")
-            .order_by("currency", "bank", "last_transaction")
+            .order_by("currency", "bank", "last_transaction", "amount")
             .annotate(
                 null_count=Count(Case(When(transaction__balance__isnull=True, then=1)))
             )
         )
-
-        sum_dict = {
-            k[0]: {"current": 0, "prev": 0} for k in models.CurrencyType.choices
-        }
-
-        currency_map = {}
-        for account in context["account_list"]:
-            currency_map[account.id] = account.currency
-            sum_dict[account.currency]["current"] += account.amount
-
-        # compare with last month
-        last_prev_month_day = datetime.date.today().replace(day=1) - datetime.timedelta(
-            days=1
+        account_list = helper.filter_by_get(
+            self.request, account_list, "account_type", "type"
         )
 
-        prev_transaction_list_per_account = (
-            models.Transaction.objects.filter(
-                date__month__lte=last_prev_month_day.month,
-                date__year__lte=last_prev_month_day.year,
-            )
-            .values("account")
-            .annotate(
-                last_date=Max("date"),
-            )
-        )
-
-        for account in prev_transaction_list_per_account:
-            balance = (
-                models.Transaction.objects.filter(account__id=account["account"])
-                .filter(date=account["last_date"])
-                .order_by("-balance")[0]
-                .balance
-            )
-
-            if balance:
-                sum_dict[currency_map[account["account"]]]["prev"] += balance
-
-        sum_list = [(k, v) for k, v in sum_dict.items()]
-        for _, v in sum_list:
-            v["diff"] = v["current"] - v["prev"]
-            v["ratio"] = round(v["diff"] / v["prev"] * 100, 2)
-        sum_list.sort()
-
-        context["sum_list"] = sum_list
+        context["account_list"] = account_list
+        context["sum_list"] = helper.get_transaction_summary(account_list)
+        context["option_list"] = models.AccountType.choices
 
         return context
 
@@ -96,6 +58,14 @@ home_view = HomeView.as_view()
 class BankDetailView(LoginRequiredMixin, DetailView):
     model = models.Bank
     template_name = "bank/bank_detail.html"
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["account_list"] = models.Account.objects.filter(
+            bank__id=self.kwargs["pk"], is_active=True
+        ).order_by("currency", "last_transaction", "amount")
+
+        return context
 
 
 bank_detail_view = BankDetailView.as_view()
@@ -116,7 +86,7 @@ bank_list_view = BankListView.as_view()
 class AccountDetailView(LoginRequiredMixin, DetailView):
     model = models.Account
     template_name = "account/account_detail.html"
-    objects_per_page = 100
+    objects_per_page = 25
 
     def get_queryset(self):
         qs = (
@@ -151,15 +121,9 @@ class AccountDetailView(LoginRequiredMixin, DetailView):
             context["additional_get_query"] += f"&reviewed={filter_reviewed}"
 
         paginator = Paginator(ordered_transaction_set, self.objects_per_page)
-
-        # get the current page number from the request query parameters
         page_number = self.request.GET.get("page")
-
-        # get the Page object for the current page number
         page = paginator.get_page(page_number)
-
-        # pass the Page object to the template context
-        context["page"] = page
+        context["page_obj"] = page
 
         context["data"] = helper.get_transaction_chart_data(
             ordered_transaction_set,
@@ -212,46 +176,26 @@ class CategoryDetailView(LoginRequiredMixin, View):
         context = {}
         category_type = kwargs["category_type"]
 
-        selected_month = request.GET.get("month")
-
         transaction_list = (
             models.Transaction.objects.filter(type=category_type)
             .prefetch_related("retailer", "account")
             .order_by("date", "amount")
         )
+        transaction_list = helper.filter_month(request, transaction_list)
 
-        if selected_month:
-            selected_month_split = selected_month.split("-")
-            context["selected_month"] = (
-                selected_month,
-                f"{selected_month_split[0]}년 {selected_month_split[1]}월",
-            )
-            transaction_list = transaction_list.filter(
-                date__year=selected_month_split[0]
-            ).filter(date__month=selected_month_split[1])
-        else:
-            month_detail = (
-                transaction_list.annotate(month=TruncMonth("date"))
-                .values("month", "account__currency")
-                .annotate(total_amount=Sum("amount"))
-                .order_by("month")
-            )
+        date_range = models.Transaction.objects.aggregate(Min("date"), Max("date"))
+        helper.update_month_info(
+            request,
+            context,
+            date_range["date__min"],
+            date_range["date__max"],
+        )
 
-            month_label = {k[0]: [] for k in models.CurrencyType.choices}
-            month_data = {k[0]: [] for k in models.CurrencyType.choices}
-
-            for month in month_detail:
-                month_label[month["account__currency"]].append(
-                    f"{month['month'].year}년 {month['month'].month}월"
-                )
-                month_data[month["account__currency"]].append(month["total_amount"])
-
-            context["month_detail"] = month_detail
-            context["month_label"] = month_label
-            context["month_data"] = month_data
+        helper.update_month_summary(request, context, transaction_list)
 
         context["category"] = category_type
         context["transactions"] = transaction_list
+        context["unreviewd"] = transaction_list.filter(reviewed=False)
 
         context["retailer_detail"] = (
             transaction_list.values(
@@ -261,21 +205,9 @@ class CategoryDetailView(LoginRequiredMixin, View):
             .order_by("amount__sum")
         )
 
-        label = {k[0]: [] for k in models.CurrencyType.choices}
-        data = {k[0]: [] for k in models.CurrencyType.choices}
+        helper.update_retailer_summary(context, context["retailer_detail"])
 
-        for retailer in context["retailer_detail"]:
-            label[retailer["account__currency"]].append(str(retailer["retailer__name"]))
-            data[retailer["account__currency"]].append(retailer["amount__sum"])
-
-        context["label"] = label
-        context["data"] = data
         context["category_list"] = models.TransactionCategory.choices
-
-        date_range = models.Transaction.objects.aggregate(Min("date"), Max("date"))
-        context["months"] = helper.get_month_list(
-            date_range["date__min"], date_range["date__max"]
-        )
         context["currencies"] = [k[0] for k in models.CurrencyType.choices]
 
         return render(request, self.template_name, context)
@@ -465,3 +397,8 @@ class StockDetailView(LoginRequiredMixin, DetailView):
 
 
 stock_detail_view = StockDetailView.as_view()
+
+
+class ExchangeListView(LoginRequiredMixin, ListView):
+    template_name = "exchange/exchange_list.html"
+    model = models.Exchange

@@ -18,6 +18,34 @@ from money import helper, models
 class TransactionListView(LoginRequiredMixin, ListView):
     model = models.Transaction
     template_name = "transaction/transaction_list.html"
+    paginate_by = 20
+
+    def get_queryset(self) -> QuerySet[Any]:
+        qs = super().get_queryset().order_by("-date")
+        qs = helper.filter_month(self.request, qs)
+
+        return qs
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+
+        date_range = models.Transaction.objects.aggregate(Min("date"), Max("date"))
+        helper.update_month_info(
+            self.request,
+            context,
+            date_range["date__min"],
+            date_range["date__max"],
+        )
+
+        return context
+
+
+transaction_list_view = TransactionListView.as_view()
+
+
+class TransactionChartListView(LoginRequiredMixin, ListView):
+    model = models.Transaction
+    template_name = "transaction/transaction_chart_list.html"
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
@@ -39,7 +67,7 @@ class TransactionListView(LoginRequiredMixin, ListView):
         return context
 
 
-transaction_list_view = TransactionListView.as_view()
+transaction_chart_list_view = TransactionChartListView.as_view()
 
 
 class TransactionCreateView(LoginRequiredMixin, CreateView):
@@ -88,7 +116,7 @@ transaction_create_view = TransactionCreateView.as_view()
 class TransactionUpdateView(UpdateView):
     template_name = "transaction/transaction_update.html"
     model = models.Transaction
-    form_class = money_forms.TransactionForm
+    form_class = money_forms.TransactionUpdateForm
 
 
 transaction_update_view = TransactionUpdateView.as_view()
@@ -185,25 +213,22 @@ class TransactionCategoryView(LoginRequiredMixin, View):
     template_name = "dashboard/category.html"
 
     def get(self, request, *args, **kwargs):
-        selected_month = request.GET.get("month")
-
-        query = models.Transaction.objects.values("type", "account__currency")
+        query_set = models.Transaction.objects.values("type", "account__currency")
+        query_set = helper.filter_month(request, query_set)
 
         context = {}
 
-        if selected_month:
-            selected_month_split = selected_month.split("-")
-            context["selected_month"] = (
-                selected_month,
-                f"{selected_month_split[0]}년 {selected_month_split[1]}월",
-            )
-            query = query.filter(date__year=selected_month_split[0]).filter(
-                date__month=selected_month_split[1]
-            )
-
-        context["summarization"] = query.annotate(total_amount=-Sum("amount")).order_by(
-            "account__currency", "-total_amount"
+        date_range = models.Transaction.objects.aggregate(Min("date"), Max("date"))
+        helper.update_month_info(
+            request,
+            context,
+            date_range["date__min"],
+            date_range["date__max"],
         )
+
+        context["summarization"] = query_set.annotate(
+            total_amount=-Sum("amount")
+        ).order_by("account__currency", "-total_amount")
 
         label_per_currency = {k[0]: [] for k in models.CurrencyType.choices}
         data_per_currency = {k[0]: [] for k in models.CurrencyType.choices}
@@ -224,11 +249,6 @@ class TransactionCategoryView(LoginRequiredMixin, View):
         context["data"] = data_per_currency
         context["income"] = sorted([(k, v) for k, v in income_per_currency.items()])
         context["spent"] = sorted([(k, v) for k, v in spent_per_currency.items()])
-
-        date_range = models.Transaction.objects.aggregate(Min("date"), Max("date"))
-        context["months"] = helper.get_month_list(
-            date_range["date__min"], date_range["date__max"]
-        )
         context["currencies"] = [k[0] for k in models.CurrencyType.choices]
 
         return render(request, self.template_name, context)
@@ -261,6 +281,8 @@ class ReviewInternalTransactionView(LoginRequiredMixin, ListView):
     template_name = "review/review_internal.html"
     paginate_by = 20
 
+    INTERNAL_ONLY_FLAG = "internal_only"
+
     def get_queryset(self) -> QuerySet[Any]:
         qs = super().get_queryset()
 
@@ -271,15 +293,15 @@ class ReviewInternalTransactionView(LoginRequiredMixin, ListView):
             .prefetch_related("account", "retailer", "related_transaction")
         )
 
-        if self.request.GET.get("internal_only", False):
+        if self.request.GET.get(self.INTERNAL_ONLY_FLAG, False):
             qs = qs.filter(is_internal=True)
 
         return qs
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        if self.request.GET.get("internal_only", False):
-            context["internal_only"] = True
+        if self.request.GET.get(self.INTERNAL_ONLY_FLAG, False):
+            context["additional_get_query"] = f"&{self.INTERNAL_ONLY_FLAG}=True"
 
         return context
 

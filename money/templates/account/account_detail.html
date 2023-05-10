@@ -10,7 +10,8 @@
     <canvas id="myChart"></canvas>
 </div>
 
-<button type="button" class="btn btn-secondary" id="update_button">
+<button type="button" class="btn btn-secondary update-balance-button"
+    data-arg="{% url 'money:update_balance' account.id %}">
     Update Balance
 </button>
 <a type="button" class="btn btn-secondary" href="{% url 'money:transaction_create' account.id %}">
@@ -23,53 +24,17 @@
 </a>
 {% endif %}
 
-{% with transaction_list=page.object_list print_flags=True print_balance=True ignore_account=True %}
+{% with transaction_list=page_obj.object_list print_flags=True print_balance=True ignore_account=True print_related=True %}
 {% include 'transaction/transaction_table.html' %}
 {% endwith %}
 
-{% if page.has_previous %}
-<a href="?page=1{{ additional_get_query }}">&laquo; first</a>
-<a href="?page={{ page.previous_page_number }}{{ additional_get_query }}">&lsaquo; prev</a>
-{% endif %}
-{% for i in page.paginator.page_range %}
-{% if page.number == i %}
-<strong>{{ i }}</strong>
-{% else %}
-<a href="?page={{ i }}{{ additional_get_query }}">{{ i }}</a>
-{% endif %}
-{% endfor %}
-{% if page.has_next %}
-<a href="?page={{ page.next_page_number }}{{ additional_get_query }}">next &rsaquo;</a>
-<a href="?page={{ page.paginator.num_pages }}{{ additional_get_query }}">last &raquo;</a>
-{% endif %}
-
+{% include 'shared/pagination.html' %}
 
 {% with chartId="myChart" %}
 {% include 'transaction/transaction_chart.html' %}
 {% endwith %}
 
-<script>
-    const myButton = document.getElementById("update_button");
-
-    myButton.addEventListener("click", function () {
-        fetch("{% url 'money:update_balance' account.id %}", {
-            method: "GET"
-        })
-            .then(response => response.json())
-            .then(data => {
-                // handle response
-                myButton.innerHTML = data.success ? "Success" : "Error";
-            })
-            .catch(error => {
-                // handle error
-                console.error(error);
-                myButton.innerHTML = "Error";
-            })
-            .finally(() => {
-                myButton.disabled = true;
-            })
-    });
-
-</script>
+{% include 'scripts/toggle_reviewed.html' %}
+{% include 'scripts/update_balance.html' %}
 
 {% endblock %}

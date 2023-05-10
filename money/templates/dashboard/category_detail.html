@@ -22,16 +22,10 @@
 {% endif %}
 
 <div class="btn-group p-1" role="group">
-<a href="{% url 'money:category_detail' category %}" class="btn btn-outline-secondary">All</a>
+    <a href="{% url 'money:category_detail' category %}" class="btn btn-outline-secondary">All</a>
 </div>
-<br/>
-{% for year in months %}
-<div class="btn-group p-1" role="group" aria-label="Basic button group">
-    {% for month in months|get_value:year %}
-    <a href="?month={{ month }}" class="btn btn-outline-primary">{{ month }}</a>
-    {% endfor %}
-</div>
-{% endfor %}
+
+{% include "shared/month_selector.html" %}
 
 {% if month_detail %}
 {% for currency in currencies %}
@@ -92,52 +86,14 @@
     {% endfor %}
 </table>
 
-<h1>Transactions</h1>
-{% with transaction_list=transactions print_flags=True %}
+<h1>Unreviewed Transactions</h1>
+{% with transaction_list=unreviewd print_flags=True %}
 {% include 'transaction/transaction_table.html' %}
 {% endwith %}
 
 {% for currency in currencies %}
-<script>
-    {% if data|get_value:currency %}
-    const ctx_{{ currency }} = document.getElementById('myChart_{{ currency }}');
-
-    new Chart(ctx_{{ currency }}, {
-        type: 'doughnut',
-        data: {
-            labels: {{ label | get_value:currency | safe }},
-        datasets: [{
-            label: 'Category',
-            data: {{ data | get_value:currency | safe }}
-                }]
-        },
-        options: {
-        maintainAspectRatio: false,
-        responsive: true
-    }
-    });
-    {% endif %}
-
-    {% if month_detail %}
-    {% if data|get_value:currency %}
-    const month_{{ currency }}_ctx = document.getElementById('month_detail_{{ currency }}');
-
-    new Chart(month_{{ currency }}_ctx, {
-        type: 'bar',
-        data: {
-            labels: {{ month_label | get_value:currency | safe }},
-        datasets: [{
-            label: 'Amount',
-            data: {{ data | get_value:currency | safe }}
-                }]
-        },
-        options: {
-        maintainAspectRatio: false,
-        responsive: true
-    }
-    });
-    {% endif %}
-    {% endif %}
-</script>
+{% include 'scripts/category_chart.html' %}
 {% endfor %}
+
+{% include 'scripts/toggle_reviewed.html' %}
 {% endblock %}

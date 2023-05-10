@@ -10,13 +10,11 @@
 {% endif %}
 
 
-<div class="btn-group p-3" role="group" aria-label="Basic button group">
-    <a href="{% url 'money:transaction_category' %}" class="btn btn-outline-secondary">All</a>
+<a href="{% url 'money:transaction_category' %}" class="btn btn-outline-secondary">All</a>
 
-    {% for month in months %}
-    <a href="?month={{ month }}" class="btn btn-outline-primary">{{ month }}</a>
-    {% endfor %}
-</div>
+<br />
+
+{% include "shared/month_selector.html" %}
 
 <h2>Income</h2>
 <table class="table table-hover">

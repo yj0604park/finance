@@ -1,0 +1,5 @@
+<div class="btn-group p-3" role="group" aria-label="Basic button group">
+    {% for cat in category_list %}
+    <a class="btn btn-outline-primary" href="{% url 'money:category_detail' cat.0 %}">{{ cat.1 }}</a>
+    {% endfor %}
+</div>

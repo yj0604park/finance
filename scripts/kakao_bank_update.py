@@ -1,5 +1,5 @@
 import json
-from money import models
+from money import models, choices
 import re
 
 
@@ -73,4 +73,13 @@ def run():
             transaction.type = models.TransactionCategory.INTEREST
             transaction.retailer = kakao_retailer
             transaction.reviewed = True
+            transaction.save()
+
+        if (
+            data["note"] == "계좌간자동이체"
+            or ("적금" in retailer and "신규" in retailer)
+            or (retailer == "박윤재" and data["note"] == "일반이체")
+        ):
+            transaction.type = choices.TransactionCategory.TRANSFER
+            transaction.is_internal = True
             transaction.save()

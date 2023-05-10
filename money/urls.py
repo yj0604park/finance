@@ -1,7 +1,7 @@
 from django.urls import path
 
-from money import helper, views
-from money.view import transaction_view
+from money import views
+from money.view import transaction_view, view_functions
 
 app_name = "money"
 
@@ -42,6 +42,11 @@ urlpatterns = [
         "transaction_list",
         view=transaction_view.transaction_list_view,
         name="transaction_list",
+    ),
+    path(
+        "transaction_chart_list",
+        view=transaction_view.transaction_chart_list_view,
+        name="transaction_chart_list",
     ),
     path(
         "transaction_create/<int:account_id>",
@@ -113,32 +118,32 @@ urlpatterns = [
     ),
     path(
         "update_balance/<int:account_id>",
-        view=helper.update_balance,
+        view=view_functions.update_balance,
         name="update_balance",
     ),
     path(
         "set_detail_required",
-        view=helper.set_detail_required,
+        view=view_functions.set_detail_required,
         name="set_detail_required",
     ),
     path(
         "update_related_trasaction",
-        view=helper.update_related_transaction,
+        view=view_functions.update_related_transaction,
         name="update_related_transaction",
     ),
     path(
         "update_retailer_type",
-        view=helper.update_retailer_type,
+        view=view_functions.update_retailer_type,
         name="update_retailer_type",
     ),
     path(
         "get_retailer_type/<int:retailer_id>",
-        view=helper.get_retailer_type,
+        view=view_functions.get_retailer_type,
         name="get_retailer_type",
     ),
     path(
         "transaction/toggle_reviewed/<int:transaction_id>",
-        view=helper.toggle_reviewed,
+        view=view_functions.toggle_reviewed,
         name="toggle_reviewed",
     ),
 ]

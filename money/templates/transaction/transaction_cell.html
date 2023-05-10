@@ -26,21 +26,29 @@
 {% endif %}
 <td>{{ transaction.note }}</td>
 
+{% if print_related %}
+<td>{{ transaction.related_transaction.id }}</td>
+{% endif %}
+
 {% if print_flags %}
 <td {% if transaction.is_internal %}class="table-info" {% endif %}>{{ transaction.is_internal }}</td>
 <td {% if transaction.requires_detail %}class="table-warning" {% endif %}>
     {{ transaction.requires_detail }}
 </td>
-<td {% if not transaction.reviewed %}class="table-danger" {% endif %}><a href="" class="btn">
-        {{ transaction.reviewed }}</a></td>
+<td {% if not transaction.reviewed %}class="table-danger" {% endif %}>
+    <a data-arg="{% url 'money:toggle_reviewed' transaction.id %}"
+        class="btn btn-outline-primary toggle-reviewed-button">
+        {{ transaction.reviewed }}
+    </a>
+</td>
 {% endif %}
 
 {% if add_detail %}
 <td>
     {% if transaction.requires_detail and not transaction.reviewed %}
-    <a class="btn btn-primary" href="{% url 'money:transaction_detail_create' transaction.id %}">
+    <button class="btn btn-primary" href="{% url 'money:transaction_detail_create' transaction.id %}">
         Add Details
-    </a>
+    </button>
     {% elif transaction.reviewed %}
     Detail Added
     {% endif %}

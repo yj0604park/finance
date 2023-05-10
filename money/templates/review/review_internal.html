@@ -5,7 +5,7 @@
 
 <form method="POST" id="my-form">
     {% csrf_token %}
-
+    <button type="submit" class="btn btn-primary" id="id_submit">Update Link</button>
     <table class="table table-striped">
         <thead>
             <tr>
@@ -45,42 +45,9 @@
             {% endfor %}
         </tbody>
     </table>
-    <button type="submit" class="btn btn-primary" id="id_submit">Update Link</button>
 </form>
 
-<div class="pagination">
-    <span class="step-links">
-        {% if internal_only %}
-        {% if page_obj.has_previous %}
-        <a href="?page=1&internal_only=True">&laquo; first</a>
-        <a href="?page={{ page_obj.previous_page_number }}&internal_only=True">previous</a>
-        {% endif %}
-
-        <span class="current-page">
-            Page {{ page_obj.number }} of {{ paginator.num_pages }}.
-        </span>
-
-        {% if page_obj.has_next %}
-        <a href="?page={{ page_obj.next_page_number }}&internal_only=True">next</a>
-        <a href="?page={{ paginator.num_pages }}&internal_only=True">last &raquo;</a>
-        {% endif %}
-        {% else %}
-        {% if page_obj.has_previous %}
-        <a href="?page=1">&laquo; first</a>
-        <a href="?page={{ page_obj.previous_page_number }}">previous</a>
-        {% endif %}
-
-        <span class="current-page">
-            Page {{ page_obj.number }} of {{ paginator.num_pages }}.
-        </span>
-
-        {% if page_obj.has_next %}
-        <a href="?page={{ page_obj.next_page_number }}">next</a>
-        <a href="?page={{ paginator.num_pages }}">last &raquo;</a>
-        {% endif %}
-        {% endif %}
-    </span>
-</div>
+{% include 'shared/pagination.html' %}
 
 <script>
     document.getElementById('my-form').addEventListener('submit', function (event) {
@@ -114,7 +81,8 @@
                 console.error(error);
             });
     });
-
 </script>
+
+{% include 'scripts/toggle_reviewed.html' %}
 
 {% endblock %}
