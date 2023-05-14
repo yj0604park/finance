@@ -64,10 +64,20 @@
 
     <tr>
         <th>Amount</th>
-        <td>{{ transaction.amount | print_dollar | safe }}</td>
+        <td>{{ transaction.amount | print_currency:transaction.account.currency | safe }}</td>
         {% if related %}
         <td>
-            {{ related.amount | print_dollar | safe }}
+            {{ related.amount | print_currency:related.account.currency | safe }}
+        </td>
+        {% endif %}
+    </tr>
+
+    <tr>
+        <th>Balance</th>
+        <td>{{ transaction.balance | print_currency:transaction.account.currency | safe }}</td>
+        {% if related %}
+        <td>
+            {{ related.balance | print_currency:related.account.currency | safe }}
         </td>
         {% endif %}
     </tr>
@@ -132,7 +142,8 @@
 {% if transaction.transactiondetail_set.all %}
 <h1>Detail</h1>
 
-<h3>Total: {{ detail_sum|print_dollar }}, Diff: {{ transaction.amount|add_float:detail_sum|print_dollar }}</h3>
+<h3>Total: {{ detail_sum|print_currency:transaction.account.currency|safe }},
+    Diff: {{ transaction.amount|add_float:detail_sum|print_currency:transaction.account.currency|safe }}</h3>
 
 <table class="table">
     <thead>
@@ -149,9 +160,9 @@
     <tr>
         <td>{{ detail.id }}</td>
         <td>{{ detail.item }}</td>
-        <td>{{ detail.amount|print_dollar }}</td>
+        <td>{{ detail.amount|print_currency:transaction.account.currency|safe }}</td>
         <td>{{ detail.count }}</td>
-        <td>{{ detail.amount|multiply:detail.count|print_dollar }}</td>
+        <td>{{ detail.amount|multiply:detail.count|print_currency:transaction.account.currency|safe }}</td>
         <td>{% if detail.note %}{{ detail.note }}{% endif %}</td>
     </tr>
     {% endfor %}

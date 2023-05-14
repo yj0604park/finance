@@ -3,6 +3,8 @@
 {% block content %}
 <h1>Unreviewed Internal Transactions</h1>
 
+{% include "shared/month_selector.html" %}
+
 <form method="POST" id="my-form">
     {% csrf_token %}
     <button type="submit" class="btn btn-primary" id="id_submit">Update Link</button>
@@ -34,7 +36,7 @@
                 {% if transaction.is_internal %}
                 {% if transaction.related_transaction %}
                 <td><a href="{% url 'money:transaction_detail' transaction.related_transaction.id %}">
-                        {{ transaction.related_transaction.id }}</a></td>
+                        {{ transaction.related_transaction.id }} {{ transaction.related_transaction.reviewed }}</a></td>
                 {% else %}
                 <td><input type="number" id="input_{{ transaction.id }}" name="name_{{ transaction.id }}"></td>
                 {% endif %}

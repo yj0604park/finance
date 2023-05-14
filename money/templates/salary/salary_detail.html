@@ -30,7 +30,7 @@
 
     <tr style="border-bottom: 2px solid black;border-top: 2px solid black" class="table-primary">
         <th>Gross Pay</th>
-        <td align="right">{{ salary.gross_pay | print_dollar }}</td>
+        <td align="right">{{ salary.gross_pay | print_dollar | safe }}</td>
     </tr>
 
     <tr>
@@ -40,18 +40,18 @@
     {% for key, value in salary.adjustment_detail.items %}
     <tr>
         <td>&nbsp;&emsp;{{ key }}</td>
-        <td align="right">{{ value | print_dollar }}</td>
+        <td align="right">{{ value | print_dollar | safe }}</td>
     </tr>
     {% endfor %}
 
     <tr style="border-bottom: 2px solid black;border-top: 2px solid black" class="table-secondary">
         <th>Total Adjustment</th>
-        <td align="right">{{ salary.total_adjustment | print_dollar }}</td>
+        <td align="right">{{ salary.total_adjustment | print_dollar | safe }}</td>
     </tr>
 
     <tr style="border-bottom: 2px solid black;border-top: 2px solid black" class="table-secondary">
         <th>Taxable Earnings</th>
-        <td align="right">{{ salary.gross_pay | add_float:salary.total_adjustment | print_dollar }}</td>
+        <td align="right">{{ salary.gross_pay | add_float:salary.total_adjustment | print_dollar | safe }}</td>
     </tr>
 
 
@@ -62,13 +62,13 @@
     {% for key, value in salary.tax_detail.items %}
     <tr>
         <td>&nbsp;&emsp;{{ key }}</td>
-        <td align="right">{{ value | print_dollar }}</td>
+        <td align="right">{{ value | print_dollar | safe }}</td>
     </tr>
     {% endfor %}
 
     <tr style="border-bottom: 2px solid black;border-top: 2px solid black" class="table-secondary">
         <th>Taxes Withheld</th>
-        <td align="right">{{ salary.total_withheld | print_dollar }}</td>
+        <td align="right">{{ salary.total_withheld | print_dollar | safe }}</td>
     </tr>
 
     <tr>
@@ -78,18 +78,18 @@
     {% for key, value in salary.deduction_detail.items %}
     <tr>
         <td>&nbsp;&emsp;{{ key }}</td>
-        <td align="right">{{ value | print_dollar }}</td>
+        <td align="right">{{ value | print_dollar | safe }}</td>
     </tr>
     {% endfor %}
 
     <tr style="border-bottom: 2px solid black;border-top: 2px solid black" class="table-secondary">
         <th>Total After Tax Deductions</th>
-        <td align="right">{{ salary.total_deduction | print_dollar }}</td>
+        <td align="right">{{ salary.total_deduction | print_dollar | safe }}</td>
     </tr>
 
     <tr style="border-bottom: 2px solid black;border-top: 2px solid black" class="table-success">
         <th>Net Pay</th>
-        <td align="right">{{ salary.net_pay|print_dollar }}</td>
+        <td align="right">{{ salary.net_pay | print_dollar | safe }}</td>
     </tr>
 </table>
 

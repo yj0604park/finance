@@ -44,7 +44,7 @@ class TransactionAdmin(admin.ModelAdmin):
 
 @admin.register(models.Retailer)
 class RetailerAdmin(admin.ModelAdmin):
-    pass
+    list_display = ["id", "name", "type", "category"]
 
 
 @admin.register(models.DetailItem)
@@ -91,7 +91,7 @@ class StockAdmin(admin.ModelAdmin):
 
 @admin.register(models.StockTransaction)
 class StockTransactionAdmin(admin.ModelAdmin):
-    pass
+    raw_id_fields = ("related_transaction",)
 
 
 @admin.register(models.AmazonOrder)

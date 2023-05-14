@@ -1,3 +1,4 @@
+from collections import defaultdict
 from typing import Any, Dict
 
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -9,8 +10,10 @@ from django.db.models import (
     FloatField,
     Max,
     Min,
+    OuterRef,
     Prefetch,
     QuerySet,
+    Subquery,
     Sum,
     When,
 )
@@ -21,6 +24,7 @@ from django.urls import reverse_lazy
 from django.views.generic import DetailView, ListView, TemplateView, View
 from django.views.generic.edit import CreateView
 
+from money import choices
 from money import forms as money_forms
 from money import helper, models
 
@@ -37,7 +41,8 @@ class HomeView(LoginRequiredMixin, TemplateView):
             .prefetch_related("bank")
             .order_by("currency", "bank", "last_transaction", "amount")
             .annotate(
-                null_count=Count(Case(When(transaction__balance__isnull=True, then=1)))
+                null_count=Count(Case(When(transaction__balance__isnull=True, then=1))),
+                unreviewed_count=Count(Case(When(transaction__reviewed=False, then=1))),
             )
         )
         account_list = helper.filter_by_get(
@@ -61,10 +66,39 @@ class BankDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        context["account_list"] = models.Account.objects.filter(
-            bank__id=self.kwargs["pk"], is_active=True
+        bank = context["bank"]
+        account_list = models.Account.objects.filter(
+            bank=bank, is_active=True
         ).order_by("currency", "last_transaction", "amount")
 
+        last_stock_transaction = (
+            models.StockTransaction.objects.filter(
+                stock=OuterRef("stock"), account__name=OuterRef("account__name")
+            )
+            .order_by("-date", "shares")
+            .values("balance")
+        )
+
+        last_transactions_per_account = (
+            models.StockTransaction.objects.filter(account__bank=bank)
+            .distinct("stock", "account__name")
+            .annotate(
+                last_stock_transaction=Subquery(
+                    last_stock_transaction[:1],
+                    output_field=FloatField(),
+                )
+            )
+        )
+
+        stock_balance_map = defaultdict(list)
+        for data in last_transactions_per_account:
+            stock_balance_map[data.account.id].append(
+                (data.stock.name, data.last_stock_transaction)
+            )
+        print(stock_balance_map)
+
+        context["account_list"] = account_list
+        context["stock_balance_map"] = stock_balance_map
         return context
 
 
@@ -104,11 +138,13 @@ class AccountDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
+        account = context["account"]
         ordered_transaction_set = (
-            context["account"]
-            .transaction_set.all()
-            .prefetch_related("retailer", "account")
+            account.transaction_set.all()
+            .prefetch_related(
+                "retailer",
+                "account",
+            )
             .order_by("-date", "amount")
         )
 
@@ -128,6 +164,12 @@ class AccountDetailView(LoginRequiredMixin, DetailView):
         context["data"] = helper.get_transaction_chart_data(
             ordered_transaction_set,
             reverse=True,
+        )
+
+        context["stock_list"] = (
+            models.StockTransaction.objects.filter(account=account)
+            .order_by("-date", "balance")
+            .prefetch_related("stock")
         )
 
         return context
@@ -170,11 +212,12 @@ detail_item_create_view = DetailItemCreateView.as_view()
 
 
 class CategoryDetailView(LoginRequiredMixin, View):
-    template_name = "dashboard/category_detail.html"
+    template_name = "category/category_detail.html"
 
     def get(self, request, *args, **kwargs):
-        context = {}
+        context = {"additional_get_query": ""}
         category_type = kwargs["category_type"]
+        context["print_all"] = request.GET.get("print_all", False)
 
         transaction_list = (
             models.Transaction.objects.filter(type=category_type)
@@ -194,7 +237,7 @@ class CategoryDetailView(LoginRequiredMixin, View):
         helper.update_month_summary(request, context, transaction_list)
 
         context["category"] = category_type
-        context["transactions"] = transaction_list
+        context["transaction_list"] = transaction_list
         context["unreviewd"] = transaction_list.filter(reviewed=False)
 
         context["retailer_detail"] = (
@@ -281,9 +324,9 @@ class RetailerDetailView(LoginRequiredMixin, DetailView):
         ).order_by("date")
         transactions_by_month = (
             trnasactions.annotate(month=TruncMonth("date"))
-            .values("month")
+            .values("month", "account__currency")
             .annotate(total_amount=Sum("amount"))
-            .order_by("month")
+            .order_by("month", "account__currency")
         )
         context["transactions"] = trnasactions
         context["transactions_by_month"] = transactions_by_month

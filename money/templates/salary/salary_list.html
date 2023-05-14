@@ -19,8 +19,8 @@
         {% for salary in salary_list %}
         <tr>
             <td><a href="{% url 'money:salary_detail' salary.id %}">{{ salary.date }}</a></td>
-            <td align="right">{{ salary.gross_pay|print_dollar }}</td>
-            <td align="right">{{ salary.net_pay|print_dollar }}</td>
+            <td align="right">{{ salary.gross_pay | print_dollar | safe }}</td>
+            <td align="right">{{ salary.net_pay | print_dollar | safe }}</td>
         </tr>
         {% endfor %}
     </tbody>
@@ -48,12 +48,12 @@
         {% for salary in salary_list %}
         <tr>
             <td><a href="{% url 'money:salary_detail' salary.id %}">{{ salary.date }}</a></td>
-            <td align="right">{{ salary.gross_pay | print_dollar }}</td>
-            <td align="right">{{ salary.total_adjustment | print_dollar }}</td>
-            <td align="right">{{ salary.gross_pay | add_float:salary.total_adjustment | print_dollar }}</td>
-            <td align="right">{{ salary.total_withheld | print_dollar }}</td>
-            <td align="right">{{ salary.total_deduction | print_dollar }}</td>
-            <td align="right">{{ salary.net_pay|print_dollar }}</td>
+            <td align="right">{{ salary.gross_pay | print_dollar | safe }}</td>
+            <td align="right">{{ salary.total_adjustment | print_dollar | safe }}</td>
+            <td align="right">{{ salary.gross_pay | add_float:salary.total_adjustment | print_dollar | safe }}</td>
+            <td align="right">{{ salary.total_withheld | print_dollar | safe }}</td>
+            <td align="right">{{ salary.total_deduction | print_dollar | safe }}</td>
+            <td align="right">{{ salary.net_pay|print_dollar | safe }}</td>
         </tr>
         {% endfor %}
     </tbody>
@@ -66,12 +66,12 @@
         type: 'bar',
         data: {{ datasets | safe }},
         options : {
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
+        scales: {
+            y: {
+                beginAtZero: true
             }
         }
+    }
     });
 </script>
 

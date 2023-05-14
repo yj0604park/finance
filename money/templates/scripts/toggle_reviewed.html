@@ -1,5 +1,5 @@
 <script>
-    function updateBalanceButton(buttonElement) {
+    function toggleReviewedButton(buttonElement) {
 
         buttonElement.addEventListener('click', () => {
             fetch(buttonElement.dataset.arg, {
@@ -24,7 +24,7 @@
 
     document.querySelectorAll(".toggle-reviewed-button").forEach(
         (buttonElement) => {
-            updateBalanceButton(buttonElement)
+            toggleReviewedButton(buttonElement)
         }
     );
 </script>

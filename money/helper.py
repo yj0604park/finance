@@ -62,6 +62,8 @@ def update_month_info(request, context, start_date, end_date):
             f"{selected_month_split[0]}년 {selected_month_split[1]}월",
         )
 
+        context["additional_get_query"] += f"&month={selected_month}"
+
     context["months"] = get_month_list(start_date, end_date)
 
 
@@ -146,7 +148,8 @@ def get_transaction_summary(account_list):
         balance = (
             models.Transaction.objects.filter(account__id=account["account"])
             .filter(date=account["last_date"])
-            .order_by("-balance")[0]
+            .order_by("balance")
+            .first()
             .balance
         )
 

@@ -1,10 +1,11 @@
 {% extends "base.html" %}
-
+{% load money_tags %}
 
 {% block content %}
 <h1>{{ account.name }} Details</h1>
 
 <a href="{% url 'money:bank_detail' account.bank.id %}" class="btn btn-outline-secondary">{{ account.bank.name }}</a>
+<a href="?reviewed=False" class="btn btn-outline-secondary">Filter Unreviewed</a>
 
 <div>
     <canvas id="myChart"></canvas>
@@ -24,11 +25,44 @@
 </a>
 {% endif %}
 
-{% with transaction_list=page_obj.object_list print_flags=True print_balance=True ignore_account=True print_related=True %}
+{% with transaction_list=page_obj.object_list print_flags=True %}
+{% with print_balance=True ignore_account=True print_related=True %}
 {% include 'transaction/transaction_table.html' %}
+{% endwith %}
 {% endwith %}
 
 {% include 'shared/pagination.html' %}
+
+
+{% if account.type == "STOCK" %}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Stock</th>
+            <th>Amount</th>
+            <th>Balance</th>
+            <th>Price</th>
+            <th>Shares</th>
+            <th>Transaction</th>
+        </tr>
+    </thead>
+    {% for stock in stock_list %}
+    <tr>
+        <td>{{ stock.date | date:"Y-m-d" }}</td>
+        <td>{{ stock.stock }}</td>
+        <td align="right">{{ stock.amount | print_currency:account.currency | safe }}</td>
+        <td align="right">{{ stock.balance | floatformat:2 }}</td>
+        <td align="right">{{ stock.price | print_currency:account.currency | safe }}</td>
+        <td align="right">{{ stock.shares }}</td>
+        <td>{{ stock.related_transaction.id }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% endif %}
+
 
 {% with chartId="myChart" %}
 {% include 'transaction/transaction_chart.html' %}

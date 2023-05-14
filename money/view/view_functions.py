@@ -1,4 +1,6 @@
+import requests
 import datetime
+from collections import defaultdict
 
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Q
@@ -22,6 +24,19 @@ def update_balance(request, account_id):
     account.amount = sum
     account.last_update = datetime.datetime.now()
     account.save()
+
+    stocks = (
+        account.stocktransaction_set.all()
+        .order_by("date", "-amount")
+        .prefetch_related("stock")
+    )
+
+    stock_sum = defaultdict(int)
+
+    for stock in stocks:
+        stock_sum[stock.stock.id] += stock.shares
+        stock.balance = stock_sum[stock.stock.id]
+        stock.save()
 
     return JsonResponse({"success": True})
 
@@ -103,3 +118,14 @@ def toggle_reviewed(request, transaction_id):
     transaction.save()
 
     return JsonResponse({"success": True, "transaction_id": transaction_id})
+
+
+def get_exchange_rate(request):
+    headers = {"apikey": "FcfMFHmo63q1LeBD13Okk7rJjNrUQTXS"}
+    response = requests.get(
+        "https://api.apilayer.com/exchangerates_data/convert?to=KRW&from=USD&amount=5",
+        headers=headers,
+    )
+    print(response)
+
+    return JsonResponse(response)

@@ -211,7 +211,7 @@ class TransactionUpdateForm(TransactionForm):
 class StockTransactionForm(forms.ModelForm):
     class Meta:
         model = models.StockTransaction
-        exclude = ["related_transaction", "amount"]
+        exclude = ["related_transaction", "amount", "balance"]
         widgets = {
             "date": DateTimePickerWidget(attrs={"class": "form-control"}),
             "stock": RelatedFieldWidgetCanAdd(models.Stock, "money:stock_create"),

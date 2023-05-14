@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-
+{% load money_tags %}
 {% block content %}
 
 
@@ -15,6 +15,34 @@
 
 </div>
 
+<h1>Monthly Summary</h1>
+
+<div class="btn-group p-3" role="group" aria-label="Basic button group">
+    <a href="?year=all" class="btn btn-outline-primary">All</a>
+    {% for year in year_list %}
+    <a href="?year={{ year }}" class="btn btn-outline-primary">{{ year }}</a>
+    {% endfor %}
+</div>
+
+<table class="table table-hover">
+    <tr>
+        <th>월</th>
+        <th>통화</th>
+        <th>총합</th>
+        <th>수입</th>
+        <th>지출</th>
+    </tr>
+    {% for month in monthly_summary %}
+    <tr>
+        <td>{{ month.month.year }}년 {{ month.month.month }}월</td>
+        <td>{{ month.account__currency }}</td>
+        <td>{{ month.total_amount|print_currency:month.account__currency|safe }}</td>
+        <td>{{ month.plus_sum|print_currency:month.account__currency|safe }}</td>
+        <td>{{ month.minus_sum|print_currency:month.account__currency|safe }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
 <h1>USD Chart</h1>
 <div>
     <canvas id="USDChart"></canvas>
@@ -24,6 +52,9 @@
 <div>
     <canvas id="KRWChart"></canvas>
 </div>
+
+
+
 
 {% with data=usd_data chartId="USDChart" %}
 {% include 'transaction/transaction_chart.html' %}

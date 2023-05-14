@@ -50,7 +50,7 @@ class Retailer(models.Model):
         ordering = ["name"]
 
     def __str__(self):
-        return self.name
+        return f"{self.type}: {self.name}"
 
 
 class Transaction(models.Model):
@@ -112,11 +112,15 @@ class StockTransaction(models.Model):
     price = models.FloatField()
     shares = models.FloatField()
     amount = models.FloatField()
+    balance = models.FloatField(default=0, null=True, blank=True)
 
     note = models.TextField(null=True, blank=True, default="")
 
     def get_absolute_url(self):
         return reverse("money:stock_transaction_detail", kwargs={"pk": self.pk})
+
+    def __str__(self):
+        return f"{self.date.strftime('%Y-%m-%d')}, Stock {self.stock.id}, share {self.shares}, price {self.price}"
 
 
 class DetailItem(models.Model):
@@ -128,7 +132,7 @@ class DetailItem(models.Model):
     )
 
     def __str__(self):
-        return self.name
+        return f"{self.category}-{self.name}"
 
 
 class TransactionDetail(models.Model):

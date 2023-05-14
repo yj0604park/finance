@@ -1,8 +1,22 @@
+from datetime import date
 from typing import Any, Dict
 
 from django import forms
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Max, Min, Prefetch, QuerySet, Sum, Count
+from django.db import transaction
+from django.db.models import (
+    Case,
+    Count,
+    FloatField,
+    Max,
+    Min,
+    Prefetch,
+    Q,
+    QuerySet,
+    Sum,
+    When,
+)
+from django.db.models.functions import TruncMonth
 from django.db.models.query import QuerySet
 from django.http import HttpResponse
 from django.shortcuts import render
@@ -10,6 +24,7 @@ from django.urls import reverse_lazy
 from django.views.generic import DetailView, ListView, UpdateView, View
 from django.views.generic.edit import CreateView
 
+from money import choices
 from money import forms as money_forms
 from money import helper, models
 
@@ -24,18 +39,27 @@ class TransactionListView(LoginRequiredMixin, ListView):
         qs = super().get_queryset().order_by("-date")
         qs = helper.filter_month(self.request, qs)
 
+        reviewed = self.request.GET.get("reviewed", None)
+        if reviewed is not None:
+            qs = qs.filter(reviewed=reviewed)
+
         return qs
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
 
         date_range = models.Transaction.objects.aggregate(Min("date"), Max("date"))
+        context["additional_get_query"] = ""
         helper.update_month_info(
             self.request,
             context,
             date_range["date__min"],
             date_range["date__max"],
         )
+
+        reviewed = self.request.GET.get("reviewed", None)
+        if reviewed is not None:
+            context["additional_get_query"] += f"&reviewed={reviewed}"
 
         return context
 
@@ -63,6 +87,40 @@ class TransactionChartListView(LoginRequiredMixin, ListView):
             ).order_by("date", "-amount"),
             recalculate=True,
         )
+
+        selected_year = self.request.GET.get("year", date.today().year)
+        monthly_summary = (
+            models.Transaction.objects.filter(is_internal=False)
+            .filter(~Q(type=choices.TransactionCategory.STOCK))
+            .annotate(month=TruncMonth("date"))
+            .values("month", "account__currency")
+            .annotate(
+                total_amount=Sum("amount"),
+                minus_sum=Sum(
+                    Case(
+                        When(amount__lt=0, then="amount"),
+                        default=0,
+                        output_field=FloatField(),
+                    )
+                ),
+                plus_sum=Sum(
+                    Case(
+                        When(amount__gt=0, then="amount"),
+                        default=0,
+                        output_field=FloatField(),
+                    )
+                ),
+            )
+            .order_by("-month", "account__currency")
+        )
+
+        context["year_list"] = {summary["month"].year for summary in monthly_summary}
+
+        if str(selected_year).lower() != "all":
+            monthly_summary = monthly_summary.filter(month__year=selected_year)
+
+        context["monthly_summary"] = monthly_summary
+        context["selected_year"] = selected_year
 
         return context
 
@@ -210,13 +268,13 @@ transaction_detail_create_view = TransactionDetailCreateView.as_view()
 
 # Transaction category related views
 class TransactionCategoryView(LoginRequiredMixin, View):
-    template_name = "dashboard/category.html"
+    template_name = "category/category.html"
 
     def get(self, request, *args, **kwargs):
         query_set = models.Transaction.objects.values("type", "account__currency")
         query_set = helper.filter_month(request, query_set)
 
-        context = {}
+        context = {"additional_get_query": ""}
 
         date_range = models.Transaction.objects.aggregate(Min("date"), Max("date"))
         helper.update_month_info(
@@ -296,13 +354,23 @@ class ReviewInternalTransactionView(LoginRequiredMixin, ListView):
         if self.request.GET.get(self.INTERNAL_ONLY_FLAG, False):
             qs = qs.filter(is_internal=True)
 
+        qs = helper.filter_month(self.request, qs)
+
         return qs
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
+        context["additional_get_query"] = ""
         if self.request.GET.get(self.INTERNAL_ONLY_FLAG, False):
             context["additional_get_query"] = f"&{self.INTERNAL_ONLY_FLAG}=True"
 
+        date_range = models.Transaction.objects.aggregate(Min("date"), Max("date"))
+        helper.update_month_info(
+            self.request,
+            context,
+            date_range["date__min"],
+            date_range["date__max"],
+        )
         return context
 
 
@@ -352,10 +420,34 @@ class StockTransactionCreateView(LoginRequiredMixin, CreateView):
 
         return form
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        account_id = self.kwargs["account_id"]
+    @transaction.atomic
+    def form_valid(self, form):
+        stock_transaction = form.save(commit=False)
+        stock_transaction.amount = round(
+            form.cleaned_data["price"] * form.cleaned_data["shares"], 2
+        )
 
-        return super().get_context_data(**kwargs)
+        # Create account transaction
+        transaction = models.Transaction.objects.create(
+            account=stock_transaction.account,
+            amount=-stock_transaction.amount,
+            date=stock_transaction.date,
+            note=stock_transaction.note,
+            type=choices.TransactionCategory.STOCK,
+        )
+        transaction.save()
+
+        stock_transaction.related_transaction = transaction
+        stock_transaction.save()
+
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        account_id = self.kwargs["account_id"]
+        context["account"] = models.Account.objects.get(pk=account_id)
+
+        return context
 
 
 stock_transaction_create_view = StockTransactionCreateView.as_view()

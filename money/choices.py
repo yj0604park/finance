@@ -8,6 +8,7 @@ class AccountType(models.TextChoices):
     TIME_DEPOSIT = "TIME_DEPOSIT", "예금"
     CREDIT_CARD = "CREDIT_CARD", "신용카드"
     STOCK = "STOCK", "주식"
+    LOAN = "LOAN", "대출"
 
 
 class CurrencyType(models.TextChoices):
@@ -32,6 +33,8 @@ class TransactionCategory(models.TextChoices):
     INTEREST = "INTEREST", "이자"
     INCOME = "INCOME", "소득"
     ETC = "ETC", "ETC"
+    STOCK = "STOCK", "주식"
+    CASH = "CASH", "현금"
 
 
 class RetailerType(models.TextChoices):
@@ -40,6 +43,7 @@ class RetailerType(models.TextChoices):
     PERSON = "PERSON"
     BANK = "BANK"
     SERVICE = "SERVICE"
+    INCOME = "INCOME"
 
 
 class DetailItemCategory(models.TextChoices):

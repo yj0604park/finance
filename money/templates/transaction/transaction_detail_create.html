@@ -34,7 +34,7 @@
 </form>
 
 <div class="p-3">
-    <h3>남은 금액 {{ leftover | print_dollar }}</h3>
+    <h3>남은 금액 {{ leftover | print_dollar | safe }}</h3>
 
     {% if details %}
     <table class="table">
@@ -50,9 +50,9 @@
         {% for detail in details %}
         <tr>
             <td>{{ detail.item.name }}</td>
-            <td>{{ detail.amount | print_dollar }}</td>
+            <td>{{ detail.amount | print_dollar | safe }}</td>
             <td>{{ detail.count }}</td>
-            <td>{{ detail.amount | multiply:detail.count | print_dollar }}</td>
+            <td>{{ detail.amount | multiply:detail.count | print_dollar | safe }}</td>
             <td>{% if detail.note %}{{ detail.note }}{% endif %}</td>
         </tr>
         {% endfor %}

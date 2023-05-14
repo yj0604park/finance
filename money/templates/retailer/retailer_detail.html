@@ -27,8 +27,8 @@
     </thead>
     {% for month in transactions_by_month %}
     <tr>
-        <td>{{ month.month.year }}년 {{ month.month.month }}월</td>
-        <td align="right">{{ month.total_amount|print_dollar }}</td>
+        <td>{{ month.month.year }}년 {{ month.month.month }}월 {{ month.account__currency }}</td>
+        <td align="right">{{ month.total_amount|print_currency:month.account__currency|safe }}</td>
     </tr>
     {% endfor %}
 </table>

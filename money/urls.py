@@ -146,4 +146,9 @@ urlpatterns = [
         view=view_functions.toggle_reviewed,
         name="toggle_reviewed",
     ),
+    path(
+        "get_exchange_rate",
+        view=view_functions.get_exchange_rate,
+        name="get_exchange_rate",
+    ),
 ]

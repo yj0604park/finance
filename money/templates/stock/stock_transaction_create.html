@@ -5,7 +5,14 @@
 
 <h1>Stock Transaction Create</h1>
 
-{{ form | crispy }}
+<a href="{% url 'money:account_detail' account.id %}">{{ account.name }}</a>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form | crispy }}
+
+    <input type="submit" name="submit" value="Submit" class="btn btn-primary" id="submit-id-submit" />
+</form>
 
 {% include 'widgets/increase_by_one.html' %}
 

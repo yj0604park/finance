@@ -86,8 +86,15 @@
     {% endfor %}
 </table>
 
+{% if print_all %}
+<h1>All Transactions</h1>
+{% with transaction_list=transaction_list print_flags=True print_related=True %}
+{% include 'transaction/transaction_table.html' %}
+{% endwith %}
+{% endif %}
+
 <h1>Unreviewed Transactions</h1>
-{% with transaction_list=unreviewd print_flags=True %}
+{% with transaction_list=unreviewd print_flags=True print_related=True %}
 {% include 'transaction/transaction_table.html' %}
 {% endwith %}
 

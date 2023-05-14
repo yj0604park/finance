@@ -16,6 +16,7 @@
             <th>Type</th>
             <th>Last updated</th>
             <th>Last transaction</th>
+            <th>Unreviewed</th>
             <th>Update</th>
         </tr>
     </thead>
@@ -27,6 +28,7 @@
         <td>{{ account.type }}</td>
         <td>{{ account.last_update | date:"Y-m-d" }}</td>
         <td>{{ account.last_transaction | date:"Y-m-d" }}</td>
+        <td>{{ account.unreviewed_count }}</td>
         <td>
             {% if account.null_count %}
             <button type="button" class="btn btn-secondary update-balance-button"
@@ -37,14 +39,14 @@
         </td>
     </tr>
     {% endfor %}
+</table>
+<table class="table table-striped">
     <tr style="border-bottom: 2px solid black;border-top: 2px solid black">
         <th>Total</th>
-        <th>Curreny Balance</th>
+        <th>Current Balance</th>
         <th>Previous Balance</th>
         <th>Diff</th>
         <th>Ratio</th>
-        <th></th>
-        <th></th>
     </tr>
     {% for currency, sum in sum_list %}
     <tr>
@@ -53,8 +55,6 @@
         <td align="right">{{ sum.prev | print_currency:currency | safe }}</td>
         <td align="right">{{ sum.diff | print_currency:currency | safe }}</td>
         <td>{{ sum.ratio }}%</td>
-        <td></td>
-        <td></td>
     </tr>
     {% endfor %}
 </table>

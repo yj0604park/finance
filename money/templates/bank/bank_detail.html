@@ -13,6 +13,7 @@
       <th>ID</th>
       <th>Account</th>
       <th>Balance</th>
+      <th>Stock</th>
     </tr>
   </thead>
   {% for account in account_list %}
@@ -20,7 +21,18 @@
     <td>{{ account.id }}</td>
     <td><a href="{% url 'money:account_detail' account.id %}">{{ account.name }}</a></td>
     <td align="right">{{ account.amount | print_currency:account.currency | safe }}</td>
+    {% with stock_list=stock_balance_map|get_value:account.id %}
+    <td>
+      {% for stock in stock_list %}
+      {% if not forloop.first %}
+      <br />
+      {% endif %}
+      {{ stock.0 }}: {{ stock.1 | floatformat:2 }}
+      {% endfor %}
+    </td>
+    {% endwith %}
   </tr>
   {% endfor %}
 </table>
+
 {% endblock %}

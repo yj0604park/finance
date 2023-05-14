@@ -1,0 +1,29 @@
+<script>
+    const selectField = document.getElementById('id_retailer');
+    const otherField = document.getElementById('id_type');
+
+    selectField.addEventListener('change', (event) => {
+        const selectedOption = event.target.value;
+
+        fetch("/money/get_retailer_type/" + selectedOption, {
+            method: "GET"
+        })
+            .then(response => response.json())
+            .then(data => {
+                otherField.value = data.retailer_category;
+            })
+    });
+
+    function openPopup(link) {
+        // Open the pop-up window
+        window.open(link + "?_to_field=id&_popup=1", 'popup', 'height=500,width=800,resizable=yes,scrollbars=yes,modal=yes');
+    }
+
+    const checkField = document.getElementById("id_is_internal");
+    checkField.addEventListener('change', (event) => {
+        const checked = event.currentTarget.checked;
+        if (checked == true) {
+            otherField.value = "TRANSFER"
+        }
+    });
+</script>

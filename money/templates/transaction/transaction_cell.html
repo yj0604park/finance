@@ -27,7 +27,16 @@
 <td>{{ transaction.note }}</td>
 
 {% if print_related %}
-<td>{{ transaction.related_transaction.id }}</td>
+<td>
+    {% if transaction.related_transaction %}
+    {{ transaction.related_transaction.id }}({{ transaction.related_transaction.reviewed }})
+    {% endif %}
+</td>
+<td>
+    {% if transaction.transactiondetail_set.count %}
+    {{ transaction.transactiondetail_set.count }}
+    {% endif %}
+</td>
 {% endif %}
 
 {% if print_flags %}
