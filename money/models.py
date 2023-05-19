@@ -26,6 +26,8 @@ class Account(models.Model):
     amount = models.FloatField(default=0)
     last_update = models.DateTimeField(null=True, blank=True)
     last_transaction = models.DateField(null=True, blank=True)
+    first_transaction = models.DateField(null=True, blank=True)
+    first_added = models.BooleanField(default=False)
     currency = models.CharField(
         max_length=3, choices=CurrencyType.choices, default=CurrencyType.USD
     )
@@ -134,6 +136,9 @@ class DetailItem(models.Model):
     def __str__(self):
         return f"{self.category}-{self.name}"
 
+    class Meta:
+        ordering = ["name"]
+
 
 class TransactionDetail(models.Model):
     transaction = models.ForeignKey(Transaction, on_delete=models.CASCADE)
@@ -173,6 +178,13 @@ class AmazonOrder(models.Model):
     transaction = models.ForeignKey(
         Transaction, null=True, blank=True, on_delete=models.SET_NULL
     )
+    return_transaction = models.ForeignKey(
+        Transaction,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="returned_order",
+    )
 
     def get_absolute_url(self):
         return reverse("money:amazon_order_detail", kwargs={"pk": self.pk})
@@ -194,3 +206,7 @@ class Exchange(models.Model):
     to_amount = models.FloatField()
     from_currency = models.CharField(max_length=3, choices=CurrencyType.choices)
     to_currency = models.CharField(max_length=3, choices=CurrencyType.choices)
+    ratio_per_krw = models.FloatField(null=True, blank=True)
+
+    def __str__(self) -> str:
+        return f"{self.date}: {self.ratio_per_krw}"

@@ -221,6 +221,7 @@ class CategoryDetailView(LoginRequiredMixin, View):
 
         transaction_list = (
             models.Transaction.objects.filter(type=category_type)
+            .filter(is_internal=False)
             .prefetch_related("retailer", "account")
             .order_by("date", "amount")
         )

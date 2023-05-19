@@ -97,4 +97,9 @@ class StockTransactionAdmin(admin.ModelAdmin):
 @admin.register(models.AmazonOrder)
 class AmazonOrderAdmin(admin.ModelAdmin):
     list_display = ["item", "date", "is_returned", "transaction"]
-    raw_id_fields = ("transaction",)
+    raw_id_fields = ("transaction", "return_transaction")
+
+
+@admin.register(models.Exchange)
+class ExchangeAdmin(admin.ModelAdmin):
+    raw_id_fields = ("from_transaction", "to_transaction")

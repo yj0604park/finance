@@ -3,7 +3,7 @@
 {% block content %}
 <h1>Unreviewed Transactions</h1>
 
-{% with print_flags=True %}
+{% with print_flags=True print_related=True %}
 {% include 'transaction/transaction_table.html' %}
 {% endwith %}
 

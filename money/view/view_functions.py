@@ -1,12 +1,14 @@
-import requests
 import datetime
+import json
 from collections import defaultdict
 
+import requests
 from django.contrib.auth.decorators import login_required
+from django.core import serializers
 from django.db.models import Count, Q
-from django.http import JsonResponse
+from django.http import HttpRequest, JsonResponse
 
-from money import models
+from money import choices, models
 
 
 @login_required
@@ -15,7 +17,11 @@ def update_balance(request, account_id):
     transactions = account.transaction_set.all().order_by("date", "-amount")
 
     sum = 0
+    first = True
     for transaction in transactions:
+        if first:
+            account.first_transaction = transaction.date
+            first = False
         sum += transaction.amount
         transaction.balance = sum
         transaction.save()
@@ -43,6 +49,7 @@ def update_balance(request, account_id):
 
 @login_required
 def update_retailer_type(request):
+    # update retailer type based on the transaction type frequency
     result = (
         models.Transaction.objects.values("type", "retailer__id")
         .annotate(count=Count("type"))
@@ -77,20 +84,65 @@ def update_related_transaction(request):
                 source = models.Transaction.objects.get(id=source_id)
                 target = models.Transaction.objects.get(id=target_id)
 
-                if (
-                    source.related_transaction is None
-                    and target.related_transaction is None
-                    and source.is_internal
-                    and target.is_internal
-                    and source_id != target_id
-                ):
-                    if abs(source.amount + target.amount) < 0.01:
+                if source.account.currency == target.account.currency:
+                    if (
+                        source.related_transaction is None
+                        and target.related_transaction is None
+                        and source.is_internal
+                        and target.is_internal
+                        and source_id != target_id
+                        and source.account.id != target.account.id
+                    ):
+                        if abs(source.amount + target.amount) < 0.01:
+                            source.related_transaction = target
+                            target.related_transaction = source
+
+                            target.save()
+                            source.save()
+                            updated[item] = value
+                else:
+                    # 환전
+                    if (
+                        source.date == target.date
+                        and source.related_transaction is None
+                        and target.related_transaction is None
+                        and source.is_internal
+                        and target.is_internal
+                        and source_id != target_id
+                        and source.account.pk != target.account.pk
+                    ):
+                        print("hi")
+                        if source.account.currency == choices.CurrencyType.KRW:
+                            ratio = source.amount / target.amount
+                        else:
+                            ratio = target.amount / source.amount
+
+                        ratio = round(-ratio, 2)
+
+                        print(ratio)
+
+                        if ratio > 1600 or ratio < 1000:
+                            continue
+
+                        exchange = models.Exchange(
+                            date=source.date,
+                            from_transaction=source,
+                            to_transaction=target,
+                            from_amount=source.amount,
+                            to_amount=target.amount,
+                            from_currency=source.account.currency,
+                            to_currency=target.account.currency,
+                            ratio_per_krw=ratio,
+                        )
+                        exchange.save()
+
                         source.related_transaction = target
                         target.related_transaction = source
 
                         target.save()
                         source.save()
                         updated[item] = value
+
         return JsonResponse(updated)
 
 
@@ -120,6 +172,36 @@ def toggle_reviewed(request, transaction_id):
     return JsonResponse({"success": True, "transaction_id": transaction_id})
 
 
+@login_required
+def get_items_for_category(request: HttpRequest):
+    if request.method == "POST":
+        post_data = json.loads(request.body.decode())
+        item_list = models.DetailItem.objects.filter(
+            category=post_data["category"]
+        ).values("pk", "name")
+        item_list = sorted(list(item_list), key=lambda x: x["name"].lower())
+
+        return JsonResponse({"result": item_list})
+
+
+@login_required
+def update_related_transaction_for_amazon(request: HttpRequest):
+    if request.method == "POST":
+        post_data = json.loads(request.body.decode())
+        transaction = models.Transaction.objects.get(pk=post_data["transaction_id"])
+        order = models.AmazonOrder.objects.get(pk=post_data["order_id"])
+        order.transaction = transaction
+        order.save()
+        return JsonResponse(
+            {
+                "success": True,
+                "transaction": transaction.__str__(),
+                "amount": transaction.amount,
+            }
+        )
+
+
+@login_required
 def get_exchange_rate(request):
     headers = {"apikey": "FcfMFHmo63q1LeBD13Okk7rJjNrUQTXS"}
     response = requests.get(

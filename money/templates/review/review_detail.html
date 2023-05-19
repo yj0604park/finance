@@ -5,29 +5,10 @@
 
 <a href="{% url 'money:set_detail_required' %}" class="btn btn-success">Set Detail Required</a>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Date</th>
-            <th>Retailer</th>
-            <th>Account</th>
-            <th>Amount</th>
-            <th>Category</th>
-            <th>Note</th>
-            <th>Add Detail</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for transaction in transaction_list %}
-        <tr>
-            {% with add_detail=True %}
-            {% include 'transaction/transaction_cell.html' %}
-            {% endwith %}
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+
+{% with add_detail=True print_flags=True print_related=True %}
+{% include 'transaction/transaction_table.html' %}
+{% endwith %}
 
 {% include 'shared/pagination.html' %}
 

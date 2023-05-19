@@ -1,15 +1,19 @@
 import json
 from datetime import date
+from typing import Any, Dict, Mapping, Optional, Type, Union
 
 from django import forms
+from django.core.files.base import File
+from django.db.models.base import Model
 from django.forms import widgets
+from django.forms.utils import ErrorList
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, Row, Column
 
 
-from money import models
+from money import models, choices
 
 
 class DateTimePickerWidget(forms.TextInput):
@@ -228,6 +232,10 @@ class StockTransactionForm(forms.ModelForm):
 
 
 class TransactionDetailForm(forms.ModelForm):
+    category = forms.ChoiceField(
+        label="Item Category", choices=choices.DetailItemCategory.choices
+    )
+
     class Meta:
         model = models.TransactionDetail
         exclude = ["transaction"]
@@ -239,8 +247,33 @@ class TransactionDetailForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["item"].choices = sorted(
-            self.fields["item"].choices, key=lambda x: x[1].lower()
+        self.fields["item"].choices = [
+            (x["pk"], x["name"])
+            for x in sorted(
+                list(
+                    models.DetailItem.objects.filter(
+                        category=choices.DetailItemCategory.ETC
+                    ).values("pk", "name")
+                ),
+                key=lambda x: x["name"].lower(),
+            )
+        ]
+        self.fields["category"].choices = sorted(
+            self.fields["category"].choices, key=lambda x: x[1].lower()
+        )
+
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Row(
+                Column("category", css_class="form-group col-md-6 mb-0"),
+                Column("item", css_class="form-group col-md-6 mb-0"),
+            ),
+            Row(
+                Column("note", css_class="form-group col-md-4 mb-0"),
+                Column("amount", css_class="form-group col-md-4 mb-0"),
+                Column("count", css_class="form-group col-md-4 mb-0"),
+            ),
+            Submit("submit", "Submit"),
         )
 
 
@@ -248,6 +281,12 @@ class DetailItemForm(forms.ModelForm):
     class Meta:
         model = models.DetailItem
         fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["category"].choices = sorted(
+            self.fields["category"].choices, key=lambda x: x[1].lower()
+        )
 
 
 class RetailerForm(forms.ModelForm):
@@ -328,7 +367,7 @@ class StockForm(forms.ModelForm):
 class AmazonOrderForm(forms.ModelForm):
     class Meta:
         model = models.AmazonOrder
-        exclude = ("transaction",)
+        exclude = ("transaction", "return_transaction")
         widgets = {
             "date": DateTimePickerWidget(attrs={"class": "form-control"}),
         }

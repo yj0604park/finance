@@ -16,6 +16,7 @@
             <th>Type</th>
             <th>Last updated</th>
             <th>Last transaction</th>
+            <th>First transaction</th>
             <th>Unreviewed</th>
             <th>Update</th>
         </tr>
@@ -28,6 +29,7 @@
         <td>{{ account.type }}</td>
         <td>{{ account.last_update | date:"Y-m-d" }}</td>
         <td>{{ account.last_transaction | date:"Y-m-d" }}</td>
+        <td>{{ account.first_transaction | date:"Y-m-d" }}{% if not account.first_added %}(Not Correct){% endif %}</td>
         <td>{{ account.unreviewed_count }}</td>
         <td>
             {% if account.null_count %}

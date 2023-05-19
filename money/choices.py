@@ -70,4 +70,5 @@ class DetailItemCategory(models.TextChoices):
     COOKER = "COOKER", "주방용품"
     FOOD = "FOOD", "식품"
     CLOTHING = "CLOTHING", "의류"
+    FUNITURE = "FUNITURE", "가구"
     UNK = "UNK", "Unknown"

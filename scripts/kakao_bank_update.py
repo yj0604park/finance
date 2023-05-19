@@ -82,6 +82,9 @@ def run():
             data["note"] == "계좌간자동이체"
             or ("적금" in retailer and "신규" in retailer)
             or (retailer == "박윤재" and data["note"] == "일반이체")
+            or (retailer == "박윤재" and data["note"] == "타행자동이체")
+            or (retailer == "박윤재" and data["note"] == "일반입금")
+            or (retailer == "토스 박윤재" and data["note"] == "자동이체(기타)")
         ):
             transaction.type = choices.TransactionCategory.TRANSFER
             transaction.is_internal = True

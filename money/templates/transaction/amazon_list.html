@@ -18,17 +18,16 @@
             <th>Category</th>
             <th>Note</th>
             <th>Add details</th>
-            <th>Order Counts</th>
         </tr>
     </thead>
     {% for transaction in transaction_list %}
     <tr>
         {% include 'transaction/transaction_cell.html' %}
-        <td>{{ transaction.order_count }}</td>
     </tr>
     {% endfor %}
 
 </table>
 {% endwith %}
 
+{% include 'shared/pagination.html' %}
 {% endblock %}

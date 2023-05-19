@@ -383,17 +383,21 @@ class ReviewDetailTransactionView(LoginRequiredMixin, ListView):
     paginate_by = 20
 
     def get_queryset(self) -> QuerySet[Any]:
+        reviewed = self.request.GET.get("reviewed", False)
         return (
             super()
             .get_queryset()
             .filter(requires_detail=True)
-            .filter(reviewed=False)
-            .prefetch_related("account", "retailer")
+            .filter(reviewed=reviewed)
+            .prefetch_related("account", "retailer", "transactiondetail_set")
             .order_by("-date")
         )
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        return super().get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
+        context["reviewed"] = self.request.GET.get("reviewed", False)
+        context["additional_get_query"] = f"&reviewed={context['reviewed']}"
+        return context
 
 
 review_detail_transaction_view = ReviewDetailTransactionView.as_view()
@@ -464,6 +468,7 @@ stock_transaction_detail_view = StockTransactionView.as_view()
 class AmazonListView(LoginRequiredMixin, ListView):
     template_name = "transaction/amazon_list.html"
     model = models.Transaction
+    paginate_by = 20
 
     def get_queryset(self) -> QuerySet[Any]:
         amazon = models.Retailer.objects.filter(name="Amazon")
@@ -472,9 +477,13 @@ class AmazonListView(LoginRequiredMixin, ListView):
                 super()
                 .get_queryset()
                 .filter(retailer=amazon[0])
+                .annotate(
+                    num_amazon_order=Count("amazonorder"),
+                    num_return_order=Count("returned_order"),
+                )
+                .filter(num_amazon_order=0, num_return_order=0)
                 .prefetch_related("account")
                 .order_by("-date")
-                .annotate(order_count=Count("amazonorder"))
             )
         else:
             return None
@@ -492,6 +501,7 @@ class AmazonOrderListView(LoginRequiredMixin, ListView):
             super()
             .get_queryset()
             .order_by("date", "id")
+            .filter(transaction=None)
             .prefetch_related(
                 "transaction",
                 Prefetch(
@@ -524,6 +534,9 @@ class AmazonOrderCreateView(LoginRequiredMixin, CreateView):
         context["prev_order"] = prev_order
 
         return context
+
+    def get_success_url(self) -> str:
+        return reverse_lazy("money:amazon_order_create")
 
 
 amazon_order_create_view = AmazonOrderCreateView.as_view()

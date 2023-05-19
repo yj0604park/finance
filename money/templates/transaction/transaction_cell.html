@@ -54,11 +54,11 @@
 
 {% if add_detail %}
 <td>
-    {% if transaction.requires_detail and not transaction.reviewed %}
-    <button class="btn btn-primary" href="{% url 'money:transaction_detail_create' transaction.id %}">
-        Add Details
-    </button>
-    {% elif transaction.reviewed %}
+    {% if transaction.requires_detail and transaction.transactiondetail_set.count == 0 %}
+    <a class="btn btn-primary" href="{% url 'money:transaction_detail_create' transaction.id %}">
+        Add
+    </a>
+    {% else %}
     Detail Added
     {% endif %}
 </td>

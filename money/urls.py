@@ -151,4 +151,14 @@ urlpatterns = [
         view=view_functions.get_exchange_rate,
         name="get_exchange_rate",
     ),
+    path(
+        "get_items_for_category",
+        view=view_functions.get_items_for_category,
+        name="get_items_for_category",
+    ),
+    path(
+        "update_related_transaction_for_amazon",
+        view=view_functions.update_related_transaction_for_amazon,
+        name="update_related_transaction_for_amazon",
+    ),
 ]
