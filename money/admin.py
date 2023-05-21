@@ -99,6 +99,19 @@ class AmazonOrderAdmin(admin.ModelAdmin):
     list_display = ["item", "date", "is_returned", "transaction"]
     raw_id_fields = ("transaction", "return_transaction")
 
+    def get_queryset(self, request):
+        return (
+            super()
+            .get_queryset(request)
+            .select_related(
+                "transaction",
+                "return_transaction",
+                "transaction__account",
+                "transaction__retailer",
+                "return_transaction__account",
+            )
+        )
+
 
 @admin.register(models.Exchange)
 class ExchangeAdmin(admin.ModelAdmin):

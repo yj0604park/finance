@@ -71,4 +71,5 @@ class DetailItemCategory(models.TextChoices):
     FOOD = "FOOD", "식품"
     CLOTHING = "CLOTHING", "의류"
     FUNITURE = "FUNITURE", "가구"
+    SPORTING = "SPORTING", "운동용품"
     UNK = "UNK", "Unknown"
