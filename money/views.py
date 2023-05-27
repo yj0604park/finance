@@ -2,7 +2,6 @@ from collections import defaultdict
 from typing import Any, Dict
 
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.paginator import Paginator
 from django.db.models import (
     Case,
@@ -69,7 +68,7 @@ class BankDetailView(LoginRequiredMixin, DetailView):
         bank = context["bank"]
         account_list = models.Account.objects.filter(
             bank=bank, is_active=True
-        ).order_by("currency", "last_transaction", "amount")
+        ).order_by("type", "name")
 
         last_stock_transaction = (
             models.StockTransaction.objects.filter(
@@ -110,7 +109,7 @@ class BankListView(LoginRequiredMixin, ListView):
     template_name = "bank/bank_list.html"
 
     def get_queryset(self) -> QuerySet[Any]:
-        return super().get_queryset().annotate(count=Count("account"))
+        return super().get_queryset().annotate(count=Count("account")).order_by("name")
 
 
 bank_list_view = BankListView.as_view()
@@ -148,13 +147,13 @@ class AccountDetailView(LoginRequiredMixin, DetailView):
             .order_by("-date", "amount")
         )
 
-        context["additional_get_query"] = ""
+        context["additional_get_query"] = {}
         filter_reviewed = self.request.GET.get("reviewed")
         if filter_reviewed:
             ordered_transaction_set = ordered_transaction_set.filter(
                 reviewed=filter_reviewed
             )
-            context["additional_get_query"] += f"&reviewed={filter_reviewed}"
+            context["additional_get_query"]["reviewed"] = filter_reviewed
 
         paginator = Paginator(ordered_transaction_set, self.objects_per_page)
         page_number = self.request.GET.get("page")
@@ -163,6 +162,7 @@ class AccountDetailView(LoginRequiredMixin, DetailView):
 
         context["data"] = helper.get_transaction_chart_data(
             ordered_transaction_set,
+            account.currency,
             reverse=True,
         )
 
@@ -178,44 +178,11 @@ class AccountDetailView(LoginRequiredMixin, DetailView):
 account_detail_view = AccountDetailView.as_view()
 
 
-class DetailItemListView(LoginRequiredMixin, ListView):
-    template_name = "detail_item/detail_item_list.html"
-    model = models.DetailItem
-
-    def get_queryset(self) -> QuerySet[Any]:
-        group_by_category = (
-            models.DetailItem.objects.all()
-            .values("category")
-            .annotate(name_array=ArrayAgg("name", distinct=False))
-            .order_by("category")
-        )
-
-        for v in group_by_category:
-            list.sort(v["name_array"])
-
-        return group_by_category
-
-
-detail_item_list_view = DetailItemListView.as_view()
-
-
-class DetailItemCreateView(LoginRequiredMixin, CreateView):
-    template_name = "detail_item/detail_item_create.html"
-    model = models.DetailItem
-    form_class = money_forms.DetailItemForm
-
-    def get_success_url(self) -> str:
-        return reverse_lazy("money:detail_item_create")
-
-
-detail_item_create_view = DetailItemCreateView.as_view()
-
-
 class CategoryDetailView(LoginRequiredMixin, View):
     template_name = "category/category_detail.html"
 
     def get(self, request, *args, **kwargs):
-        context = {"additional_get_query": ""}
+        context = {"additional_get_query": {}}
         category_type = kwargs["category_type"]
         context["print_all"] = request.GET.get("print_all", False)
 
@@ -248,6 +215,14 @@ class CategoryDetailView(LoginRequiredMixin, View):
             .annotate(Sum("amount"))
             .order_by("amount__sum")
         )
+        context["detail_item_summary"] = (
+            models.TransactionDetail.objects.filter(
+                transaction__in=transaction_list.values("id")
+            )
+            .values("item__category")
+            .annotate(Sum("amount"))
+            .order_by("-amount__sum")
+        )
 
         helper.update_retailer_summary(context, context["retailer_detail"])
 
@@ -258,6 +233,13 @@ class CategoryDetailView(LoginRequiredMixin, View):
 
 
 category_detail_view = CategoryDetailView.as_view()
+
+
+class CompareCategoryView(LoginRequiredMixin, TemplateView):
+    template_name = "category/compare_category.html"
+
+
+compare_category_view = CompareCategoryView.as_view()
 
 
 # Retailer related views
@@ -446,3 +428,33 @@ stock_detail_view = StockDetailView.as_view()
 class ExchangeListView(LoginRequiredMixin, ListView):
     template_name = "exchange/exchange_list.html"
     model = models.Exchange
+    paginate_by = 20
+
+    def get_queryset(self) -> QuerySet[Any]:
+        return super().get_queryset().order_by("date")
+
+
+exchange_list_view = ExchangeListView.as_view()
+
+
+class AmountSnapshotListView(LoginRequiredMixin, ListView):
+    template_name = "snapshot/amount_snapshot.html"
+    model = models.AmountSnapshot
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+
+        # group by currency
+        context["chart"] = {
+            "KRW": helper.snapshot_chart(
+                context["amountsnapshot_list"], choices.CurrencyType.KRW
+            ),
+            "USD": helper.snapshot_chart(
+                context["amountsnapshot_list"], choices.CurrencyType.USD
+            ),
+        }
+
+        return context
+
+
+amount_snapshot_list_view = AmountSnapshotListView.as_view()

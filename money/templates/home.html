@@ -27,8 +27,8 @@
         <td><a href="{% url 'money:account_detail' account.id %}">{{ account.name }}</a></td>
         <td align="right">{{ account.amount | print_currency:account.currency | safe }}</td>
         <td>{{ account.type }}</td>
-        <td>{{ account.last_update | date:"Y-m-d" }}</td>
-        <td>{{ account.last_transaction | date:"Y-m-d" }}</td>
+        <td>{{ account.last_update | date:"Y-m-d" }} ({{ account.last_update|days_ago }})</td>
+        <td>{{ account.last_transaction | date:"Y-m-d" }} ({{ account.last_transaction|days_ago }})</td>
         <td>{{ account.first_transaction | date:"Y-m-d" }}{% if not account.first_added %}(Not Correct){% endif %}</td>
         <td>{{ account.unreviewed_count }}</td>
         <td>

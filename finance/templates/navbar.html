@@ -36,6 +36,12 @@
           <li class="nav-item">
             <a class="nav-link" href="{% url 'money:amazon_order_list' %}">Amazon</a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'money:exchange_list' %}">Exchange</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'money:amount_snapshot_list' %}">Snapshot</a>
+          </li>
           {% if request.user.is_authenticated %}
           <li class="nav-item">
             {# URL provided by django-allauth/account/urls.py #}

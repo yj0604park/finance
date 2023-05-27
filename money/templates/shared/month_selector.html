@@ -1,9 +1,22 @@
 {% load money_tags %}
 
-{% for year in months %}
-<div class="btn-group p-1" role="group" aria-label="Basic button group">
-    {% for month in months|get_value:year %}
-    <a href="?month={{ month }}" class="btn btn-outline-primary">{{ month }}</a>
+<div class="btn-group p-1" role="group" aria-label="Button group">
+    {% for year in months %}
+    <a class="btn btn-outline-primary" data-bs-toggle="collapse" href="#collapseExample_{{ year }}" role="button"
+        aria-expanded="false" aria-controls="collapseExample">
+        {{ year }}
+    </a>
     {% endfor %}
+</div>
+
+{% for year in months %}
+<div class="collapse" id="collapseExample_{{ year }}">
+    <div class="btn-group p-1" role="group" aria-label="Year {{ year }} button group">
+        {% for month in months|get_value:year %}
+        <a href="{{ additional_get_query|update_month:month|print_argument }}" class="btn btn-outline-success">
+            {{ month }}
+        </a>
+        {% endfor %}
+    </div>
 </div>
 {% endfor %}

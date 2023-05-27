@@ -59,7 +59,6 @@ def update_retailer_type(request):
         if retailer["retailer__id"]:
             retailer_model = models.Retailer.objects.get(pk=retailer["retailer__id"])
             retailer_model.category = retailer["type"]
-            retailer_model.type = models.RetailerType.ETC
             retailer_model.save()
 
     return JsonResponse({"success": True})
@@ -111,15 +110,12 @@ def update_related_transaction(request):
                         and source_id != target_id
                         and source.account.pk != target.account.pk
                     ):
-                        print("hi")
                         if source.account.currency == choices.CurrencyType.KRW:
                             ratio = source.amount / target.amount
                         else:
                             ratio = target.amount / source.amount
 
                         ratio = round(-ratio, 2)
-
-                        print(ratio)
 
                         if ratio > 1600 or ratio < 1000:
                             continue

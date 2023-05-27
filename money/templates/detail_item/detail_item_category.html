@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load money_tags %}
+
+{% block content %}
+
+<h1>{{ category }} {{ summary.amount__sum | print_dollar }}</h1>
+
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>아이템</th>
+      <th>금액</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in per_item %}
+    <tr>
+      <td>{{ item.item__name }}</td>
+      <td align="right">{{ item.amount__sum | print_dollar }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}

@@ -1,7 +1,7 @@
 from django.urls import path
 
 from money import views
-from money.view import transaction_view, view_functions
+from money.view import transaction_view, view_functions, transaction_detail_view
 
 app_name = "money"
 
@@ -17,12 +17,6 @@ urlpatterns = [
         view=views.category_detail_view,
         name="category_detail",
     ),
-    path("detail_item_list", view=views.detail_item_list_view, name="detail_item_list"),
-    path(
-        "detail_item_create",
-        view=views.detail_item_create_view,
-        name="detail_item_create",
-    ),
     path(
         "retailer_summary",
         view=views.retailer_summary_view,
@@ -37,6 +31,12 @@ urlpatterns = [
     path("salary_list", view=views.salary_list_view, name="salary_list"),
     path("salary_detail/<int:pk>", view=views.salary_detail_view, name="salary_detail"),
     path("salary_create", view=views.salary_create_view, name="salary_create"),
+    path("exchange/exchange_list", view=views.exchange_list_view, name="exchange_list"),
+    path(
+        "amount_snapshot_list",
+        view=views.amount_snapshot_list_view,
+        name="amount_snapshot_list",
+    ),
     # Transaction
     path(
         "transaction_list",
@@ -59,11 +59,6 @@ urlpatterns = [
         name="transaction_update",
     ),
     path(
-        "transaction_detail/<int:pk>",
-        view=transaction_view.transaction_detail_view,
-        name="transaction_detail",
-    ),
-    path(
         "transaction_category",
         view=transaction_view.transaction_category_view,
         name="transaction_category",
@@ -82,11 +77,6 @@ urlpatterns = [
         "review_detail_transaction",
         view=transaction_view.review_detail_transaction_view,
         name="review_detail_transaction",
-    ),
-    path(
-        "transaction_detail_create/<int:transaction_id>",
-        view=transaction_view.transaction_detail_create_view,
-        name="transaction_detail_create",
     ),
     path("stock_create", view=views.stock_create_view, name="stock_create"),
     path("stock_detail/<int:pk>", view=views.stock_detail_view, name="stock_detail"),
@@ -116,6 +106,33 @@ urlpatterns = [
         view=transaction_view.amazon_order_detail_view,
         name="amazon_order_detail",
     ),
+    # transaction detail view
+    path(
+        "transaction_detail/<int:pk>",
+        view=transaction_detail_view.transaction_detail_view,
+        name="transaction_detail",
+    ),
+    path(
+        "transaction_detail_create/<int:transaction_id>",
+        view=transaction_detail_view.transaction_detail_create_view,
+        name="transaction_detail_create",
+    ),
+    path(
+        "detail_item_list",
+        view=transaction_detail_view.detail_item_list_view,
+        name="detail_item_list",
+    ),
+    path(
+        "detail_item_create",
+        view=transaction_detail_view.detail_item_create_view,
+        name="detail_item_create",
+    ),
+    path(
+        "detail_item_category/<str:category>",
+        view=transaction_detail_view.detail_item_category_view,
+        name="detail_item_category",
+    ),
+    # functional views
     path(
         "update_balance/<int:account_id>",
         view=view_functions.update_balance,

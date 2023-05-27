@@ -44,6 +44,7 @@ class RetailerType(models.TextChoices):
     BANK = "BANK"
     SERVICE = "SERVICE"
     INCOME = "INCOME"
+    RESTAURANT = "RESTAURANT"
 
 
 class DetailItemCategory(models.TextChoices):

@@ -14,7 +14,9 @@
     {% for item in category.name_array %}
     <tr>
         {% if forloop.first %}
-        <td rowspan="{{ category.name_array|length }}">{{ category.category }}</td>
+        <td rowspan="{{ category.name_array|length }}">
+            <a href="{% url 'money:detail_item_category' category.category %}">{{ category.category }}</a>
+        </td>
         {% endif %}
         <td>{{ item }}</td>
     </tr>

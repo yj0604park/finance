@@ -3,6 +3,7 @@
 
 {% block content %}
 <h1>{{ bank }}</h1>
+<a href="{% url 'money:bank_list' %}" class="btn btn-primary">Bank List</a>
 
 <a href="" class="btn btn-secondary">Add New Account</a>
 
@@ -12,6 +13,9 @@
     <tr>
       <th>ID</th>
       <th>Account</th>
+      <th>Type</th>
+      <th>Last Transaction</th>
+      <th>First transaction</th>
       <th>Balance</th>
       <th>Stock</th>
     </tr>
@@ -20,6 +24,9 @@
   <tr>
     <td>{{ account.id }}</td>
     <td><a href="{% url 'money:account_detail' account.id %}">{{ account.name }}</a></td>
+    <td>{{ account.type }}</td>
+    <td>{{ account.last_transaction }}</td>
+    <td>{{ account.first_transaction | date:"Y-m-d" }}{% if not account.first_added %}(Not Correct){% endif %}</td>
     <td align="right">{{ account.amount | print_currency:account.currency | safe }}</td>
     {% with stock_list=stock_balance_map|get_value:account.id %}
     <td>

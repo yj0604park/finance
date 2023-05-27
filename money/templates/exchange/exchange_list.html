@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load money_tags %}
+
+{% block content %}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>날짜</th>
+            <th>이전 금액</th>
+            <th>이후 금액</th>
+            <th>원화 기준 환율</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for exchange in exchange_list %}
+        <tr>
+            <td>{{ exchange.date }}</td>
+            <td>{{ exchange.from_amount|print_currency:exchange.from_currency|safe }}</td>
+            <td>{{ exchange.to_amount|print_currency:exchange.to_currency|safe }}</td>
+            <td>{{ exchange.ratio_per_krw }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+{% endblock %}

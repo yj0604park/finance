@@ -1,28 +1,50 @@
 import datetime
+import calendar
 from collections import defaultdict
 
 from dateutil.rrule import MONTHLY, rrule
 from django.db.models import Max, Q, Sum
 from django.db.models.functions import TruncMonth
+from django.db.models.query import QuerySet
 
 from money import models
 
 
 def get_transaction_chart_data(
-    transaction_list,
+    transaction_list: QuerySet[models.Transaction],
+    currency,
     recalculate=False,
     reverse=False,
     sample_threshold=1000,
     sample_ratio=50,
+    update_snapshot=False,
 ):
+    """Create chart of transaction amounts. transaction_list should be sorted by date."""
+    transaction_list = transaction_list.filter(account__currency=currency)
+
     chart_dict = []
     sum = 0
 
     sampling = transaction_list.count() > sample_threshold
     count = 0
+
+    prev_month = None
+
     for transaction in transaction_list:
         count += 1
         sum += transaction.amount
+
+        if update_snapshot:
+            new_month = (transaction.date.year, transaction.date.month)
+            if new_month != prev_month:
+                if prev_month:
+                    _, last_day = calendar.monthrange(prev_month[0], prev_month[1])
+                    create_snapshot(
+                        f"{prev_month[0]:04d}-{prev_month[1]:02d}-{last_day:02d}",
+                        currency,
+                        sum,
+                    )
+                prev_month = new_month
 
         if not sampling or count % sample_ratio == 0:
             chart_dict.append(
@@ -31,9 +53,38 @@ def get_transaction_chart_data(
                     "y": transaction.balance if not recalculate else sum,
                 }
             )
+
+    if prev_month:
+        _, last_day = calendar.monthrange(prev_month[0], prev_month[1])
+        create_snapshot(
+            f"{prev_month[0]:04d}-{prev_month[1]:02d}-{last_day:02d}", currency, sum
+        )
+
     if reverse:
         chart_dict.reverse()
     return chart_dict
+
+
+def create_snapshot(date, currency, amount):
+    if models.AmountSnapshot.objects.filter(date=date, currency=currency):
+        snapshot = models.AmountSnapshot.objects.get(date=date, currency=currency)
+        snapshot.amount = amount
+    else:
+        snapshot = models.AmountSnapshot(date=date, currency=currency, amount=amount)
+    snapshot.save()
+
+
+def snapshot_chart(snapshot_list: QuerySet[models.AmountSnapshot], currency):
+    chart_info = []
+    snapshot_list = snapshot_list.filter(currency=currency).order_by("date")
+    for snapshot in snapshot_list:
+        chart_info.append(
+            {
+                "x": snapshot.date.strftime("%Y-%m-%d"),
+                "y": snapshot.amount,
+            }
+        )
+    return chart_info
 
 
 def filter_month(request, query_set):
@@ -62,7 +113,7 @@ def update_month_info(request, context, start_date, end_date):
             f"{selected_month_split[0]}년 {selected_month_split[1]}월",
         )
 
-        context["additional_get_query"] += f"&month={selected_month}"
+        context["additional_get_query"]["month"] = selected_month
 
     context["months"] = get_month_list(start_date, end_date)
 

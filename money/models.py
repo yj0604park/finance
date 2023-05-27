@@ -210,3 +210,13 @@ class Exchange(models.Model):
 
     def __str__(self) -> str:
         return f"{self.date}: {self.ratio_per_krw}"
+
+
+class AmountSnapshot(models.Model):
+    date = models.DateField()
+    currency = models.CharField(max_length=3, choices=CurrencyType.choices)
+    amount = models.FloatField()
+    summary = models.JSONField(null=True, blank=True)
+
+    def __str__(self) -> str:
+        return f"{self.date}: {self.currency}"

@@ -18,7 +18,6 @@ from django.db.models import (
 )
 from django.db.models.functions import TruncMonth
 from django.db.models.query import QuerySet
-from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import DetailView, ListView, UpdateView, View
@@ -49,7 +48,7 @@ class TransactionListView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
 
         date_range = models.Transaction.objects.aggregate(Min("date"), Max("date"))
-        context["additional_get_query"] = ""
+        context["additional_get_query"] = {}
         helper.update_month_info(
             self.request,
             context,
@@ -59,7 +58,7 @@ class TransactionListView(LoginRequiredMixin, ListView):
 
         reviewed = self.request.GET.get("reviewed", None)
         if reviewed is not None:
-            context["additional_get_query"] += f"&reviewed={reviewed}"
+            context["additional_get_query"]["reviewed"] = reviewed
 
         return context
 
@@ -75,17 +74,17 @@ class TransactionChartListView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
 
         context["usd_data"] = helper.get_transaction_chart_data(
-            models.Transaction.objects.filter(
-                account__currency=models.CurrencyType.USD
-            ).order_by("date", "-amount"),
+            models.Transaction.objects.order_by("date", "-amount"),
+            currency=choices.CurrencyType.USD,
             recalculate=True,
+            update_snapshot=True,
         )
 
         context["krw_data"] = helper.get_transaction_chart_data(
-            models.Transaction.objects.filter(
-                account__currency=models.CurrencyType.KRW
-            ).order_by("date", "-amount"),
+            models.Transaction.objects.order_by("date", "-amount"),
+            currency=choices.CurrencyType.KRW,
             recalculate=True,
+            update_snapshot=True,
         )
 
         selected_year = self.request.GET.get("year", date.today().year)
@@ -180,92 +179,6 @@ class TransactionUpdateView(UpdateView):
 transaction_update_view = TransactionUpdateView.as_view()
 
 
-class TransactionDetailView(LoginRequiredMixin, DetailView):
-    model = models.Transaction
-    template_name = "transaction/transaction_detail.html"
-
-    def get_queryset(self) -> QuerySet[Any]:
-        return (
-            super()
-            .get_queryset()
-            .select_related(
-                "account",
-                "related_transaction",
-                "related_transaction__retailer",
-                "retailer",
-            )
-            .prefetch_related(
-                Prefetch(
-                    "transactiondetail_set",
-                    queryset=models.TransactionDetail.objects.all().select_related(
-                        "item"
-                    ),
-                )
-            )
-        )
-
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        context = super().get_context_data(**kwargs)
-        transaction = context["transaction"]
-        detail_sum = 0
-
-        for detail in transaction.transactiondetail_set.all():
-            detail_sum += detail.amount * detail.count
-        context["detail_sum"] = detail_sum
-
-        if abs(transaction.amount + detail_sum) < 0.01:
-            transaction.reviewed = True
-            transaction.save()
-
-        return context
-
-
-transaction_detail_view = TransactionDetailView.as_view()
-
-
-class TransactionDetailCreateView(LoginRequiredMixin, CreateView):
-    template_name = "transaction/transaction_detail_create.html"
-    model = models.TransactionDetail
-    form_class = money_forms.TransactionDetailForm
-
-    def get_success_url(self) -> str:
-        return reverse_lazy(
-            "money:transaction_detail_create",
-            kwargs={"transaction_id": self.kwargs["transaction_id"]},
-        )
-
-    def form_valid(self, form: forms.BaseModelForm) -> HttpResponse:
-        form.instance.transaction = models.Transaction.objects.get(
-            pk=self.kwargs["transaction_id"]
-        )
-        if form.cleaned_data["amount"] == 0:
-            form.add_error("amount", "Value must not be 0.")
-            return self.form_invalid(form)
-
-        return super().form_valid(form)
-
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        context = super().get_context_data(**kwargs)
-        transaction = models.Transaction.objects.select_related(
-            "account", "retailer"
-        ).get(pk=self.kwargs["transaction_id"])
-        context["transaction"] = transaction
-
-        leftover = -transaction.amount
-
-        details = transaction.transactiondetail_set.all().select_related("item")
-
-        for detail in details:
-            leftover -= detail.count * detail.amount
-
-        context["details"] = details
-        context["leftover"] = leftover
-        return context
-
-
-transaction_detail_create_view = TransactionDetailCreateView.as_view()
-
-
 # Transaction category related views
 class TransactionCategoryView(LoginRequiredMixin, View):
     template_name = "category/category.html"
@@ -274,7 +187,7 @@ class TransactionCategoryView(LoginRequiredMixin, View):
         query_set = models.Transaction.objects.values("type", "account__currency")
         query_set = helper.filter_month(request, query_set)
 
-        context = {"additional_get_query": ""}
+        context = {"additional_get_query": {}}
 
         date_range = models.Transaction.objects.aggregate(Min("date"), Max("date"))
         helper.update_month_info(
@@ -360,9 +273,9 @@ class ReviewInternalTransactionView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        context["additional_get_query"] = ""
+        context["additional_get_query"] = {}
         if self.request.GET.get(self.INTERNAL_ONLY_FLAG, False):
-            context["additional_get_query"] = f"&{self.INTERNAL_ONLY_FLAG}=True"
+            context["additional_get_query"][self.INTERNAL_ONLY_FLAG] = True
 
         date_range = models.Transaction.objects.aggregate(Min("date"), Max("date"))
         helper.update_month_info(
@@ -395,8 +308,9 @@ class ReviewDetailTransactionView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
+        context["additional_get_query"] = {}
         context["reviewed"] = self.request.GET.get("reviewed", False)
-        context["additional_get_query"] = f"&reviewed={context['reviewed']}"
+        context["additional_get_query"]["reviewed"] = context["reviewed"]
         return context
 
 
@@ -495,6 +409,7 @@ amazon_list_view = AmazonListView.as_view()
 class AmazonOrderListView(LoginRequiredMixin, ListView):
     template_name = "transaction/amazon_order_list.html"
     model = models.AmazonOrder
+    paginate_by = 20
 
     def get_queryset(self) -> QuerySet[Any]:
         return (

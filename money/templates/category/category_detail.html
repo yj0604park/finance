@@ -7,11 +7,11 @@
 
 
 <div class="grid gap-0 row-gap-3">
-    <div class="btn-group p-3" role="group" aria-label="Basic button group">
-        {% for cat in category_list %}
-        <a class="btn btn-outline-primary" href="{% url 'money:category_detail' cat.0 %}">{{ cat.1 }}</a>
-        {% endfor %}
-    </div>
+  <div class="btn-group p-3" role="group" aria-label="Basic button group">
+    {% for cat in category_list %}
+    <a class="btn btn-outline-primary" href="{% url 'money:category_detail' cat.0 %}">{{ cat.1 }}</a>
+    {% endfor %}
+  </div>
 </div>
 
 
@@ -22,7 +22,7 @@
 {% endif %}
 
 <div class="btn-group p-1" role="group">
-    <a href="{% url 'money:category_detail' category %}" class="btn btn-outline-secondary">All</a>
+  <a href="{% url 'money:category_detail' category %}" class="btn btn-outline-secondary">All</a>
 </div>
 
 {% include "shared/month_selector.html" %}
@@ -31,26 +31,26 @@
 {% for currency in currencies %}
 {% if data|get_value:currency %}
 <div>
-    <canvas id="month_detail_{{ currency }}" width="250" height="500"></canvas>
+  <canvas id="month_detail_{{ currency }}" width="250" height="500"></canvas>
 </div>
 {% endif %}
 {% endfor %}
 
 <table class="table">
-    <thead>
-        <tr>
-            <th>통화</th>
-            <th>월</th>
-            <th>금액</th>
-        </tr>
-    </thead>
-    {% for month in month_detail %}
+  <thead>
     <tr>
-        <td>{{ month.account__currency }}</td>
-        <td>{{ month.month.year }}년 {{ month.month.month }}월</td>
-        <td>{{ month.total_amount|print_currency:month.account__currency | safe }}</td>
+      <th>통화</th>
+      <th>월</th>
+      <th>금액</th>
     </tr>
-    {% endfor %}
+  </thead>
+  {% for month in month_detail %}
+  <tr>
+    <td>{{ month.account__currency }}</td>
+    <td>{{ month.month.year }}년 {{ month.month.month }}월</td>
+    <td>{{ month.total_amount|print_currency:month.account__currency | safe }}</td>
+  </tr>
+  {% endfor %}
 </table>
 {% endif %}
 
@@ -60,33 +60,60 @@
 {% for currency in currencies %}
 {% if data|get_value:currency %}
 <div>
-    <canvas id="myChart_{{ currency }}" width="500" height="500"></canvas>
+  <canvas id="myChart_{{ currency }}" width="500" height="500"></canvas>
 </div>
 {% endif %}
 {% endfor %}
 
 <table class="table">
-    <thead>
-        <tr>
-            <th>Currency</th>
-            <th>Name</th>
-            <th>Amount</th>
-        </tr>
-    </thead>
-    {% for retailer in retailer_detail %}
+  <thead>
     <tr>
-        <td>{{ retailer.account__currency }}</td>
-        {% if retailer.retailer__id %}
-        <td><a href="{% url 'money:retailer_detail' retailer.retailer__id %}">{{ retailer.retailer__name }}</a></td>
-        {% else %}
-        <td>None</td>
-        {% endif %}
-        <td align="right">{{ retailer.amount__sum|print_currency:retailer.account__currency | safe }}</td>
+      <th>Currency</th>
+      <th>Name</th>
+      <th>Amount</th>
     </tr>
-    {% endfor %}
+  </thead>
+  {% for retailer in retailer_detail %}
+  <tr>
+    <td>{{ retailer.account__currency }}</td>
+    {% if retailer.retailer__id %}
+    <td><a href="{% url 'money:retailer_detail' retailer.retailer__id %}">{{ retailer.retailer__name }}</a></td>
+    {% else %}
+    <td>None</td>
+    {% endif %}
+    <td align="right">{{ retailer.amount__sum|print_currency:retailer.account__currency | safe }}</td>
+  </tr>
+  {% endfor %}
 </table>
 
-{% if print_all %}
+{% if detail_item_summary %}
+<h1>Detail Item Summary</h1>
+<table class="table table-hover">
+
+  <thead>
+    <tr>
+      <th>항목</th>
+      <th>금액</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {% for item in detail_item_summary %}
+    <tr>
+      <td>{{ item.item__category }}</td>
+      <td>{{ item.amount__sum | print_dollar | safe }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+
+{% if selected_month %}
+<a href="?month={{ selected_month.0 }}&print_all=True" class="btn btn-outline-primary">Show all transactions</a>
+{% endif %}
+
+{% if print_all == True %}
 <h1>All Transactions</h1>
 {% with transaction_list=transaction_list print_flags=True print_related=True %}
 {% include 'transaction/transaction_table.html' %}

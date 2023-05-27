@@ -58,8 +58,10 @@
     <a class="btn btn-primary" href="{% url 'money:transaction_detail_create' transaction.id %}">
         Add
     </a>
-    {% else %}
+    {% elif transaction.requires_detail %}
     Detail Added
+    {% else %}
+    N/A
     {% endif %}
 </td>
 {% endif %}

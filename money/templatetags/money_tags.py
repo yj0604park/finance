@@ -1,3 +1,5 @@
+import datetime
+
 from django import template
 
 from money.models import CurrencyType
@@ -55,3 +57,42 @@ def multiply(value, arg):
 @register.filter
 def get_value(value, arg):
     return value[arg]
+
+
+@register.filter
+def update_month(dictionary, value):
+    dictionary["month"] = value
+    return dictionary
+
+
+@register.filter
+def update_page(dictionary, value):
+    dictionary["page"] = value
+    return dictionary
+
+
+@register.filter
+def update_dictionary(dictionary, key_value):
+    key, value = key_value.split("=")
+    dictionary[key] = value
+    return dictionary
+
+
+@register.filter
+def print_argument(dictionary):
+    arguments = [f"{k}={v}" for k, v in dictionary.items()]
+    return f"?{'&'.join(arguments)}"
+
+
+@register.filter
+def days_ago(date):
+    try:
+        diff = datetime.datetime.today().replace(tzinfo=None) - date.replace(
+            tzinfo=None
+        )
+    except:
+        diff = datetime.datetime.today().date() - date
+    if diff < datetime.timedelta(days=1):
+        return f"<1 day"
+    else:
+        return f"{diff.days} days"

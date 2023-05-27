@@ -45,6 +45,7 @@ class TransactionAdmin(admin.ModelAdmin):
 @admin.register(models.Retailer)
 class RetailerAdmin(admin.ModelAdmin):
     list_display = ["id", "name", "type", "category"]
+    list_filter = ["type"]
 
 
 @admin.register(models.DetailItem)
@@ -116,3 +117,8 @@ class AmazonOrderAdmin(admin.ModelAdmin):
 @admin.register(models.Exchange)
 class ExchangeAdmin(admin.ModelAdmin):
     raw_id_fields = ("from_transaction", "to_transaction")
+
+
+@admin.register(models.AmountSnapshot)
+class AmountSnapshotAdmin(admin.ModelAdmin):
+    pass

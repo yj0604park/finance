@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% load money_tags %}
+
+<h1>Snapshot</h1>
+
+{% for currency in chart %}
+<canvas id="myChart_{{ currency }}" width="500" height="500"></canvas>
+{% endfor %}
+
+
+{% for currency in chart %}
+{% with data=chart|get_value:currency chartId="myChart_"|add:currency %}
+{% include 'transaction/transaction_chart.html' %}
+{% endwith %}
+{% endfor %}
+
+
+{% endblock %}
