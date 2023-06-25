@@ -12,6 +12,9 @@ from money.choices import (
 class Bank(models.Model):
     name = models.CharField(max_length=200)
 
+    class Meta:
+        ordering = ["name"]
+
     def __str__(self):
         return self.name
 
@@ -185,6 +188,9 @@ class AmazonOrder(models.Model):
         on_delete=models.SET_NULL,
         related_name="returned_order",
     )
+
+    class Meta:
+        ordering = ["date"]
 
     def get_absolute_url(self):
         return reverse("money:amazon_order_detail", kwargs={"pk": self.pk})

@@ -1,3 +1,4 @@
+import copy
 import datetime
 
 from django import template
@@ -61,14 +62,16 @@ def get_value(value, arg):
 
 @register.filter
 def update_month(dictionary, value):
-    dictionary["month"] = value
-    return dictionary
+    result = copy.deepcopy(dictionary)
+    result["month"] = value
+    return result
 
 
 @register.filter
 def update_page(dictionary, value):
-    dictionary["page"] = value
-    return dictionary
+    result = copy.deepcopy(dictionary)
+    result["page"] = value
+    return result
 
 
 @register.filter
@@ -86,6 +89,8 @@ def print_argument(dictionary):
 
 @register.filter
 def days_ago(date):
+    if date is None:
+        return "Unk"
     try:
         diff = datetime.datetime.today().replace(tzinfo=None) - date.replace(
             tzinfo=None

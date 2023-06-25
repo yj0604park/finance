@@ -22,6 +22,7 @@ services:
     ports:
       - "58000:8000"
     command: /start
+    restart: always
 
   postgres:
     build:
@@ -34,6 +35,7 @@ services:
       - finance_local_postgres_data_backups:/backups
     env_file:
       - ./.envs/.local/.postgres
+    restart: always
 
   docs:
     image: finance_local_docs
@@ -54,6 +56,7 @@ services:
   redis:
     image: redis:6
     container_name: finance_local_redis
+    restart: always
 
   celeryworker:
     <<: *django
@@ -64,6 +67,7 @@ services:
       - postgres
     ports: []
     command: /start-celeryworker
+    restart: always
 
   celerybeat:
     <<: *django
@@ -74,6 +78,7 @@ services:
       - postgres
     ports: []
     command: /start-celerybeat
+    restart: always
 
   flower:
     <<: *django
@@ -82,3 +87,4 @@ services:
     ports:
       - "5555:5555"
     command: /start-flower
+    restart: always

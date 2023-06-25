@@ -3,15 +3,15 @@ from django import forms
 from money import models
 
 
-@admin.register(models.Bank)
-class BankAdmin(admin.ModelAdmin):
-    list_display = ["id", "name"]
-
-
 @admin.register(models.Account)
 class AccountAdmin(admin.ModelAdmin):
-    list_display = ["id", "name", "bank", "currency", "is_active"]
-    list_filter = ["is_active"]
+    list_display = ["name", "id", "bank", "currency", "is_active"]
+    list_filter = ["is_active", "bank"]
+
+
+@admin.register(models.Bank)
+class BankAdmin(admin.ModelAdmin):
+    list_display = ["name", "id"]
 
 
 class TransactionAdminForm(forms.Form):
@@ -32,7 +32,7 @@ class TransactionAdmin(admin.ModelAdmin):
         "type",
         "reviewed",
     ]
-    raw_id_fields = ("related_transaction",)
+    raw_id_fields = ("related_transaction", "account")
     list_filter = ["account"]
 
     def account_name(self, obj):
@@ -45,7 +45,7 @@ class TransactionAdmin(admin.ModelAdmin):
 @admin.register(models.Retailer)
 class RetailerAdmin(admin.ModelAdmin):
     list_display = ["id", "name", "type", "category"]
-    list_filter = ["type"]
+    list_filter = ["type", "category"]
 
 
 @admin.register(models.DetailItem)
@@ -99,6 +99,7 @@ class StockTransactionAdmin(admin.ModelAdmin):
 class AmazonOrderAdmin(admin.ModelAdmin):
     list_display = ["item", "date", "is_returned", "transaction"]
     raw_id_fields = ("transaction", "return_transaction")
+    date_hierarchy = "date"
 
     def get_queryset(self, request):
         return (
@@ -116,9 +117,11 @@ class AmazonOrderAdmin(admin.ModelAdmin):
 
 @admin.register(models.Exchange)
 class ExchangeAdmin(admin.ModelAdmin):
+    list_display = ["__str__", "id", "date", "ratio_per_krw"]
     raw_id_fields = ("from_transaction", "to_transaction")
+    date_hierarchy = "date"
 
 
 @admin.register(models.AmountSnapshot)
 class AmountSnapshotAdmin(admin.ModelAdmin):
-    pass
+    date_hierarchy = "date"
