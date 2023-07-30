@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% load money_tags %}
+
+<h1>Snapshot</h1>
+
+<canvas id="myChart" width="500" height="300"></canvas>
+
+{{ chart }}
+
+<script>
+    const ctx = document.getElementById('myChart');
+    const data = {
+        labels: {{ labels| safe }},
+    datasets: [{{ datasets| safe }}]
+    };
+    const config = {
+        type: 'line',
+        data: data,
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    };
+    new Chart(ctx, config);
+
+</script>
+{% endblock %}

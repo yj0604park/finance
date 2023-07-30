@@ -8,7 +8,7 @@ from django.core import serializers
 from django.db.models import Count, Q
 from django.http import HttpRequest, JsonResponse
 
-from money import choices, models
+from money import choices, models, helper
 
 
 @login_required
@@ -16,18 +16,18 @@ def update_balance(request, account_id):
     account = models.Account.objects.get(pk=account_id)
     transactions = account.transaction_set.all().order_by("date", "-amount")
 
-    sum = 0
+    total = 0
     first = True
     for transaction in transactions:
         if first:
             account.first_transaction = transaction.date
             first = False
-        sum += transaction.amount
-        transaction.balance = sum
+        total += transaction.amount
+        transaction.balance = total
         transaction.save()
         account.last_transaction = transaction.date
 
-    account.amount = sum
+    account.amount = total
     account.last_update = datetime.datetime.now()
     account.save()
 
@@ -207,3 +207,16 @@ def get_exchange_rate(request):
     print(response)
 
     return JsonResponse(response)
+
+
+@login_required
+def create_daily_snapshot(request):
+    helper.create_daily_snapshot()
+    return JsonResponse({"success": True})
+
+
+@login_required
+def get_stock_snapshot(request):
+    stock_snapshot = helper.get_stock_snapshot()
+
+    return JsonResponse({"data": stock_snapshot})

@@ -20,6 +20,7 @@
         <li class="page-item">
             <a class="page-link"><strong>{{ i }}</strong></a>
         </li>
+        <br />
         {% else %}
         <li class="page-item">
             <a class="page-link" href="{{ additional_get_query|update_page:i|print_argument }}">{{ i }}</a>

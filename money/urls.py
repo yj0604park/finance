@@ -1,7 +1,12 @@
 from django.urls import path
 
 from money import views
-from money.view import transaction_view, view_functions, transaction_detail_view
+from money.view import (
+    transaction_view,
+    view_functions,
+    transaction_detail_view,
+    stock_view,
+)
 
 app_name = "money"
 
@@ -37,6 +42,23 @@ urlpatterns = [
         view=views.amount_snapshot_list_view,
         name="amount_snapshot_list",
     ),
+    path(
+        "update_snapshot",
+        view=view_functions.create_daily_snapshot,
+        name="update_snapshot",
+    ),
+    # region Stock
+    path(
+        "get_stock_snapshot",
+        view=view_functions.get_stock_snapshot,
+        name="get_stock_snapshot",
+    ),
+    path(
+        "stock_chart",
+        view=stock_view.stock_amount_chart_view,
+        name="stock_chart",
+    ),
+    # endregion
     # Transaction
     path(
         "transaction_list",

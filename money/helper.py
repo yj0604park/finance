@@ -1,6 +1,7 @@
 import datetime
-import calendar
+import typing
 from collections import defaultdict
+from copy import copy
 
 from dateutil.rrule import MONTHLY, rrule
 from django.db.models import Max, Q, Sum
@@ -23,54 +24,80 @@ def get_transaction_chart_data(
     transaction_list = transaction_list.filter(account__currency=currency)
 
     chart_dict = []
-    sum = 0
+    total = 0
 
     sampling = transaction_list.count() > sample_threshold
     count = 0
 
-    prev_month = None
+    prev_month = (None, None)
 
     for transaction in transaction_list:
         count += 1
-        sum += transaction.amount
+        total += transaction.amount
 
         if update_snapshot:
             new_month = (transaction.date.year, transaction.date.month)
             if new_month != prev_month:
-                if prev_month:
-                    _, last_day = calendar.monthrange(prev_month[0], prev_month[1])
-                    create_snapshot(
-                        f"{prev_month[0]:04d}-{prev_month[1]:02d}-{last_day:02d}",
-                        currency,
-                        sum,
-                    )
                 prev_month = new_month
 
         if not sampling or count % sample_ratio == 0:
             chart_dict.append(
                 {
                     "x": transaction.date.strftime("%Y-%m-%d"),
-                    "y": transaction.balance if not recalculate else sum,
+                    "y": transaction.balance if not recalculate else total,
                 }
             )
-
-    if prev_month:
-        _, last_day = calendar.monthrange(prev_month[0], prev_month[1])
-        create_snapshot(
-            f"{prev_month[0]:04d}-{prev_month[1]:02d}-{last_day:02d}", currency, sum
-        )
 
     if reverse:
         chart_dict.reverse()
     return chart_dict
 
 
-def create_snapshot(date, currency, amount):
+def create_daily_snapshot():
+    currency_list = models.CurrencyType.choices
+    all_transaction_list = (
+        models.Transaction.objects.all().order_by("date").prefetch_related("account")
+    )
+
+    for currency in currency_list:
+        transaction_list = all_transaction_list.filter(account__currency=currency[0])
+        if not transaction_list:
+            continue
+
+        prev_date = transaction_list[0].date
+        total_value = 0.0
+
+        history = defaultdict(float)
+        for transaction in transaction_list:
+            # Save previous date value
+            if prev_date != transaction.date:
+                create_snapshot(prev_date, currency[0], total_value, history)
+                prev_date = transaction.date
+
+            account_id = transaction.account.name
+            account_value = history[account_id]
+            account_value += transaction.amount
+
+            # Update value in the map
+            if account_value == 0.0:
+                del history[account_id]
+            else:
+                history[account_id] = account_value
+            total_value += transaction.amount
+
+        # Last value will not be added by the above loop
+        create_snapshot(prev_date, currency[0], total_value, history)
+
+
+def create_snapshot(date, currency, amount, summary):
     if models.AmountSnapshot.objects.filter(date=date, currency=currency):
         snapshot = models.AmountSnapshot.objects.get(date=date, currency=currency)
         snapshot.amount = amount
+        snapshot.summary = summary
     else:
-        snapshot = models.AmountSnapshot(date=date, currency=currency, amount=amount)
+        snapshot = models.AmountSnapshot(
+            date=date, currency=currency, amount=amount, summary=summary
+        )
     snapshot.save()
 
 
@@ -85,6 +112,62 @@ def snapshot_chart(snapshot_list: QuerySet[models.AmountSnapshot], currency):
             }
         )
     return chart_info
+
+
+def get_stock_snapshot():
+    transaction_list = (
+        models.StockTransaction.objects.all().order_by("date").prefetch_related("stock")
+    )
+    if not transaction_list:
+        return []
+
+    stock_transaction_data = []
+    stock_name_set = set()
+
+    total_amount = defaultdict(float)
+    prev_date = transaction_list[0].date
+    for transaction in transaction_list:
+        stock_name_set.add(transaction.stock.name)
+
+        # append prev date data
+        if prev_date != transaction.date:
+            stock_transaction_data.append((prev_date, copy(total_amount)))
+            prev_date = transaction.date
+
+        amount = total_amount[transaction.stock.name]
+        amount += transaction.shares
+        amount = round(amount, 5)
+        if amount == 0.0:
+            del total_amount[transaction.stock.name]
+        else:
+            total_amount[transaction.stock.name] = amount
+
+    stock_transaction_data.append((prev_date, copy(total_amount)))
+
+    return stock_transaction_data, stock_name_set
+
+
+def convert_snapshot_to_chart_data(snapshot, stock_set: typing.Set):
+    converted_data = defaultdict(list)  # Stock: Amount
+    stock_list = list(stock_set)
+
+    labels = []
+    for date, stock_map in snapshot:  # Date: (Stock: Amount)
+        labels.append(date.strftime("%Y-%m-%d"))
+        for stock in stock_list:
+            if stock in stock_map:
+                converted_data[stock].append(stock_map[stock])
+            else:
+                converted_data[stock].append("NaN")
+
+    datasets = []
+    for stock in stock_list:
+        data_string = ", ".join([str(x) for x in converted_data[stock]])
+        datasets.append(
+            f"{{label: '{stock}', data: [{data_string}], fill: false, tension: 0.1}}"
+        )
+
+    return labels, ", ".join(datasets)
 
 
 def filter_month(request, query_set):

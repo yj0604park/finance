@@ -43,24 +43,22 @@
     {% endfor %}
 </table>
 
-<h1>USD Chart</h1>
-<div>
-    <canvas id="USDChart"></canvas>
-</div>
+<button type="button" class="btn btn-secondary update-balance-button" data-arg="{% url 'money:update_snapshot' %}">
+    Update Chart
+</button>
 
-<h1>KRW Chart</h1>
-<div>
-    <canvas id="KRWChart"></canvas>
-</div>
-
+{% for currency in chart %}
+<h2>{{ currency }} Chart</h2>
+<canvas id="myChart_{{ currency }}" width="500" height="300"></canvas>
+{% endfor %}
 
 
 
-{% with data=usd_data chartId="USDChart" %}
+
+{% for currency in chart %}
+{% with data=chart|get_value:currency chartId="myChart_"|add:currency %}
 {% include 'transaction/transaction_chart.html' %}
 {% endwith %}
+{% endfor %}
 
-{% with data=krw_data chartId="KRWChart" %}
-{% include 'transaction/transaction_chart.html' %}
-{% endwith %}
 {% endblock %}

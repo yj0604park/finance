@@ -95,6 +95,9 @@ class Transaction(models.Model):
 class Stock(models.Model):
     name = models.CharField(max_length=20)
     ticker = models.CharField(max_length=10, null=True, blank=True)
+    currency = models.CharField(
+        max_length=3, choices=CurrencyType.choices, default=CurrencyType.USD
+    )
 
     class Meta:
         ordering = ["ticker"]
@@ -126,6 +129,12 @@ class StockTransaction(models.Model):
 
     def __str__(self):
         return f"{self.date.strftime('%Y-%m-%d')}, Stock {self.stock.id}, share {self.shares}, price {self.price}"
+
+
+class StockPrice(models.Model):
+    stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
+    date = models.DateField()
+    price = models.FloatField()
 
 
 class DetailItem(models.Model):

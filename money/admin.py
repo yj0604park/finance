@@ -33,7 +33,7 @@ class TransactionAdmin(admin.ModelAdmin):
         "reviewed",
     ]
     raw_id_fields = ("related_transaction", "account")
-    list_filter = ["account"]
+    list_filter = ["account", "type"]
 
     def account_name(self, obj):
         return obj.account.name
@@ -87,6 +87,11 @@ class SalaryAdmin(admin.ModelAdmin):
 
 @admin.register(models.Stock)
 class StockAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(models.StockPrice)
+class StockPriceAdmin(admin.ModelAdmin):
     pass
 
 

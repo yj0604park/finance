@@ -73,19 +73,11 @@ class TransactionChartListView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
 
-        context["usd_data"] = helper.get_transaction_chart_data(
-            models.Transaction.objects.order_by("date", "-amount"),
-            currency=choices.CurrencyType.USD,
-            recalculate=True,
-            update_snapshot=True,
-        )
-
-        context["krw_data"] = helper.get_transaction_chart_data(
-            models.Transaction.objects.order_by("date", "-amount"),
-            currency=choices.CurrencyType.KRW,
-            recalculate=True,
-            update_snapshot=True,
-        )
+        amountsnapshot_list = models.AmountSnapshot.objects.all()
+        context["chart"] = {
+            "USD": helper.snapshot_chart(amountsnapshot_list, choices.CurrencyType.USD),
+            "KRW": helper.snapshot_chart(amountsnapshot_list, choices.CurrencyType.KRW),
+        }
 
         selected_year = self.request.GET.get("year", date.today().year)
         monthly_summary = (
@@ -384,6 +376,12 @@ class AmazonListView(LoginRequiredMixin, ListView):
     model = models.Transaction
     paginate_by = 20
 
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["additional_get_query"] = {}
+
+        return context
+
     def get_queryset(self) -> QuerySet[Any]:
         amazon = models.Retailer.objects.filter(name="Amazon")
         if amazon:
@@ -411,12 +409,17 @@ class AmazonOrderListView(LoginRequiredMixin, ListView):
     model = models.AmazonOrder
     paginate_by = 20
 
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["additional_get_query"] = {}
+
+        return context
+
     def get_queryset(self) -> QuerySet[Any]:
-        return (
+        query_set = (
             super()
             .get_queryset()
-            .order_by("date", "id")
-            .filter(transaction=None)
+            .order_by("-date", "id")
             .prefetch_related(
                 "transaction",
                 Prefetch(
@@ -429,6 +432,11 @@ class AmazonOrderListView(LoginRequiredMixin, ListView):
                 ),
             )
         )
+
+        if self.request.GET.get("review_required"):
+            query_set = query_set.filter(transaction=None)
+
+        return query_set
 
 
 amazon_order_list_view = AmazonOrderListView.as_view()
