@@ -1,12 +1,10 @@
-from typing import Any, Dict
+from typing import Any
 
 from django import forms
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.db.models import Prefetch, QuerySet, Sum
-from django.db.models.query import QuerySet
 from django.http import HttpResponse
-from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.edit import CreateView
@@ -39,7 +37,7 @@ class TransactionDetailView(LoginRequiredMixin, DetailView):
             )
         )
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         transaction = context["transaction"]
         detail_sum = 0
@@ -79,7 +77,7 @@ class TransactionDetailCreateView(LoginRequiredMixin, CreateView):
 
         return super().form_valid(form)
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         transaction = models.Transaction.objects.select_related(
             "account", "retailer"
@@ -137,7 +135,7 @@ detail_item_create_view = DetailItemCreateView.as_view()
 class DetailItemCategoryView(LoginRequiredMixin, TemplateView):
     template_name = "detail_item/detail_item_category.html"
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         category = self.kwargs["category"]
         context["category"] = category

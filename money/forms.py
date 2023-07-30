@@ -1,19 +1,14 @@
 import json
 from datetime import date
-from typing import Any, Dict, Mapping, Optional, Type, Union
 
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Column, Layout, Row, Submit
 from django import forms
-from django.core.files.base import File
-from django.db.models.base import Model
 from django.forms import widgets
-from django.forms.utils import ErrorList
 from django.urls import reverse
 from django.utils.safestring import mark_safe
-from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Submit, Row, Column
 
-
-from money import models, choices
+from money import choices, models
 
 
 class DateTimePickerWidget(forms.TextInput):
@@ -33,7 +28,7 @@ class DateTimePickerWidget(forms.TextInput):
 
 class RelatedFieldWidgetCanAdd(widgets.Select):
     def __init__(self, related_model, related_url=None, *args, **kw):
-        super(RelatedFieldWidgetCanAdd, self).__init__(*args, **kw)
+        super().__init__(*args, **kw)
 
         if not related_url:
             rel_to = related_model
@@ -47,8 +42,9 @@ class RelatedFieldWidgetCanAdd(widgets.Select):
         self.related_url = reverse(self.related_url)
         output = [
             '<div class="input-group">',
-            super(RelatedFieldWidgetCanAdd, self).render(name, value, *args, **kwargs),
-            f'<a href="{self.related_url}" class="btn btn-outline-secondary" id="add_id_{name}" onclick="event.preventDefault(); openPopup(this);">Add Another</a>',
+            super().render(name, value, *args, **kwargs),
+            f'<a href="{self.related_url}" class="btn btn-outline-secondary" id="add_id_{name}"'
+            + ' onclick="event.preventDefault(); openPopup(this);">Add Another</a>',
             "</div>",
         ]
 
@@ -81,7 +77,7 @@ class DynamicKeyValueJSONWidget(forms.Widget):
         for index, item in enumerate(context["widget"]["value"]):
             widget_attrs = final_attrs.copy()
             if id_:
-                widget_attrs["id"] = "{id_}_{index}".format(id_=id_, index=index)
+                widget_attrs["id"] = f"{id_}_{index}"
             widget = (
                 self.subwidget_key_form(),
                 self.subwidget_value_form(attrs={"step": "any"}),

@@ -1,12 +1,13 @@
 import json
-from money import models, choices
 import re
+
+from money import choices, models
 
 
 def run():
     kakao_retailer = models.Retailer.objects.get(name="카카오뱅크")
 
-    saving_account_pattern = re.compile("(\d{4})")
+    saving_account_pattern = re.compile(r"(\d{4})")
 
     for transaction in models.Transaction.objects.filter(
         account_id=9, reviewed=False, type=models.TransactionCategory.ETC

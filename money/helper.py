@@ -1,5 +1,4 @@
 import datetime
-import typing
 from collections import defaultdict
 from copy import copy
 
@@ -147,7 +146,7 @@ def get_stock_snapshot():
     return stock_transaction_data, stock_name_set
 
 
-def convert_snapshot_to_chart_data(snapshot, stock_set: typing.Set):
+def convert_snapshot_to_chart_data(snapshot, stock_set: set):
     converted_data = defaultdict(list)  # Stock: Amount
     stock_list = list(stock_set)
 

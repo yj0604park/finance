@@ -95,9 +95,10 @@ def days_ago(date):
         diff = datetime.datetime.today().replace(tzinfo=None) - date.replace(
             tzinfo=None
         )
-    except:
+    # trunk-ignore(pylint/W0718)
+    except Exception:
         diff = datetime.datetime.today().date() - date
     if diff < datetime.timedelta(days=1):
-        return f"<1 day"
+        return "<1 day"
     else:
         return f"{diff.days} days"

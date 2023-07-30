@@ -1,5 +1,5 @@
 from datetime import date
-from typing import Any, Dict
+from typing import Any
 
 from django import forms
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -17,7 +17,6 @@ from django.db.models import (
     When,
 )
 from django.db.models.functions import TruncMonth
-from django.db.models.query import QuerySet
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import DetailView, ListView, UpdateView, View
@@ -44,7 +43,7 @@ class TransactionListView(LoginRequiredMixin, ListView):
 
         return qs
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
 
         date_range = models.Transaction.objects.aggregate(Min("date"), Max("date"))
@@ -70,7 +69,7 @@ class TransactionChartListView(LoginRequiredMixin, ListView):
     model = models.Transaction
     template_name = "transaction/transaction_chart_list.html"
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
 
         amountsnapshot_list = models.AmountSnapshot.objects.all()
@@ -263,7 +262,7 @@ class ReviewInternalTransactionView(LoginRequiredMixin, ListView):
 
         return qs
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context["additional_get_query"] = {}
         if self.request.GET.get(self.INTERNAL_ONLY_FLAG, False):
@@ -298,7 +297,7 @@ class ReviewDetailTransactionView(LoginRequiredMixin, ListView):
             .order_by("-date")
         )
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context["additional_get_query"] = {}
         context["reviewed"] = self.request.GET.get("reviewed", False)
@@ -352,7 +351,7 @@ class StockTransactionCreateView(LoginRequiredMixin, CreateView):
 
         return super().form_valid(form)
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         account_id = self.kwargs["account_id"]
         context["account"] = models.Account.objects.get(pk=account_id)
@@ -376,7 +375,7 @@ class AmazonListView(LoginRequiredMixin, ListView):
     model = models.Transaction
     paginate_by = 20
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context["additional_get_query"] = {}
 
@@ -409,7 +408,7 @@ class AmazonOrderListView(LoginRequiredMixin, ListView):
     model = models.AmazonOrder
     paginate_by = 20
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context["additional_get_query"] = {}
 
@@ -447,7 +446,7 @@ class AmazonOrderCreateView(LoginRequiredMixin, CreateView):
     model = models.AmazonOrder
     form_class = money_forms.AmazonOrderForm
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         prev_order = models.AmazonOrder.objects.last()
 

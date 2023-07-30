@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Any, Dict
+from typing import Any
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
@@ -17,7 +17,6 @@ from django.db.models import (
     When,
 )
 from django.db.models.functions import TruncMonth
-from django.db.models.query import QuerySet
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import DetailView, ListView, TemplateView, View
@@ -32,7 +31,7 @@ from money import helper, models
 class HomeView(LoginRequiredMixin, TemplateView):
     template_name = "home.html"
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
 
         account_list = (
@@ -63,7 +62,7 @@ class BankDetailView(LoginRequiredMixin, DetailView):
     model = models.Bank
     template_name = "bank/bank_detail.html"
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         bank = context["bank"]
         account_list = models.Account.objects.filter(
@@ -276,7 +275,7 @@ class RetailerSummaryView(LoginRequiredMixin, ListView):
             .order_by("retailer__name")
         )
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context["currency"] = self.request.GET.get("currency", models.CurrencyType.USD)
         context["category_list"] = models.TransactionCategory.choices
@@ -300,7 +299,7 @@ class RetailerDetailView(LoginRequiredMixin, DetailView):
     template_name = "retailer/retailer_detail.html"
     model = models.Retailer
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         trnasactions = models.Transaction.objects.filter(
             retailer_id=self.kwargs["pk"]
@@ -338,7 +337,7 @@ class SalaryListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         return super().get_queryset().order_by("date")
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         net_pay = []
         gross_pay = []
@@ -366,7 +365,7 @@ class SalaryDetailView(LoginRequiredMixin, DetailView):
     template_name = "salary/salary_detail.html"
     model = models.Salary
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         salary = context["salary"]
         valid_check = (
@@ -441,7 +440,7 @@ class AmountSnapshotListView(LoginRequiredMixin, ListView):
     template_name = "snapshot/amount_snapshot.html"
     model = models.AmountSnapshot
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
 
         # group by currency

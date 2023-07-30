@@ -2,10 +2,10 @@ from django.urls import path
 
 from money import views
 from money.view import (
+    stock_view,
+    transaction_detail_view,
     transaction_view,
     view_functions,
-    transaction_detail_view,
-    stock_view,
 )
 
 app_name = "money"
