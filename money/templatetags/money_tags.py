@@ -35,7 +35,8 @@ def print_currency(value, currency):
     currency = currency.upper()
     if currency == CurrencyType.KRW:
         return print_krw(value)
-    elif currency == CurrencyType.USD:
+
+    if currency == CurrencyType.USD:
         return print_dollar(value)
     return value
 
@@ -98,7 +99,8 @@ def days_ago(date):
     # trunk-ignore(pylint/W0718)
     except Exception:
         diff = datetime.datetime.today().date() - date
+
     if diff < datetime.timedelta(days=1):
         return "<1 day"
-    else:
-        return f"{diff.days} days"
+
+    return f"{diff.days} days"

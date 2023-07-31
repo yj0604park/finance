@@ -215,7 +215,19 @@ def create_daily_snapshot(request):
 
 
 @login_required
+# trunk-ignore(pylint/W0613)
 def get_stock_snapshot(request):
     stock_snapshot = helper.get_stock_snapshot()
 
     return JsonResponse({"data": stock_snapshot})
+
+
+@login_required
+def filter_retailer(request):
+    keyword = request.GET.get("keyword")
+    filtered = models.Retailer.objects.filter(name__icontains=keyword)
+
+    filtered_obj_list = [
+        {"name": obj.name, "id": obj.id, "str": str(obj)} for obj in filtered
+    ]
+    return JsonResponse({"filtered_list": filtered_obj_list})

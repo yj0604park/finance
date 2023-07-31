@@ -154,7 +154,7 @@ urlpatterns = [
         view=transaction_detail_view.detail_item_category_view,
         name="detail_item_category",
     ),
-    # functional views
+    # region functional views
     path(
         "update_balance/<int:account_id>",
         view=view_functions.update_balance,
@@ -200,4 +200,6 @@ urlpatterns = [
         view=view_functions.update_related_transaction_for_amazon,
         name="update_related_transaction_for_amazon",
     ),
+    path("filter_retailer", view=view_functions.filter_retailer, name="filter_retailer")
+    # endregion
 ]

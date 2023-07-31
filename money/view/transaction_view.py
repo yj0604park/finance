@@ -1,5 +1,5 @@
 from datetime import date
-from typing import Any
+from typing import Any, Dict
 
 from django import forms
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -209,8 +209,8 @@ class TransactionCategoryView(LoginRequiredMixin, View):
 
         context["label"] = label_per_currency
         context["data"] = data_per_currency
-        context["income"] = sorted([(k, v) for k, v in income_per_currency.items()])
-        context["spent"] = sorted([(k, v) for k, v in spent_per_currency.items()])
+        context["income"] = sorted(income_per_currency.items())
+        context["spent"] = sorted(spent_per_currency.items())
         context["currencies"] = [k[0] for k in models.CurrencyType.choices]
 
         return render(request, self.template_name, context)
@@ -233,6 +233,11 @@ class ReviewTransactionView(LoginRequiredMixin, ListView):
             .prefetch_related("account", "retailer")
         )
         return qs
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["additional_get_query"] = {}
+        return context
 
 
 review_transaction_view = ReviewTransactionView.as_view()
