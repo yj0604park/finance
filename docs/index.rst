@@ -12,6 +12,7 @@ Welcome to finance's documentation!
 
    howto
    users
+   money
 
 
 
