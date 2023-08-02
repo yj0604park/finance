@@ -1,5 +1,5 @@
 from datetime import date
-from typing import Any, Dict
+from typing import Any
 
 from django import forms
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -234,7 +234,7 @@ class ReviewTransactionView(LoginRequiredMixin, ListView):
         )
         return qs
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context["additional_get_query"] = {}
         return context

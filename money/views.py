@@ -1,8 +1,6 @@
 from collections import defaultdict
 from typing import Any, TypedDict
-from django_stubs_ext import WithAnnotations
 
-from django.db.models.manager import BaseManager
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
 from django.db.models import (
@@ -16,13 +14,14 @@ from django.db.models import (
     QuerySet,
     Subquery,
     Sum,
-    When
+    When,
 )
 from django.db.models.functions import TruncMonth
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import DetailView, ListView, TemplateView, View
 from django.views.generic.edit import CreateView
+from django_stubs_ext import WithAnnotations
 
 from money import choices
 from money import forms as money_forms
@@ -62,8 +61,10 @@ home_view = HomeView.as_view()
 class BarAnnotations(TypedDict):
     last_stock_transaction: models.StockTransaction
 
+
 class MyTypedDict(TypedDict):
     foo: str
+
 
 # Bank related views
 class BankDetailView(LoginRequiredMixin, DetailView):

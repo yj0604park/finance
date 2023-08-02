@@ -1,7 +1,7 @@
 import datetime
 from collections import defaultdict
 from copy import copy
-from typing import Optional, DefaultDict
+from typing import DefaultDict
 
 from dateutil.rrule import MONTHLY, rrule
 from django.db.models import Max, Q, Sum
@@ -29,7 +29,7 @@ def get_transaction_chart_data(
     sampling = transaction_list.count() > sample_threshold
     count = 0
 
-    prev_month:tuple[Optional[float],Optional[float]] = (None, None)
+    prev_month: tuple[float | None, float | None] = (None, None)
 
     for transaction in transaction_list:
         count += 1
@@ -67,7 +67,7 @@ def create_daily_snapshot():
         prev_date = transaction_list[0].date
         total_value = 0.0
 
-        history:DefaultDict[str, float]  = defaultdict(float)
+        history: DefaultDict[str, float] = defaultdict(float)
         for transaction in transaction_list:
             # Save previous date value
             if prev_date != transaction.date:
@@ -212,8 +212,12 @@ def update_month_summary(request, context, query_set):
             .order_by("month")
         )
 
-        month_label:dict[str,list[str]] = {k[0]: [] for k in models.CurrencyType.choices}
-        month_data:dict[str,list[str]] = {k[0]: [] for k in models.CurrencyType.choices}
+        month_label: dict[str, list[str]] = {
+            k[0]: [] for k in models.CurrencyType.choices
+        }
+        month_data: dict[str, list[str]] = {
+            k[0]: [] for k in models.CurrencyType.choices
+        }
 
         for month in month_detail:
             month_label[month["account__currency"]].append(
@@ -227,8 +231,8 @@ def update_month_summary(request, context, query_set):
 
 
 def update_retailer_summary(context, retailer_list):
-    label:dict[str,list[str]] = {k[0]: [] for k in models.CurrencyType.choices}
-    data:dict[str,list[float]]  = {k[0]: [] for k in models.CurrencyType.choices}
+    label: dict[str, list[str]] = {k[0]: [] for k in models.CurrencyType.choices}
+    data: dict[str, list[float]] = {k[0]: [] for k in models.CurrencyType.choices}
 
     for retailer in retailer_list:
         label[retailer["account__currency"]].append(str(retailer["retailer__name"]))
@@ -251,7 +255,9 @@ def get_month_list(start_date, end_date):
 
 
 def get_transaction_summary(account_list):
-    sum_dict:dict[str,dict[str,float]] = {k[0]: {"current": 0.0, "prev": 0.0} for k in models.CurrencyType.choices}
+    sum_dict: dict[str, dict[str, float]] = {
+        k[0]: {"current": 0.0, "prev": 0.0} for k in models.CurrencyType.choices
+    }
 
     currency_map = {}
     for account in account_list:
@@ -279,8 +285,13 @@ def get_transaction_summary(account_list):
     )
 
     for account in prev_transaction_list_per_account:
-        first_transaction = models.Transaction.objects.filter(account__id=account["account"]).filter(date=account["last_date"]).order_by("balance").first()
-        
+        first_transaction = (
+            models.Transaction.objects.filter(account__id=account["account"])
+            .filter(date=account["last_date"])
+            .order_by("balance")
+            .first()
+        )
+
         if first_transaction is not None:
             balance = first_transaction.balance
 
