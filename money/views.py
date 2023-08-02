@@ -2,6 +2,7 @@ from collections import defaultdict
 from typing import Any, TypedDict
 from django_stubs_ext import WithAnnotations
 
+from django.db.models.manager import BaseManager
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
 from django.db.models import (
