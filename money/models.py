@@ -11,6 +11,10 @@ from money.choices import (
 
 
 class Bank(models.Model):
+    """
+    Model for a bank.
+    """
+
     name = models.CharField(max_length=200)
 
     class Meta:
@@ -21,6 +25,10 @@ class Bank(models.Model):
 
 
 class Account(models.Model):
+    """
+    Model for a bank account.
+    """
+
     bank = models.ForeignKey(Bank, on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
     alias = models.CharField(max_length=200, blank=True, null=True)

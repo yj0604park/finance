@@ -438,6 +438,10 @@ exchange_list_view = ExchangeListView.as_view()
 
 
 class AmountSnapshotListView(LoginRequiredMixin, ListView):
+    """
+    List snapshot of each day.
+    """
+
     template_name = "snapshot/amount_snapshot.html"
     model = models.AmountSnapshot
 

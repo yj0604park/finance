@@ -19,7 +19,8 @@ class User(AbstractUser):
     def get_absolute_url(self):
         """Get url for user's detail view.
 
-        Returns:
+        Returns
+        -------
             str: URL for user detail.
 
         """

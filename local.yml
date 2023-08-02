@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 volumes:
   finance_local_postgres_data: {}
@@ -49,6 +49,7 @@ services:
       - ./docs:/docs:z
       - ./config:/app/config:z
       - ./finance:/app/finance:z
+      - ./money:/app/money:z
     ports:
       - "9000:9000"
     command: /start-docs
