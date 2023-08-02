@@ -1,6 +1,7 @@
 from collections import defaultdict
 from typing import Any
 
+from django.db.models.manager import BaseManager
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
 from django.db.models import (
@@ -77,7 +78,7 @@ class BankDetailView(LoginRequiredMixin, DetailView):
             .values("balance")
         )
 
-        last_transactions_per_account = (
+        last_transactions_per_account: BaseManager[models.StockTransaction] = (
             models.StockTransaction.objects.filter(account__bank=bank)
             .distinct("stock", "account__name")
             .annotate(
