@@ -95,7 +95,7 @@ class Transaction(models.Model):
 
     def __str__(self):
         return (
-            f'{self.id} {self.date.strftime("%Y-%m-%d")} '
+            f'{self.pk} {self.date.strftime("%Y-%m-%d")} '
             + f"{self.account.name}: "
             + f"{self.retailer.name if self.retailer else None}"
         )
@@ -137,7 +137,7 @@ class StockTransaction(models.Model):
         return reverse("money:stock_transaction_detail", kwargs={"pk": self.pk})
 
     def __str__(self):
-        return f"{self.date.strftime('%Y-%m-%d')}, Stock {self.stock.id}, share {self.shares}, price {self.price}"
+        return f"{self.date.strftime('%Y-%m-%d')}, Stock {self.stock.pk}, share {self.shares}, price {self.price}"
 
 
 class StockPrice(models.Model):

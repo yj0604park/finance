@@ -1,5 +1,6 @@
 from collections import defaultdict
-from typing import Any
+from typing import Any, TypedDict
+from django_stubs_ext import WithAnnotations
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
@@ -14,7 +15,7 @@ from django.db.models import (
     QuerySet,
     Subquery,
     Sum,
-    When,
+    When
 )
 from django.db.models.functions import TruncMonth
 from django.shortcuts import render
@@ -57,6 +58,12 @@ class HomeView(LoginRequiredMixin, TemplateView):
 home_view = HomeView.as_view()
 
 
+class BarAnnotations(TypedDict):
+    last_stock_transaction: models.StockTransaction
+
+class MyTypedDict(TypedDict):
+    foo: str
+
 # Bank related views
 class BankDetailView(LoginRequiredMixin, DetailView):
     model = models.Bank
@@ -77,7 +84,7 @@ class BankDetailView(LoginRequiredMixin, DetailView):
             .values("balance")
         )
 
-        last_transactions_per_account = (
+        last_transactions_per_account: QuerySet[WithAnnotations[Any]] = (
             models.StockTransaction.objects.filter(account__bank=bank)
             .distinct("stock", "account__name")
             .annotate(
@@ -90,7 +97,7 @@ class BankDetailView(LoginRequiredMixin, DetailView):
 
         stock_balance_map = defaultdict(list)
         for data in last_transactions_per_account:
-            stock_balance_map[data.account.id].append(
+            stock_balance_map[data.account.pk].append(
                 (data.stock.name, data.last_stock_transaction)
             )
         print(stock_balance_map)
@@ -181,7 +188,7 @@ class CategoryDetailView(LoginRequiredMixin, View):
     template_name = "category/category_detail.html"
 
     def get(self, request, *args, **kwargs):
-        context = {"additional_get_query": {}}
+        context: dict[str, Any] = {"additional_get_query": {}}
         category_type = kwargs["category_type"]
         context["print_all"] = request.GET.get("print_all", False)
 

@@ -220,7 +220,7 @@ class StockTransactionForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["account"].choices = [
-            (account.id, str(account))
+            (account.pk, str(account))
             for account in models.Account.objects.filter(
                 type=models.AccountType.STOCK
             ).order_by("name")
@@ -321,7 +321,7 @@ class SalaryForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         self.fields["transaction"].choices = [
-            (transaction.id, str(transaction))
+            (transaction.pk, str(transaction))
             for transaction in models.Transaction.objects.filter(
                 type=models.TransactionCategory.INCOME
             )
