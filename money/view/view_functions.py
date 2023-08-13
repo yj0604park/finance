@@ -5,7 +5,7 @@ from collections import defaultdict
 import requests
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Q
-from django.http import HttpRequest, JsonResponse
+from django.http import HttpRequest, HttpResponseNotAllowed, JsonResponse
 
 from money import choices, helper, models
 
@@ -79,8 +79,12 @@ def update_related_transaction(request):
                 source_id = int(item[5:])
                 target_id = int(value)
 
-                source = models.Transaction.objects.get(id=source_id)
-                target = models.Transaction.objects.get(id=target_id)
+                source: models.Transaction = models.Transaction.objects.get(
+                    id=source_id
+                )
+                target: models.Transaction = models.Transaction.objects.get(
+                    id=target_id
+                )
 
                 if source.account.currency == target.account.currency:
                     if (
@@ -89,7 +93,7 @@ def update_related_transaction(request):
                         and source.is_internal
                         and target.is_internal
                         and source_id != target_id
-                        and source.account.id != target.account.id
+                        and source.account.pk != target.account.pk
                     ):
                         if abs(source.amount + target.amount) < 0.01:
                             source.related_transaction = target
@@ -177,6 +181,7 @@ def get_items_for_category(request: HttpRequest):
         item_list = sorted(list(item_list), key=lambda x: x["name"].lower())
 
         return JsonResponse({"result": item_list})
+    return HttpResponseNotAllowed(permitted_methods=["POST"])
 
 
 @login_required
@@ -194,6 +199,8 @@ def update_related_transaction_for_amazon(request: HttpRequest):
                 "amount": transaction.amount,
             }
         )
+
+    return HttpResponseNotAllowed(permitted_methods=["POST"])
 
 
 @login_required
@@ -228,6 +235,6 @@ def filter_retailer(request):
     filtered = models.Retailer.objects.filter(name__icontains=keyword)
 
     filtered_obj_list = [
-        {"name": obj.name, "id": obj.id, "str": str(obj)} for obj in filtered
+        {"name": obj.name, "id": obj.pk, "str": str(obj)} for obj in filtered
     ]
     return JsonResponse({"filtered_list": filtered_obj_list})

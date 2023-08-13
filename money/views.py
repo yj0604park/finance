@@ -116,7 +116,7 @@ class BankListView(LoginRequiredMixin, ListView):
     model = models.Bank
     template_name = "bank/bank_list.html"
 
-    def get_queryset(self) -> QuerySet[Any]:
+    def get_queryset(self) -> QuerySet[models.Bank]:
         return super().get_queryset().annotate(count=Count("account")).order_by("name")
 
 
@@ -438,7 +438,7 @@ class ExchangeListView(LoginRequiredMixin, ListView):
     model = models.Exchange
     paginate_by = 20
 
-    def get_queryset(self) -> QuerySet[Any]:
+    def get_queryset(self) -> QuerySet[models.Exchange]:
         return super().get_queryset().order_by("date")
 
 

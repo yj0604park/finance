@@ -1,6 +1,7 @@
 import datetime
 from collections import defaultdict
 from copy import copy
+from math import floor
 from typing import DefaultDict
 
 from dateutil.rrule import MONTHLY, rrule
@@ -53,7 +54,7 @@ def get_transaction_chart_data(
     return chart_dict
 
 
-def create_daily_snapshot():
+def create_daily_snapshot() -> None:
     currency_list = models.CurrencyType.choices
     all_transaction_list = (
         models.Transaction.objects.all().order_by("date").prefetch_related("account")
@@ -76,7 +77,7 @@ def create_daily_snapshot():
 
             account_id = transaction.account.name
             account_value = history[account_id]
-            account_value += transaction.amount
+            account_value = floor((account_value + transaction.amount) * 100) / 100
 
             # Update value in the map
             if account_value == 0.0:
@@ -90,6 +91,7 @@ def create_daily_snapshot():
 
 
 def create_snapshot(date, currency, amount, summary):
+    amount = floor(amount * 100) / 100
     if models.AmountSnapshot.objects.filter(date=date, currency=currency):
         snapshot = models.AmountSnapshot.objects.get(date=date, currency=currency)
         snapshot.amount = amount

@@ -1,5 +1,8 @@
+from collections import defaultdict
+
 from django.db import models
 from django.urls import reverse
+from django_choices_field import TextChoicesField
 
 from money.choices import (
     AccountType,
@@ -8,6 +11,34 @@ from money.choices import (
     RetailerType,
     TransactionCategory,
 )
+
+
+class Account(models.Model):
+    """
+    Model for a bank account.
+    """
+
+    bank = models.ForeignKey("Bank", on_delete=models.CASCADE)
+    name = models.CharField(max_length=200)
+    alias = models.CharField(max_length=200, blank=True, null=True)
+    type = TextChoicesField(
+        choices_enum=AccountType, default=AccountType.CHECKING_ACCOUNT
+    )
+    amount = models.FloatField(default=0)
+    last_update = models.DateTimeField(null=True, blank=True)
+    last_transaction = models.DateField(null=True, blank=True)
+    first_transaction = models.DateField(null=True, blank=True)
+    first_added = models.BooleanField(default=False)
+    currency = TextChoicesField(
+        max_length=3, choices_enum=CurrencyType, default=CurrencyType.USD
+    )
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name
+
+    def account_type(self):
+        return self.type
 
 
 class Bank(models.Model):
@@ -23,40 +54,23 @@ class Bank(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def balance(self):
+        sum_dict = defaultdict(float)
 
-class Account(models.Model):
-    """
-    Model for a bank account.
-    """
-
-    bank = models.ForeignKey(Bank, on_delete=models.CASCADE)
-    name = models.CharField(max_length=200)
-    alias = models.CharField(max_length=200, blank=True, null=True)
-    type = models.CharField(
-        max_length=30, choices=AccountType.choices, default=AccountType.CHECKING_ACCOUNT
-    )
-    amount = models.FloatField(default=0)
-    last_update = models.DateTimeField(null=True, blank=True)
-    last_transaction = models.DateField(null=True, blank=True)
-    first_transaction = models.DateField(null=True, blank=True)
-    first_added = models.BooleanField(default=False)
-    currency = models.CharField(
-        max_length=3, choices=CurrencyType.choices, default=CurrencyType.USD
-    )
-    is_active = models.BooleanField(default=True)
-
-    def __str__(self):
-        return self.name
+        for account in Account.objects.filter(bank=self):
+            sum_dict[account.currency] += account.amount
+        return sum_dict
 
 
 class Retailer(models.Model):
     name = models.CharField(max_length=30)
-    type = models.CharField(
-        max_length=20, choices=RetailerType.choices, default=RetailerType.ETC
+    type = TextChoicesField(
+        max_length=20, choices_enum=RetailerType, default=RetailerType.ETC
     )
-    category = models.CharField(
+    category = TextChoicesField(
         max_length=30,
-        choices=TransactionCategory.choices,
+        choices_enum=TransactionCategory,
         default=TransactionCategory.ETC,
     )
 
@@ -79,9 +93,9 @@ class Transaction(models.Model):
     is_internal = models.BooleanField(default=False)
     requires_detail = models.BooleanField(default=False)
 
-    type = models.CharField(
+    type = TextChoicesField(
         max_length=30,
-        choices=TransactionCategory.choices,
+        choices_enum=TransactionCategory,
         default=TransactionCategory.ETC,
     )
     reviewed = models.BooleanField(default=False)
@@ -104,8 +118,8 @@ class Transaction(models.Model):
 class Stock(models.Model):
     name = models.CharField(max_length=20)
     ticker = models.CharField(max_length=10, null=True, blank=True)
-    currency = models.CharField(
-        max_length=3, choices=CurrencyType.choices, default=CurrencyType.USD
+    currency = TextChoicesField(
+        max_length=3, choices_enum=CurrencyType, default=CurrencyType.USD
     )
 
     class Meta:
@@ -148,9 +162,9 @@ class StockPrice(models.Model):
 
 class DetailItem(models.Model):
     name = models.CharField(max_length=30)
-    category = models.CharField(
+    category = TextChoicesField(
         max_length=10,
-        choices=DetailItemCategory.choices,
+        choices_enum=DetailItemCategory,
         default=DetailItemCategory.ETC,
     )
 
@@ -228,8 +242,8 @@ class Exchange(models.Model):
     )
     from_amount = models.FloatField()
     to_amount = models.FloatField()
-    from_currency = models.CharField(max_length=3, choices=CurrencyType.choices)
-    to_currency = models.CharField(max_length=3, choices=CurrencyType.choices)
+    from_currency = TextChoicesField(max_length=3, choices_enum=CurrencyType)
+    to_currency = TextChoicesField(max_length=3, choices_enum=CurrencyType)
     ratio_per_krw = models.FloatField(null=True, blank=True)
 
     def __str__(self) -> str:
@@ -238,7 +252,7 @@ class Exchange(models.Model):
 
 class AmountSnapshot(models.Model):
     date = models.DateField()
-    currency = models.CharField(max_length=3, choices=CurrencyType.choices)
+    currency = TextChoicesField(max_length=3, choices_enum=CurrencyType)
     amount = models.FloatField()
     summary = models.JSONField(null=True, blank=True)
 

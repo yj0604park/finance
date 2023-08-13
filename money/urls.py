@@ -1,6 +1,8 @@
 from django.urls import path
+from strawberry.django.views import GraphQLView
 
 from money import views
+from money.schema import schema
 from money.view import (
     stock_view,
     transaction_detail_view,
@@ -200,6 +202,9 @@ urlpatterns = [
         view=view_functions.update_related_transaction_for_amazon,
         name="update_related_transaction_for_amazon",
     ),
-    path("filter_retailer", view=view_functions.filter_retailer, name="filter_retailer")
+    path(
+        "filter_retailer", view=view_functions.filter_retailer, name="filter_retailer"
+    ),
+    path("graphql", GraphQLView.as_view(schema=schema)),
     # endregion
 ]
