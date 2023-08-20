@@ -19,7 +19,7 @@ class Account(models.Model):
     """
 
     bank = models.ForeignKey("Bank", on_delete=models.CASCADE)
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=200, db_collation="C")
     alias = models.CharField(max_length=200, blank=True, null=True)
     type = TextChoicesField(
         choices_enum=AccountType, default=AccountType.CHECKING_ACCOUNT

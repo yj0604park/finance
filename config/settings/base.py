@@ -320,9 +320,7 @@ REST_FRAMEWORK = {
 # django-cors-headers - https://github.com/adamchainz/django-cors-headers#setup
 CORS_URLS_REGEX = r"^/api/.*$|^/money/graphql$"
 
-CORS_ALLOWED_ORIGIN_REGEXES = [
-    r"^http://localhost:3000",
-]
+CORS_ALLOWED_ORIGIN_REGEXES = [r"^http://localhost:3000", r"^http://localhost:4487"]
 
 # By Default swagger ui is available only to admin user(s). You can change permission classes to change that
 # See more configuration options at https://drf-spectacular.readthedocs.io/en/latest/settings.html#settings

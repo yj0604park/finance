@@ -29,20 +29,6 @@ class AccountOrder:
 @strawberry.django.type(
     models.Account, filters=AccountFilter, pagination=True, order=AccountOrder
 )
-class Account:
-    id: auto
-    name: auto
-    bank: "Bank"
-    amount: auto
-    type: auto
-    currency: auto
-    last_update: auto
-    is_active: auto
-
-
-@strawberry.django.type(
-    models.Account, filters=AccountFilter, pagination=True, order=AccountOrder
-)
 class AccountNode(relay.Node):
     id: relay.GlobalID
     name: auto
@@ -52,6 +38,16 @@ class AccountNode(relay.Node):
     currency: auto
     last_update: auto
     is_active: auto
+    last_transaction: auto
+    first_transaction: auto
+
+
+@strawberry.django.input(models.Account)
+class AccountInput:
+    name: auto
+    bank: "BankNode"
+    type: auto
+    currency: auto
 
 
 # endregion
@@ -68,14 +64,6 @@ class BankOrder:
 
 
 @strawberry.django.type(models.Bank, filters=BankFilter)
-class Bank:
-    id: auto
-    name: auto
-    account_set: list[Account]
-    balance: JSON
-
-
-@strawberry.django.type(models.Bank, filters=BankFilter)
 class BankNode(relay.Node):
     id: relay.GlobalID
     name: auto
@@ -89,8 +77,8 @@ class BankNode(relay.Node):
 
 
 @strawberry.django.type(models.Retailer)
-class Retailer:
-    id: auto
+class RetailerNode(relay.Node):
+    id: relay.GlobalID
     name: auto
 
 
@@ -99,13 +87,41 @@ class Retailer:
 class TransactionFilter:
     id: auto
     date: auto
+    account: AccountFilter
 
 
-@strawberry.django.type(models.Transaction, filters=TransactionFilter)
-class Transaction:
-    id: auto
+@strawberry.django.ordering.order(models.Transaction)
+class TransactionOrder:
+    date: auto
+    account: AccountOrder
+
+
+@strawberry.django.type(
+    models.Transaction, filters=TransactionFilter, order=TransactionOrder
+)
+class TransactionNode(relay.Node):
+    id: relay.GlobalID
     amount: auto
-    retailer: Retailer | None
+    account: AccountNode
+    retailer: RetailerNode | None
+    date: auto
+    type: auto
+    is_internal: auto
+    requires_detail: auto
+    reviewed: auto
+    balance: auto
+    type: auto
+    note: auto
+    related_transaction: "TransactionNode | None"
+
+
+@strawberry.django.input(models.Transaction)
+class TransactionInput:
+    amount: auto
+    account: AccountNode
+    retailer: RetailerNode | None
+    date: auto
+    type: auto
     is_internal: auto
 
 
