@@ -12,7 +12,9 @@ class Query:
     transaction_relay: ListConnectionWithTotalCount[
         types.TransactionNode
     ] = strawberry.django.connection()
-    retailer_relay: list[types.RetailerNode] = strawberry.django.field()
+    retailer_relay: ListConnectionWithTotalCount[
+        types.RetailerNode
+    ] = strawberry.django.connection()
 
     bank_relay: ListConnectionWithTotalCount[
         types.BankNode

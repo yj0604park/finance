@@ -80,6 +80,7 @@ class BankNode(relay.Node):
 class RetailerNode(relay.Node):
     id: relay.GlobalID
     name: auto
+    category: auto
 
 
 # region: Transaction
@@ -92,6 +93,7 @@ class TransactionFilter:
 
 @strawberry.django.ordering.order(models.Transaction)
 class TransactionOrder:
+    id: auto
     date: auto
     account: AccountOrder
 
@@ -123,6 +125,7 @@ class TransactionInput:
     date: auto
     type: auto
     is_internal: auto
+    note: auto
 
 
 # endregion
