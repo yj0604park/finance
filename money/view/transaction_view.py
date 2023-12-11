@@ -7,7 +7,9 @@ from django.db import transaction
 from django.db.models import (
     Case,
     Count,
+    F,
     FloatField,
+    Func,
     Max,
     Min,
     Prefetch,
@@ -256,7 +258,8 @@ class ReviewInternalTransactionView(LoginRequiredMixin, ListView):
         qs = (
             qs.filter(reviewed=False)
             .filter(type=models.TransactionCategory.TRANSFER)
-            .order_by("-date", "amount")
+            .annotate(abs_amount=Func(F("amount"), function="ABS"))
+            .order_by("-date", "abs_amount")
             .prefetch_related("account", "retailer", "related_transaction")
         )
 

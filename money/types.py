@@ -96,6 +96,7 @@ class TransactionOrder:
     id: auto
     date: auto
     account: AccountOrder
+    amount: auto
 
 
 @strawberry.django.type(
@@ -170,6 +171,37 @@ class Stock:
     name: auto
     ticker: auto
     currency: auto
+
+
+# endregion
+# region: Salary
+@strawberry.django.filters.filter(models.Salary, lookups=True)
+class SalaryFilter:
+    id: auto
+    date: auto
+
+
+@strawberry.django.ordering.order(models.Salary)
+class SalaryOrder:
+    date: auto
+
+
+@strawberry.django.type(models.Salary, filters=SalaryFilter, order=SalaryOrder)
+class SalaryNode(relay.Node):
+    id: relay.GlobalID
+    date: auto
+    gross_pay: auto
+    total_adjustment: auto
+    total_withheld: auto
+    total_deduction: auto
+    net_pay: auto
+
+    pay_detail: JSON
+    adjustment_detail: JSON
+    tax_detail: JSON
+    deduction_detail: JSON
+
+    transaction: TransactionNode
 
 
 # endregion

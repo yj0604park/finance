@@ -10,7 +10,6 @@ from django.http import HttpRequest, HttpResponseNotAllowed, JsonResponse
 from money import choices, helper, models
 
 
-@login_required
 def update_balance(request, account_id):
     account = models.Account.objects.get(pk=account_id)
     transactions = account.transaction_set.all().order_by("date", "-amount")
@@ -143,6 +142,7 @@ def update_related_transaction(request):
                         updated[item] = value
 
         return JsonResponse(updated)
+    return HttpResponseNotAllowed(permitted_methods=["POST"])
 
 
 @login_required

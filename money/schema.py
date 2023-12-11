@@ -25,6 +25,9 @@ class Query:
     amountSnapshot_relay: ListConnectionWithTotalCount[
         types.AmountSnapshotNode
     ] = strawberry.django.connection()
+    salary_relay: ListConnectionWithTotalCount[
+        types.SalaryNode
+    ] = strawberry.django.connection()
 
 
 @strawberry.type
