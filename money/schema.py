@@ -34,6 +34,7 @@ class Query:
 class Mutation:
     create_account: types.AccountNode = mutations.create(types.AccountInput)
     create_transaction: types.TransactionNode = mutations.create(types.TransactionInput)
+    create_retailer: types.RetailerNode = mutations.create(types.RetailerInput)
 
 
 schema = strawberry.Schema(

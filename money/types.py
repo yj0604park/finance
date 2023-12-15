@@ -83,6 +83,13 @@ class RetailerNode(relay.Node):
     category: auto
 
 
+@strawberry.django.input(models.Retailer)
+class RetailerInput:
+    name: auto
+    type: auto
+    category: auto
+
+
 # region: Transaction
 @strawberry.django.filters.filter(models.Transaction, lookups=True)
 class TransactionFilter:
