@@ -88,7 +88,7 @@ class SalaryAdmin(admin.ModelAdmin):
 
 @admin.register(models.Stock)
 class StockAdmin(admin.ModelAdmin):
-    pass
+    list_display = ("id", "ticker", "name", "currency")
 
 
 @admin.register(models.StockPrice)

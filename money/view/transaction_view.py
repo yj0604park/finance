@@ -349,8 +349,13 @@ class StockTransactionCreateView(LoginRequiredMixin, CreateView):
             account=stock_transaction.account,
             amount=-stock_transaction.amount,
             date=stock_transaction.date,
-            note=stock_transaction.note,
             type=choices.TransactionCategory.STOCK,
+            note="{} (price {}, share {}) {}".format(
+                stock_transaction.stock,
+                stock_transaction.price,
+                stock_transaction.shares,
+                stock_transaction.note,
+            ),
         )
         transaction.save()
 

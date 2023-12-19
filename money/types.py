@@ -212,3 +212,22 @@ class SalaryNode(relay.Node):
 
 
 # endregion
+
+
+# region: Stock
+@strawberry.django.input(models.Stock)
+class StockInput:
+    ticker: auto
+    name: auto
+    currency: auto
+
+
+@strawberry.django.type(models.Stock)
+class StockNode(relay.Node):
+    id: relay.GlobalID
+    ticker: auto
+    name: auto
+    currency: auto
+
+
+# endregion
