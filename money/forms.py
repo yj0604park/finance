@@ -301,7 +301,12 @@ class SalaryForm(forms.ModelForm):
                 ("401(K)", "Disability ins", "Healthcare FSA deduction")
             ),
             "tax_detail": DynamicKeyValueJSONWidget(
-                ("Federal income tax", "Social security tax", "Medicare tax")
+                (
+                    "Federal income tax",
+                    "Social security tax",
+                    "Medicare tax",
+                    "WA Cares Fund Ltc Tax",
+                )
             ),
             "deduction_detail": DynamicKeyValueJSONWidget(
                 (
@@ -326,7 +331,7 @@ class SalaryForm(forms.ModelForm):
                 type=models.TransactionCategory.INCOME
             )
             .filter(reviewed=False)
-            .order_by("date")
+            .order_by("-date")
         ]
 
         self.helper = FormHelper()

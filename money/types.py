@@ -231,3 +231,33 @@ class StockNode(relay.Node):
 
 
 # endregion
+
+
+# region: StockTransaction
+@strawberry.django.input(models.StockTransaction)
+class StockTransactionInput:
+    date: auto
+    account: AccountNode
+    stock: StockNode
+    related_transaction: TransactionNode
+
+    price: auto
+    amount: auto
+    shares: auto
+    note: auto
+
+
+@strawberry.django.type(models.StockTransaction)
+class StockTransactionNode(relay.Node):
+    id: relay.GlobalID
+    account: AccountNode
+    stock: StockNode
+    related_transaction: TransactionNode
+
+    price: auto
+    amount: auto
+    shares: auto
+    note: auto
+
+
+# endregion

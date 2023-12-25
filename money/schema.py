@@ -44,6 +44,9 @@ class Mutation:
     create_transaction: types.TransactionNode = mutations.create(types.TransactionInput)
     create_retailer: types.RetailerNode = mutations.create(types.RetailerInput)
     create_stock: types.StockNode = mutations.create(types.StockInput)
+    create_stock_transaction: types.StockTransactionNode = mutations.create(
+        types.StockTransactionInput
+    )
 
 
 schema = strawberry.Schema(
