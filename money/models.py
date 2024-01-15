@@ -8,6 +8,7 @@ from money.choices import (
     AccountType,
     CurrencyType,
     DetailItemCategory,
+    ExchangeType,
     RetailerType,
     TransactionCategory,
 )
@@ -245,6 +246,9 @@ class Exchange(models.Model):
     from_currency = TextChoicesField(max_length=3, choices_enum=CurrencyType)
     to_currency = TextChoicesField(max_length=3, choices_enum=CurrencyType)
     ratio_per_krw = models.FloatField(null=True, blank=True)
+    exchange_type = TextChoicesField(
+        max_length=10, choices_enum=ExchangeType, default=ExchangeType.ETC
+    )
 
     def __str__(self) -> str:
         return f"{self.date}: {self.ratio_per_krw}"

@@ -1,87 +1,84 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
 {% block content %}
-{% load money_tags %}
+  {% load money_tags %}
 
-<h1>Amazon Orders</h1>
+  <h1>Amazon Orders</h1>
 
-<div class="btn-group p-3" role="group" aria-label="Basic button group">
+  <div class="btn-group p-3" role="group" aria-label="Basic button group">
     <a href="{% url 'money:amazon_list' %}" class="btn btn-primary">Amazon Transactions</a>
     <a href="{% url 'money:amazon_order_create' %}" class="btn btn-secondary">Create New</a>
-</div>
+  </div>
 
-<form>
+  <form>
     {% csrf_token %}
     <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Date</th>
-                <th>Item</th>
-                <th>Is Returned</th>
-                <th>Related Transaction</th>
-                <th>Related Price</th>
-            </tr>
-        </thead>
-
-        {% for order in amazonorder_list %}
+      <thead>
         <tr>
-            <td>{{ order.id }}</td>
-            <td>{{ order.date }}</td>
-            <td>{{ order.item }}</td>
-            <td>{{ order.is_returned }}</td>
-            {% if order.transaction %}
-            <td><a href="{% url 'money:transaction_detail' order.transaction.id %}">{{ order.transaction }}</a></td>
-            <td>{{ order.transaction.amount|print_currency:order.transaction.account.currency|safe }}</td>
-            {% else %}
-            <td>
-                <input class="form-control numberinput" type="number" id="input_{{ order.id }}"
-                    name="name_{{ order.id }}">
-            </td>
-            <td>
-                <button class="btn btn-primary update-button" id="button_{{ order.id }}">Update</button>
-            </td>
-            {% endif %}
+          <th>ID</th>
+          <th>Date</th>
+          <th>Item</th>
+          <th>Is Returned</th>
+          <th>Related Transaction</th>
+          <th>Related Price</th>
         </tr>
-        {% endfor %}
+      </thead>
+
+      {% for order in amazonorder_list %}
+        <tr>
+          <td>{{ order.id }}</td>
+          <td>{{ order.date }}</td>
+          <td>{{ order.item }}</td>
+          <td>{{ order.is_returned }}</td>
+          {% if order.transaction %}
+            <td>
+              <a href="{% url 'money:transaction_detail' order.transaction.id %}">{{ order.transaction }}</a>
+            </td>
+            <td>{{ order.transaction.amount|print_currency:order.transaction.account.currency|safe }}</td>
+          {% else %}
+            <td>
+              <input class="form-control numberinput" type="number" id="input_{{ order.id }}" name="name_{{ order.id }}" />
+            </td>
+            <td>
+              <button class="btn btn-primary update-button" id="button_{{ order.id }}">Update</button>
+            </td>
+          {% endif %}
+        </tr>
+      {% endfor %}
     </table>
-</form>
+  </form>
 
-{% include 'shared/pagination.html' %}
+  {% include 'shared/pagination.html' %}
 
-<script>
-    const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+  <script>
+    const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value
 
     function initializeButton(buttonElement) {
-        const buttonId = buttonElement.getAttribute('id').split('_');
-        const inputNumber = document.getElementById('input_' + buttonId[1]);
+      const buttonId = buttonElement.getAttribute('id').split('_')
+      const inputNumber = document.getElementById('input_' + buttonId[1])
 
-        buttonElement.addEventListener('click', (e) => {
-            e.preventDefault();
-            if (inputNumber.value) {
-                fetch("{% url 'money:update_related_transaction_for_amazon' %}", {
-                    method: "POST",
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrfToken
-                    },
-                    body: JSON.stringify({ transaction_id: inputNumber.value, order_id: buttonId[1] })
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log(data);
-                        inputNumber.replaceWith(data.transaction);
-                        buttonElement.replaceWith("-$" + Math.abs(data.amount));
-                    })
-            }
-        })
+      buttonElement.addEventListener('click', (e) => {
+        e.preventDefault()
+        if (inputNumber.value) {
+          fetch("{% url 'money:update_related_transaction_for_amazon' %}", {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({ transaction_id: inputNumber.value, order_id: buttonId[1] })
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              inputNumber.replaceWith(data.transaction)
+              buttonElement.replaceWith('-$' + Math.abs(data.amount))
+            })
+        }
+      })
     }
 
-    document.querySelectorAll('.update-button').forEach(
-        (buttonElement) => {
-            initializeButton(buttonElement)
-        }
-    )
-</script>
-
+    document.querySelectorAll('.update-button').forEach((buttonElement) => {
+      initializeButton(buttonElement)
+    })
+  </script>
 {% endblock %}

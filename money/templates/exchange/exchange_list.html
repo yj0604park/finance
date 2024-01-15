@@ -10,6 +10,7 @@
             <th>이전 금액</th>
             <th>이후 금액</th>
             <th>원화 기준 환율</th>
+            <th>타입</th>
         </tr>
     </thead>
     <tbody>
@@ -19,6 +20,7 @@
             <td>{{ exchange.from_amount|print_currency:exchange.from_currency|safe }}</td>
             <td>{{ exchange.to_amount|print_currency:exchange.to_currency|safe }}</td>
             <td>{{ exchange.ratio_per_krw }}</td>
+            <td>{{ exchange.exchange_type }}</td>
         </tr>
         {% endfor %}
     </tbody>

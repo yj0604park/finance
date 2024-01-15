@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% load money_tags %}
+
+{% block content %}
+  <h1>Category</h1>
+  <table class="table table-striped">
+    <tr>
+      <th>Category</th>
+      <th>Amount</th>
+    </tr>
+    {% for category in usd_transactions %}
+      <tr>
+        <td>{{ category.type }}</td>
+        <td>{{ category.total|print_currency:'USD'|safe }}</td>
+      </tr>
+    {% endfor %}
+  </table>
+
+  <br />
+
+  <h1>USD Income</h1>
+  <table class="table table-striped">
+    <tr>
+      <th>Amount</th>
+      <th>Source</th>
+    </tr>
+    {% for transaction in usd_income %}
+      <tr>
+        <td>{{ transaction.retailer__name }}</td>
+        <td>{{ transaction.total|print_currency:'USD' }}</td>
+      </tr>
+    {% endfor %}
+  </table>
+
+  <h1>USD housing</h1>
+
+  <table class="table table-striped">
+    <tr>
+      <th>Amount</th>
+      <th>Source</th>
+    </tr>
+    {% for transaction in usd_housing %}
+      <tr>
+        <td>{{ transaction.retailer__name }}</td>
+        <td>{{ transaction.total|print_currency:'USD'|safe }}</td>
+      </tr>
+    {% endfor %}
+  </table>
+
+  <h1>USD car</h1>
+  <table class="table table-striped">
+    <tr>
+      <th>Amount</th>
+      <th>Source</th>
+    </tr>
+    {% for transaction in usd_car %}
+      <tr>
+        <td>{{ transaction.retailer__name }}</td>
+        <td>{{ transaction.total|print_currency:'USD'|safe }}</td>
+      </tr>
+    {% endfor %}
+  </table>
+
+  <h1>USD food</h1>
+  <table class="table table-striped">
+    <tr>
+      <th>Amount</th>
+      <th>Source</th>
+    </tr>
+    {% for transaction in usd_eat_out %}
+      <tr>
+        <td>{{ transaction.type }}</td>
+        <td>{{ transaction.total|print_currency:'USD'|safe }}</td>
+      </tr>
+    {% endfor %}
+  </table>
+
+  <h1>Transfer</h1>
+  <table class="table table-striped">
+    <tr>
+      <th>Amount</th>
+      <th>Source</th>
+    </tr>
+    {% for transaction in usd_transfer %}
+      <tr>
+        <td>{{ transaction.retailer__name }}</td>
+        <td>{{ transaction.total|print_currency:'USD'|safe }}</td>
+      </tr>
+    {% endfor %}
+  </table>
+
+  <h1>Exchange</h1>
+  {{ exchange }}
+{% endblock %}

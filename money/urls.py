@@ -88,6 +88,16 @@ urlpatterns = [
         name="transaction_category",
     ),
     path(
+        "yearly_summary",
+        view=transaction_view.yearly_summary_view,
+        name="yearly_summary",
+    ),
+    path(
+        "tax",
+        view=transaction_view.tax_view,
+        name="tax",
+    ),
+    path(
         "review_transaction",
         view=transaction_view.review_transaction_view,
         name="review_transaction",

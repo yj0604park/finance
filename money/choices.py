@@ -74,3 +74,10 @@ class DetailItemCategory(models.TextChoices):
     FUNITURE = "FUNITURE", "가구"
     SPORTING = "SPORTING", "운동용품"
     UNK = "UNK", "Unknown"
+
+
+class ExchangeType(models.TextChoices):
+    ETC = "ETC", "ETC"
+    BANK = "BANK", "은행"
+    WIREBARLEY = "WIREBARLEY", "와이어바알리"
+    CREDITCARD = "CREDITCARD", "신용카드"

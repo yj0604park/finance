@@ -221,6 +221,81 @@ class TransactionCategoryView(LoginRequiredMixin, View):
 transaction_category_view = TransactionCategoryView.as_view()
 
 
+# Yearly summary
+class YearlySummaryView(LoginRequiredMixin, View):
+    template_name = "category/yearly_summary.html"
+
+    def get(self, request, *args, **kwargs):
+        usd_query_set = models.Transaction.objects.filter(
+            date__year=2023, account__currency="USD"
+        )
+        usd_income = (
+            usd_query_set.filter(
+                type=choices.TransactionCategory.INCOME,
+            )
+            .values("retailer__name")
+            .annotate(total=Sum("amount"))
+        )
+
+        usd_housing = (
+            usd_query_set.filter(
+                type=choices.TransactionCategory.HOUSING,
+            )
+            .values("retailer__name")
+            .annotate(total=Sum("amount"))
+        )
+
+        usd_car = (
+            usd_query_set.filter(
+                type=choices.TransactionCategory.CAR,
+            )
+            .values("retailer__name")
+            .annotate(total=Sum("amount"))
+        )
+
+        usd_eat_out = (
+            usd_query_set.filter(
+                ~Q(type=choices.TransactionCategory.INCOME),
+                ~Q(type=choices.TransactionCategory.HOUSING),
+                ~Q(type=choices.TransactionCategory.CAR),
+                ~Q(type=choices.TransactionCategory.TRANSFER),
+                ~Q(type=choices.TransactionCategory.STOCK),
+            )
+            .values("type")
+            .annotate(total=Sum("amount"))
+        )
+
+        usd_transfer = (
+            usd_query_set.filter(
+                type=choices.TransactionCategory.TRANSFER,
+                is_internal=False,
+            )
+            .values("retailer__name")
+            .annotate(total=Sum("amount"))
+        )
+
+        exchange = models.Exchange.objects.filter(
+            date__year=2023, exchange_type=choices.ExchangeType.WIREBARLEY
+        ).aggregate(total=Sum("from_amount"))
+
+        context = {
+            "usd_transactions": usd_query_set.values("type").annotate(
+                total=Sum("amount")
+            ),
+            "usd_income": usd_income,
+            "usd_housing": usd_housing,
+            "usd_car": usd_car,
+            "usd_eat_out": usd_eat_out,
+            "usd_transfer": usd_transfer,
+            "exchange": exchange,
+        }
+
+        return render(request, self.template_name, context)
+
+
+yearly_summary_view = YearlySummaryView.as_view()
+
+
 # Transaction review related views
 class ReviewTransactionView(LoginRequiredMixin, ListView):
     model = models.Transaction
@@ -483,3 +558,26 @@ class AmazonOrderDetailView(LoginRequiredMixin, DetailView):
 
 
 amazon_order_detail_view = AmazonOrderDetailView.as_view()
+
+
+class TaxView(LoginRequiredMixin, ListView):
+    template_name = "tax/tax.html"
+    model = models.Transaction
+    paginate_by = 20
+
+    def get_queryset(self) -> QuerySet[Any]:
+        qs = super().get_queryset()
+        qs = (
+            qs.filter(reviewed=False)
+            .order_by("-date", "amount")
+            .prefetch_related("account", "retailer")
+        )
+        return qs
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["additional_get_query"] = {}
+        return context
+
+
+tax_view = TaxView.as_view()

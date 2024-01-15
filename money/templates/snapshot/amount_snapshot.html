@@ -5,6 +5,8 @@
 
 <h1>Snapshot</h1>
 
+<a href="{% url 'money:update_snapshot' %}">Update Snapshot</a>
+
 {% for currency in chart %}
 <h2>{{ currency }}</h2>
 <canvas id="myChart_{{ currency }}" width="500" height="300"></canvas>
