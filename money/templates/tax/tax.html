@@ -3,4 +3,76 @@
 {% load crispy_forms_tags %}
 {% block content %}
   <h1>Tax 2023</h1>
+
+  Total Last: {{ account_summary_krw.total_last_value_positive|print_currency:'KRW'|safe }}
+  <br />
+  Total Max: {{ account_summary_krw.total_max_value_positive|print_currency:'KRW'|safe }}
+  <br />
+  Count: {{ account_summary_krw.count }}
+  <br />
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Account</th>
+        <th>Max Value</th>
+        <th>Last Value</th>
+        <th>First Transaction</th>
+        <th>Is Active</th>
+        <th>Check</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for account, value in account_summary_krw.filtered_list %}
+        <tr>
+          <td>{{ account }}</td>
+          <td>{{ value.max_value|print_currency:'KRW'|safe }}</td>
+          <td>{{ value.last_value|print_currency:'KRW'|safe }}</td>
+          <td>{{ account.first_transaction }}</td>
+          <td>{{ account.is_active }}</td>
+          <td>
+            <input type="checkbox" />
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h1>적금 이자 및 세금</h1>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Account</th>
+        <th>Interest</th>
+        <th>Tax</th>
+        <th>After Tax</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for account, value in saving_interest_tax %}
+        <tr>
+          <td>{{ account }}</td>
+          <td>{{ value.total_interest|print_currency:'KRW'|safe }}</td>
+          <td>{{ value.total_tax|print_currency:'KRW'|safe }}</td>
+          <td>{{ value.after_tax|print_currency:'KRW'|safe }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Account</th>
+        <th>Value</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for account, value in account_summary_usd.filtered_list %}
+        <tr>
+          <td>{{ account }}</td>
+          <td>{{ value }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 {% endblock %}

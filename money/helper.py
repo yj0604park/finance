@@ -10,6 +10,7 @@ from django.db.models.functions import TruncMonth
 from django.db.models.query import QuerySet
 
 from money import models
+from money.choices import AccountType, CurrencyType
 
 
 def get_transaction_chart_data(
@@ -314,3 +315,101 @@ def filter_by_get(request, query_set, get_key_name, query_key_name):
     if filter_value:
         query_set = query_set.filter(**{query_key_name: filter_value})
     return query_set
+
+
+def filter_by_currency(data_list, currency):
+    """
+    Filter data_list by currency and return total value
+    """
+    filtered_list = list(filter(lambda x: x[0].currency == currency, data_list))
+
+    return {
+        "filtered_list": sorted(
+            filtered_list,
+            key=lambda x: x[0].first_transaction
+            if x[0].first_transaction
+            else datetime.date.today(),
+        ),
+        "total_last_value_positive": sum(
+            [x[1]["last_value"] for x in filtered_list if x[1]["last_value"] > 0]
+        ),
+        "total_max_value_positive": sum(
+            [x[1]["max_value"] for x in filtered_list if x[1]["max_value"] > 0]
+        ),
+        "count": len(filtered_list),
+    }
+
+
+def get_saving_interest_tax_summary(target_year: int):
+    tax_interest = (
+        models.Transaction.objects.prefetch_related("account")
+        .filter(
+            date__year=target_year,
+            account__type=AccountType.INSTALLMENT_SAVING,
+            retailer__isnull=False,
+        )
+        .order_by("date", "-amount")
+    )
+
+    account = {}
+
+    for transaction in tax_interest:
+        if transaction.account not in account:
+            account[transaction.account] = {
+                "total_interest": 0.0,
+                "total_tax": 0.0,
+                "after_tax": 0.0,
+            }
+
+        account[transaction.account]["after_tax"] += transaction.amount
+
+        if transaction.amount > 0:
+            account[transaction.account]["total_interest"] += transaction.amount
+
+        else:
+            account[transaction.account]["total_tax"] += transaction.amount
+
+    return sorted(account.items(), key=lambda x: x[0].name)
+
+
+def year_summary(target_year: int):
+    """
+    Get all transactions in the year and return summary
+    """
+    this_year_transactions = (
+        models.Transaction.objects.prefetch_related("account")
+        .filter(date__year=target_year, account__bank__id=5)
+        .order_by("date", "-amount")
+    )
+
+    account_summary = {}
+
+    for transaction in this_year_transactions:
+        account = transaction.account
+        if account not in account_summary:
+            account_summary[account] = {
+                "max_value": 0.0,
+                "last_value": 0.0,
+            }
+
+        if transaction.balance is not None:
+            current_max = account_summary[account]["max_value"]
+
+            account_summary[account]["max_value"] = max(
+                current_max, transaction.balance
+            )
+
+            account_summary[account]["last_value"] = transaction.balance
+        else:
+            print(f"{transaction} is not updated")
+
+    account_summary = account_summary.items()
+
+    context = {
+        "this_year_transactions": this_year_transactions,
+        "account_summary_krw": filter_by_currency(account_summary, CurrencyType.KRW),
+        "account_summary_usd": filter_by_currency(account_summary, CurrencyType.USD),
+        "saving_interest_tax": get_saving_interest_tax_summary(target_year),
+    }
+
+    return context

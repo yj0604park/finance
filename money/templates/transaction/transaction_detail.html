@@ -173,4 +173,13 @@
 <a href="{% url 'money:transaction_detail_create' transaction.id %}">
     Add detail
 </a>
+
+{% if transaction.stocktransaction_set %}
+<h1> Related Stock Transaction </h1>
+    {% for stock in transaction.stocktransaction_set.all %}
+        <a href="{% url 'money:stock_transaction_detail' stock.id %}">
+            {{ stock.id }}
+        </a>
+    {% endfor %}
+{% endif %}
 {% endblock %}

@@ -21,7 +21,7 @@ from django.db.models import (
 from django.db.models.functions import TruncMonth
 from django.shortcuts import render
 from django.urls import reverse_lazy
-from django.views.generic import DetailView, ListView, UpdateView, View
+from django.views.generic import DetailView, ListView, TemplateView, UpdateView, View
 from django.views.generic.edit import CreateView
 
 from money import choices
@@ -560,23 +560,15 @@ class AmazonOrderDetailView(LoginRequiredMixin, DetailView):
 amazon_order_detail_view = AmazonOrderDetailView.as_view()
 
 
-class TaxView(LoginRequiredMixin, ListView):
+class TaxView(LoginRequiredMixin, TemplateView):
     template_name = "tax/tax.html"
     model = models.Transaction
-    paginate_by = 20
-
-    def get_queryset(self) -> QuerySet[Any]:
-        qs = super().get_queryset()
-        qs = (
-            qs.filter(reviewed=False)
-            .order_by("-date", "amount")
-            .prefetch_related("account", "retailer")
-        )
-        return qs
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        context["additional_get_query"] = {}
+
+        context.update(helper.year_summary(2023))
+
         return context
 
 

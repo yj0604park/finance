@@ -99,9 +99,14 @@ class BankDetailView(LoginRequiredMixin, DetailView):
 
         stock_balance_map = defaultdict(list)
         for data in last_transactions_per_account:
-            stock_balance_map[data.account.pk].append(
-                (data.stock.name, data.last_stock_transaction)
-            )
+            if (
+                data.last_stock_transaction > 0.01
+                or data.last_stock_transaction < -0.01
+            ):
+                stock_balance_map[data.account.pk].append(
+                    (data.stock.name, data.last_stock_transaction)
+                )
+
         print(stock_balance_map)
 
         context["account_list"] = account_list
@@ -438,8 +443,14 @@ class ExchangeListView(LoginRequiredMixin, ListView):
     model = models.Exchange
     paginate_by = 20
 
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["additional_get_query"] = {}
+
+        return context
+
     def get_queryset(self) -> QuerySet[models.Exchange]:
-        return super().get_queryset().order_by("date")
+        return super().get_queryset().order_by("-date")
 
 
 exchange_list_view = ExchangeListView.as_view()

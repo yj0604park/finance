@@ -138,7 +138,7 @@ class StockTransaction(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
     related_transaction = models.ForeignKey(
-        Transaction, on_delete=models.SET_NULL, null=True, blank=True
+        Transaction, on_delete=models.CASCADE, null=True, blank=True
     )
 
     price = models.FloatField()

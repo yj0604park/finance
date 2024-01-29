@@ -111,7 +111,14 @@ def update_related_transaction(request):
                         and target.is_internal
                         and source_id != target_id
                         and source.account.pk != target.account.pk
+                        and source.amount * target.amount < 0
                     ):
+                        if source.amount > 0:
+                            # source should has minus amount
+                            temp = source
+                            source = target
+                            target = temp
+
                         if source.account.currency == choices.CurrencyType.KRW:
                             ratio = source.amount / target.amount
                         else:

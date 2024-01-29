@@ -104,6 +104,7 @@ class TransactionOrder:
     date: auto
     account: AccountOrder
     amount: auto
+    balance: auto
 
 
 @strawberry.django.type(
