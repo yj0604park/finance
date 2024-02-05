@@ -262,3 +262,20 @@ class StockTransactionNode(relay.Node):
 
 
 # endregion
+
+# region: Amazon Orders
+
+
+@strawberry.django.ordering.order(models.AmazonOrder)
+class AmazonOrderOrder:
+    date: auto
+
+
+@strawberry.django.type(models.AmazonOrder, order=AmazonOrderOrder)
+class AmazonOrderNode(relay.Node):
+    id: relay.GlobalID
+    date: auto
+    item: auto
+    is_returned: auto
+    transaction: TransactionNode
+    return_transaction: TransactionNode | None

@@ -326,9 +326,11 @@ def filter_by_currency(data_list, currency):
     return {
         "filtered_list": sorted(
             filtered_list,
-            key=lambda x: x[0].first_transaction
-            if x[0].first_transaction
-            else datetime.date.today(),
+            key=lambda x: (
+                x[0].first_transaction
+                if x[0].first_transaction
+                else datetime.date.today()
+            ),
         ),
         "total_last_value_positive": sum(
             [x[1]["last_value"] for x in filtered_list if x[1]["last_value"] > 0]

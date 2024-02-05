@@ -37,6 +37,10 @@ class Query:
         types.StockNode
     ] = strawberry.django.connection()
 
+    amazon_order_relay: ListConnectionWithTotalCount[
+        types.AmazonOrderNode
+    ] = strawberry.django.connection()
+
 
 @strawberry.type
 class Mutation:
