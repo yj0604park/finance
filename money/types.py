@@ -68,9 +68,9 @@ class BankNode(relay.Node):
     id: relay.GlobalID
     name: auto
     balance: JSON
-    account_set: strawberry.django.relay.ListConnectionWithTotalCount[
-        AccountNode
-    ] = strawberry.django.connection()
+    account_set: strawberry.django.relay.ListConnectionWithTotalCount[AccountNode] = (
+        strawberry.django.connection()
+    )
 
 
 # endregion
@@ -266,6 +266,15 @@ class StockTransactionNode(relay.Node):
 # region: Amazon Orders
 
 
+@strawberry.django.input(models.AmazonOrder)
+class AmazonOrderInput:
+    date: auto
+    item: auto
+    is_returned: auto
+    transaction: TransactionNode
+    return_transaction: TransactionNode | None
+
+
 @strawberry.django.ordering.order(models.AmazonOrder)
 class AmazonOrderOrder:
     date: auto
@@ -277,5 +286,5 @@ class AmazonOrderNode(relay.Node):
     date: auto
     item: auto
     is_returned: auto
-    transaction: TransactionNode
+    transaction: TransactionNode | None
     return_transaction: TransactionNode | None

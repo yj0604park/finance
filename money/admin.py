@@ -103,7 +103,7 @@ class StockTransactionAdmin(admin.ModelAdmin):
 
 @admin.register(models.AmazonOrder)
 class AmazonOrderAdmin(admin.ModelAdmin):
-    list_display = ["item", "date", "is_returned", "transaction"]
+    list_display = ["id", "item", "date", "is_returned", "transaction"]
     raw_id_fields = ("transaction", "return_transaction")
     date_hierarchy = "date"
 
