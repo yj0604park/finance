@@ -24,7 +24,7 @@ class TransactionCategory(models.TextChoices):
     EAT_OUT = "EAT_OUT", "외식"
     CLOTHING = "CLOTHING", "옷"
     PRESENT = "PRESENT", "선물"
-    CAR = "CAR", "차/주유"
+    TRANSPORTATION = "CAR", "차/주유/운임"
     HOUSING = "HOUSING", "집/월세"
     LEISURE = "LEISURE", "여가"
     MEDICAL = "MEDICAL", "의료비"

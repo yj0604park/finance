@@ -247,7 +247,7 @@ class YearlySummaryView(LoginRequiredMixin, View):
 
         usd_car = (
             usd_query_set.filter(
-                type=choices.TransactionCategory.CAR,
+                type=choices.TransactionCategory.TRANSPORTATION,
             )
             .values("retailer__name")
             .annotate(total=Sum("amount"))
@@ -257,7 +257,7 @@ class YearlySummaryView(LoginRequiredMixin, View):
             usd_query_set.filter(
                 ~Q(type=choices.TransactionCategory.INCOME),
                 ~Q(type=choices.TransactionCategory.HOUSING),
-                ~Q(type=choices.TransactionCategory.CAR),
+                ~Q(type=choices.TransactionCategory.TRANSPORTATION),
                 ~Q(type=choices.TransactionCategory.TRANSFER),
                 ~Q(type=choices.TransactionCategory.STOCK),
             )

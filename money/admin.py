@@ -6,8 +6,8 @@ from money import models
 
 @admin.register(models.Account)
 class AccountAdmin(admin.ModelAdmin):
-    list_display = ["name", "id", "bank", "currency", "is_active"]
-    list_filter = ["is_active", "bank"]
+    list_display = ["name", "id", "bank", "currency", "is_active", "first_added"]
+    list_filter = ["is_active", "bank", "first_added"]
 
 
 @admin.register(models.Bank)
@@ -93,7 +93,7 @@ class StockAdmin(admin.ModelAdmin):
 
 @admin.register(models.StockPrice)
 class StockPriceAdmin(admin.ModelAdmin):
-    pass
+    list_display = ("id", "stock", "date", "price")
 
 
 @admin.register(models.StockTransaction)
@@ -123,7 +123,8 @@ class AmazonOrderAdmin(admin.ModelAdmin):
 
 @admin.register(models.Exchange)
 class ExchangeAdmin(admin.ModelAdmin):
-    list_display = ["__str__", "id", "date", "ratio_per_krw"]
+    list_display = ["__str__", "id", "date", "ratio_per_krw", "exchange_type"]
+    list_filter = ["exchange_type"]
     raw_id_fields = ("from_transaction", "to_transaction")
     date_hierarchy = "date"
 

@@ -27,14 +27,24 @@
     <td>{{ account.type }}</td>
     <td>{{ account.last_transaction }}</td>
     <td>{{ account.first_transaction | date:"Y-m-d" }}{% if not account.first_added %}(Not Correct){% endif %}</td>
-    <td align="right">{{ account.amount | print_currency:account.currency | safe }}</td>
-    {% with stock_list=stock_balance_map|get_value:account.id %}
+    {% with stock_list=stock_balance_map|get_value:account.id stock_value=stock_value_map|get_value:account.id %}
+    <td align="right">
+      Cash: {{ account.amount | print_currency:account.currency | safe }}
+      {% if stock_value %}
+        <br />
+        Stock: {{ stock_value | print_currency:account.currency | safe }}
+        <br />
+        Total: {{ account.amount | add_float:stock_value | print_currency:account.currency | safe }}
+      {% endif %}
+
+    </td>
     <td>
+      Total Stock Price : {{ stock_value | print_currency:account.currency | safe }} <br />
       {% for stock in stock_list %}
       {% if not forloop.first %}
       <br />
       {% endif %}
-      {{ stock.0 }}: {{ stock.1 | floatformat:2 }}
+      {{ stock.0 }}: {{ stock.1 | floatformat:2 }} Price: {{ stock.2 | print_currency:account.currency | safe }}
       {% endfor %}
     </td>
     {% endwith %}

@@ -4,6 +4,31 @@
 {% block content %}
   <h1>Tax 2023</h1>
 
+  <h2>W-2</h2>
+  {{ salary }}
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Year</th>
+        <th>Total Gross Pay</th>
+        <th>Fedral Income Tax Withheld</th>
+        <th>Social Security Tax Withheld</th>
+        <th>Medicare Health Withheld</th>
+        <th>Employment Insurance</th>
+        <th>After Tax</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>{{ target_year }}</td>
+          <td>{{ salary.total_grosspay|print_currency:'USD'|safe }} + {{ salary.stock_award|print_currency:'USD'|safe }}  + {{ salary.relocation|print_currency:'USD'|safe }}</td>
+          <td>{{ salary.federal_tax|print_currency:'USD'|safe }}</td>
+          <td>{{ salary.social_security_tax|print_currency:'USD'|safe }}</td>
+          <td>{{ salary.medicare_tax|print_currency:'USD'|safe }}</td>
+        </tr>
+    </tbody>
+
   Total Last: {{ account_summary_krw.total_last_value_positive|print_currency:'KRW'|safe }}
   <br />
   Total Max: {{ account_summary_krw.total_max_value_positive|print_currency:'KRW'|safe }}
@@ -25,7 +50,7 @@
       {% for account, value in account_summary_krw.filtered_list %}
         <tr>
           <td>{{ account }}</td>
-          <td>{{ value.max_value|print_currency:'KRW'|safe }}</td>
+          <td>{{ value.max_value|print_currency:'KRW'|safe }}({{ value.max_date }})</td>
           <td>{{ value.last_value|print_currency:'KRW'|safe }}</td>
           <td>{{ account.first_transaction }}</td>
           <td>{{ account.is_active }}</td>

@@ -1,6 +1,8 @@
+# Standard library imports
 from collections import defaultdict
 from typing import Any, TypedDict
 
+# Third-party library imports
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
 from django.db.models import (
@@ -17,15 +19,18 @@ from django.db.models import (
     When,
 )
 from django.db.models.functions import TruncMonth
+from django.db.models.functions.math import Sign
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import DetailView, ListView, TemplateView, View
 from django.views.generic.edit import CreateView
 from django_stubs_ext import WithAnnotations
 
-from money import choices
-from money import forms as money_forms
 from money import helper, models
+
+# Local application/library specific imports
+from money.choices import CurrencyType
+from money.forms import RetailerForm, SalaryForm, StockForm
 
 
 # Dashboard
@@ -78,6 +83,7 @@ class BankDetailView(LoginRequiredMixin, DetailView):
             bank=bank, is_active=True
         ).order_by("type", "name")
 
+        # Get last stock transaction for each account
         last_stock_transaction = (
             models.StockTransaction.objects.filter(
                 stock=OuterRef("stock"), account__name=OuterRef("account__name")
@@ -86,6 +92,14 @@ class BankDetailView(LoginRequiredMixin, DetailView):
             .values("balance")
         )
 
+        # Get last stock price for each stock
+        last_stock_price = (
+            models.StockPrice.objects.filter(stock=OuterRef("stock"))
+            .order_by("-date")
+            .values("price")
+        )
+
+        # Annotate last stock transaction for each account
         last_transactions_per_account: QuerySet[WithAnnotations[Any]] = (
             models.StockTransaction.objects.filter(account__bank=bank)
             .distinct("stock", "account__name")
@@ -93,24 +107,36 @@ class BankDetailView(LoginRequiredMixin, DetailView):
                 last_stock_transaction=Subquery(
                     last_stock_transaction[:1],
                     output_field=FloatField(),
-                )
+                ),
+                last_stock_price=Subquery(
+                    last_stock_price[:1],
+                    output_field=FloatField(),
+                ),
             )
         )
 
         stock_balance_map = defaultdict(list)
+        stock_value_map = defaultdict(float)
         for data in last_transactions_per_account:
             if (
                 data.last_stock_transaction > 0.01
                 or data.last_stock_transaction < -0.01
             ):
                 stock_balance_map[data.account.pk].append(
-                    (data.stock.name, data.last_stock_transaction)
+                    (
+                        data.stock.name,
+                        data.last_stock_transaction,
+                        data.last_stock_price,
+                    )
                 )
-
-        print(stock_balance_map)
+                if data.last_stock_price is not None:
+                    stock_value_map[data.account.pk] += (
+                        data.last_stock_transaction * data.last_stock_price
+                    )
 
         context["account_list"] = account_list
         context["stock_balance_map"] = stock_balance_map
+        context["stock_value_map"] = stock_value_map
         return context
 
 
@@ -157,7 +183,8 @@ class AccountDetailView(LoginRequiredMixin, DetailView):
                 "retailer",
                 "account",
             )
-            .order_by("-date", "amount")
+            .annotate(sign=Sign("amount") * Sum("balance"))
+            .order_by("-date", "amount", "-sign")
         )
 
         context["additional_get_query"] = {}
@@ -335,7 +362,7 @@ retailer_detail_view = RetailerDetailView.as_view()
 class RetailerCreateView(LoginRequiredMixin, CreateView):
     template_name = "retailer/retailer_create.html"
     model = models.Retailer
-    form_class = money_forms.RetailerForm
+    form_class = RetailerForm
 
     def get_success_url(self) -> str:
         return reverse_lazy("money:retailer_create")
@@ -415,7 +442,7 @@ salary_detail_view = SalaryDetailView.as_view()
 class SalaryCreateView(LoginRequiredMixin, CreateView):
     template_name = "salary/salary_create.html"
     model = models.Salary
-    form_class = money_forms.SalaryForm
+    form_class = SalaryForm
 
 
 salary_create_view = SalaryCreateView.as_view()
@@ -424,7 +451,7 @@ salary_create_view = SalaryCreateView.as_view()
 class StockCreateView(LoginRequiredMixin, CreateView):
     template_name = "stock/stock_create.html"
     model = models.Stock
-    form_class = money_forms.StockForm
+    form_class = StockForm
 
 
 stock_create_view = StockCreateView.as_view()
@@ -470,10 +497,10 @@ class AmountSnapshotListView(LoginRequiredMixin, ListView):
         # group by currency
         context["chart"] = {
             "KRW": helper.snapshot_chart(
-                context["amountsnapshot_list"], choices.CurrencyType.KRW
+                context["amountsnapshot_list"], CurrencyType.KRW
             ),
             "USD": helper.snapshot_chart(
-                context["amountsnapshot_list"], choices.CurrencyType.USD
+                context["amountsnapshot_list"], CurrencyType.USD
             ),
         }
 

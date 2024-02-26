@@ -21,6 +21,8 @@ def update_balance(request, account_id):
             account.first_transaction = transaction.date
             first = False
         total += transaction.amount
+        if abs(total) < 0.01:
+            total = 0
         transaction.balance = total
         transaction.save()
         account.last_transaction = transaction.date

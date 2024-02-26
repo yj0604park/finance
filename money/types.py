@@ -125,6 +125,10 @@ class TransactionNode(relay.Node):
     note: auto
     related_transaction: "TransactionNode | None"
 
+    @strawberry.field
+    def get_sorting_amount(self) -> float:
+        return self.balance if self.amount >= 0 else -self.balance
+
 
 @strawberry.django.input(models.Transaction)
 class TransactionInput:

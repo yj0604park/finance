@@ -4,6 +4,8 @@
 {% block content %}
   <h1>Retailer Category {{ category }}</h1>
 
+{{ month_data }}
+
   <div class="grid gap-0 row-gap-3">
     <div class="btn-group p-3" role="group" aria-label="Basic button group">
       {% for cat in category_list %}
@@ -53,13 +55,15 @@
 
   <h1>Retailer Summary</h1>
 
-  {% for currency in currencies %}
-    {% if month_data|get_value:currency %}
-      <div>
-        <canvas id="myChart_{{ currency }}" width="500" height="500"></canvas>
-      </div>
-    {% endif %}
-  {% endfor %}
+  {% if month_data %}
+    {% for currency in currencies %}
+      {% if month_data|get_value:currency %}
+        <div>
+          <canvas id="myChart_{{ currency }}" width="500" height="500"></canvas>
+        </div>
+      {% endif %}
+    {% endfor %}
+  {% endif %}
 
   <table class="table">
     <thead>
@@ -121,11 +125,12 @@
     {% include 'transaction/transaction_table.html' %}
   {% endwith %}
 
-  {% for currency in currencies %}
-    {% with data=month_data %}
-      {% include 'scripts/category_chart.html' %}
-    {% endwith %}
-  {% endfor %}
-
+  {% if month_data %}
+    {% for currency in currencies %}
+      {% with data=month_data %}
+        {% include 'scripts/category_chart.html' %}
+      {% endwith %}
+    {% endfor %}
+  {% endif %}
   {% include 'scripts/toggle_reviewed.html' %}
 {% endblock %}
