@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>People</h1>
+
+<table class="table table-hover">
+{% for person in person_list %}
+<tr>
+<td>{{ person.name }}</td>
+</tr>
+{% endfor %}
+</table>
+
+{% endblock %}

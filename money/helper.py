@@ -374,9 +374,27 @@ def get_saving_interest_tax_summary(target_year: int):
     return sorted(account.items(), key=lambda x: x[0].name)
 
 
+def bank_summary(target_year: int):
+    """
+    Get all transactions in the year and return summary.
+    """
+
+    banks = models.Retailer.objects.filter(type=models.RetailerType.BANK)
+    bank_interest = (
+        models.Transaction.objects.filter(
+            retailer__type=models.RetailerType.BANK, date__year=target_year
+        )
+        .values("retailer__name")
+        .annotate(total=Sum("amount"))
+        .order_by("retailer")
+    )
+
+    return {"banks": banks, "bank_interest": bank_interest}
+
+
 def year_summary(target_year: int):
     """
-    Get all transactions in the year and return summary
+    Get all transactions in the year and return summary.
     """
     this_year_transactions = (
         models.Transaction.objects.prefetch_related("account")
@@ -465,6 +483,7 @@ def year_summary(target_year: int):
         "account_summary_usd": filter_by_currency(account_summary, CurrencyType.USD),
         "saving_interest_tax": get_saving_interest_tax_summary(target_year),
         "salary": salary_info,
+        "bank": bank_summary(target_year),
     }
 
     return context

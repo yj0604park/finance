@@ -28,6 +28,12 @@
           <td>{{ salary.medicare_tax|print_currency:'USD'|safe }}</td>
         </tr>
     </tbody>
+  </table>
+
+  <h2>Banks</h2>
+  {{ bank }}
+
+  <h2>Accounts</h2>
 
   Total Last: {{ account_summary_krw.total_last_value_positive|print_currency:'KRW'|safe }}
   <br />

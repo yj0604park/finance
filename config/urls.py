@@ -19,6 +19,8 @@ urlpatterns = [
     path("users/", include("finance.users.urls", namespace="users")),
     path("accounts/", include("allauth.urls")),
     path("money/", include("money.urls", namespace="money")),
+    path("people/", include("people.urls", namespace="people")),
+    path("leetcode/", include("leetcode.urls", namespace="leetcode")),
     # Your stuff: custom urls includes go here
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 if settings.DEBUG:

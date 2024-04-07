@@ -67,10 +67,6 @@ class BarAnnotations(TypedDict):
     last_stock_transaction: models.StockTransaction
 
 
-class MyTypedDict(TypedDict):
-    foo: str
-
-
 # Bank related views
 class BankDetailView(LoginRequiredMixin, DetailView):
     model = models.Bank
@@ -383,6 +379,7 @@ class SalaryListView(LoginRequiredMixin, ListView):
         net_pay = []
         gross_pay = []
         labels = []
+        context["salary_list"] = context["salary_list"].order_by("-date")
         for salary in context["salary_list"]:
             labels.append(salary.date.strftime("%Y-%m-%d"))
             gross_pay.append(salary.gross_pay)

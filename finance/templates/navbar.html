@@ -45,6 +45,9 @@
           <li class="nav-item">
             <a class="nav-link" href="{% url 'money:tax' %}">Tax</a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'people:home' %}">People</a>
+          </li>
           {% if request.user.is_authenticated %}
             <li class="nav-item">
               {# URL provided by django-allauth/account/urls.py #}
