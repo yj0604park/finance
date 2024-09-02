@@ -215,6 +215,7 @@ urlpatterns = [
     path(
         "filter_retailer", view=view_functions.filter_retailer, name="filter_retailer"
     ),
+    path("file_upload", view=view_functions.file_upload, name="file_upload"),
     path("graphql", GraphQLView.as_view(schema=schema)),
     # endregion
 ]

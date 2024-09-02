@@ -84,7 +84,7 @@ class BankDetailView(LoginRequiredMixin, DetailView):
             models.StockTransaction.objects.filter(
                 stock=OuterRef("stock"), account__name=OuterRef("account__name")
             )
-            .order_by("-date", "shares")
+            .order_by("-date", "amount")
             .values("balance")
         )
 

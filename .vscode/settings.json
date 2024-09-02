@@ -4,5 +4,9 @@
   },
   "python.analysis.typeCheckingMode": "basic",
   "python.analysis.logLevel": "Trace",
-  "python.formatting.provider": "none"
+  "python.formatting.provider": "none",
+  "files.associations": {
+    "complex": "c",
+    "cmath": "c"
+  }
 }

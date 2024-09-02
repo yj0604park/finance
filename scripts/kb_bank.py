@@ -31,9 +31,11 @@ def run():
                     sort_keys=True,
                     ensure_ascii=False,
                 ),
-                "amount": -float(data[WithDrawIndex].strip().replace(",", ""))
-                if float(data[WithDrawIndex].strip().replace(",", ""))
-                else float(data[DepositIndex].strip().replace(",", "")),
+                "amount": (
+                    -float(data[WithDrawIndex].strip().replace(",", ""))
+                    if float(data[WithDrawIndex].strip().replace(",", ""))
+                    else float(data[DepositIndex].strip().replace(",", ""))
+                ),
                 "account_id": 8,  # 직장인우대통장
             }
 

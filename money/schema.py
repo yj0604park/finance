@@ -1,10 +1,32 @@
 import strawberry
 import strawberry.django
+from django.db.models import Sum
 from strawberry_django import mutations
 from strawberry_django.optimizer import DjangoOptimizerExtension
 from strawberry_django.relay import ListConnectionWithTotalCount
 
-from money import types
+from money import models, types
+
+
+def get_salary_years() -> list[int]:
+    return list(
+        models.Salary.objects.values_list("date__year", flat=True)
+        .distinct()
+        .order_by("date__year")
+    )
+
+
+def get_salary_summary() -> list[types.SalarySummaryNode]:
+
+    query = models.Salary.objects.values("date__year").aggregate(
+        total_gross_pay=Sum("gross_pay")
+    )
+
+    print(query)
+
+    summary_list = []
+
+    return summary_list
 
 
 @strawberry.type
@@ -40,6 +62,11 @@ class Query:
     amazon_order_relay: ListConnectionWithTotalCount[types.AmazonOrderNode] = (
         strawberry.django.connection()
     )
+
+    salary_years: list[int] = strawberry.field(resolver=get_salary_years)
+    # salary_summary: list[types.SalarySummaryNode] = strawberry.field(
+    #     resolver=get_salary_summary
+    # )
 
 
 @strawberry.type

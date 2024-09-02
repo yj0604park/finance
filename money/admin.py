@@ -132,3 +132,9 @@ class ExchangeAdmin(admin.ModelAdmin):
 @admin.register(models.AmountSnapshot)
 class AmountSnapshotAdmin(admin.ModelAdmin):
     date_hierarchy = "date"
+
+
+@admin.register(models.TransactionFile)
+class TransactionFile(admin.ModelAdmin):
+    list_display = ["id", "file", "date"]
+    date_hierarchy = "date"

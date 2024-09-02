@@ -6,8 +6,9 @@ import requests
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Q
 from django.http import HttpRequest, HttpResponseNotAllowed, JsonResponse
+from django.shortcuts import render
 
-from money import choices, helper, models
+from money import choices, forms, helper, models
 
 
 def update_balance(request, account_id):
@@ -247,3 +248,15 @@ def filter_retailer(request):
         {"name": obj.name, "id": obj.pk, "str": str(obj)} for obj in filtered
     ]
     return JsonResponse({"filtered_list": filtered_obj_list})
+
+
+@login_required
+def file_upload(request):
+    if request.method == "POST":
+        form = forms.TransactionFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return JsonResponse({"success": True})
+    else:
+        form = forms.TransactionFileForm()
+    return render(request, "file/upload.html", {"form": form})

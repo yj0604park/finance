@@ -292,3 +292,9 @@ class AmazonOrderNode(relay.Node):
     is_returned: auto
     transaction: TransactionNode | None
     return_transaction: TransactionNode | None
+
+
+@strawberry.type()
+class SalarySummaryNode:
+    year: auto
+    total_gross_pay: auto

@@ -328,7 +328,9 @@ class SalaryForm(forms.ModelForm):
         self.fields["transaction"].choices = [
             (transaction.pk, str(transaction))
             for transaction in models.Transaction.objects.filter(
-                type=models.TransactionCategory.INCOME
+                type=models.TransactionCategory.INCOME,
+                retailer__type=models.RetailerType.INCOME,
+                retailer__id=37,
             )
             .filter(reviewed=False)
             .order_by("-date")
@@ -376,3 +378,9 @@ class AmazonOrderForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["date"].initial = date.today()
+
+
+class TransactionFileForm(forms.ModelForm):
+    class Meta:
+        model = models.TransactionFile
+        fields = "__all__"

@@ -26,6 +26,8 @@ class Account(models.Model):
         choices_enum=AccountType, default=AccountType.CHECKING_ACCOUNT
     )
     amount = models.FloatField(default=0)
+    amount_int = models.BigIntegerField(default=0)
+
     last_update = models.DateTimeField(null=True, blank=True)
     last_transaction = models.DateField(null=True, blank=True)
     first_transaction = models.DateField(null=True, blank=True)
@@ -88,6 +90,8 @@ class Transaction(models.Model):
         Retailer, on_delete=models.SET_NULL, blank=True, null=True
     )
     amount = models.FloatField()
+    amount_int = models.BigIntegerField(default=0)
+
     balance = models.FloatField(null=True, blank=True)
     date = models.DateField()
     note = models.TextField(null=True, blank=True)
@@ -107,6 +111,10 @@ class Transaction(models.Model):
 
     def get_absolute_url(self):
         return reverse("money:transaction_detail", kwargs={"pk": self.pk})
+
+    def save(self, *args, **kwargs):
+        self.amount_int = int(self.amount * 100)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return (
@@ -262,3 +270,17 @@ class AmountSnapshot(models.Model):
 
     def __str__(self) -> str:
         return f"{self.date}: {self.currency}"
+
+
+class TransactionFile(models.Model):
+    file = models.FileField(upload_to="transaction_files/")
+    date = models.DateField()
+    account = models.ForeignKey(
+        Account, on_delete=models.SET_NULL, null=True, blank=True
+    )
+    note = models.TextField(null=True, blank=True)
+    is_processed = models.BooleanField(default=False)
+    processed_date = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.date}: {self.file.name}"
