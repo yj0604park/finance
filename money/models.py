@@ -284,3 +284,19 @@ class TransactionFile(models.Model):
 
     def __str__(self):
         return f"{self.date}: {self.file.name}"
+
+
+class W2(models.Model):
+    date = models.DateField()
+    year = models.IntegerField()
+    wages = models.DecimalField(max_digits=10, decimal_places=2)
+    income_tax = models.DecimalField(max_digits=10, decimal_places=2)
+    social_security_wages = models.DecimalField(max_digits=10, decimal_places=2)
+    social_security_tax = models.DecimalField(max_digits=10, decimal_places=2)
+    medicare_wages = models.DecimalField(max_digits=10, decimal_places=2)
+    medicare_tax = models.DecimalField(max_digits=10, decimal_places=2)
+    box_12 = models.JSONField(blank=True, null=True)
+    box_14 = models.CharField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.date}"

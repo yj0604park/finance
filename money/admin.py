@@ -138,3 +138,11 @@ class AmountSnapshotAdmin(admin.ModelAdmin):
 class TransactionFile(admin.ModelAdmin):
     list_display = ["id", "file", "date"]
     date_hierarchy = "date"
+
+
+@admin.register(models.W2)
+class W2Admin(admin.ModelAdmin):
+    list_display = ["id", "year", "date"]
+    date_hierarchy = "date"
+    list_filter = ["year"]
+    search_fields = ["year"]

@@ -253,10 +253,50 @@ def filter_retailer(request):
 @login_required
 def file_upload(request):
     if request.method == "POST":
+        print("Post")
         form = forms.TransactionFileForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             return JsonResponse({"success": True})
     else:
         form = forms.TransactionFileForm()
+    print("hi")
     return render(request, "file/upload.html", {"form": form})
+
+
+@login_required
+def get_end_month_balance(request):
+    accounts = models.Account.objects.filter(is_active=True)
+    end_month_balances = []
+
+    year = "2024"
+
+    for account in accounts:
+        account_balances = []
+        for month in range(1, 13):
+            last_transaction = (
+                account.transaction_set.filter(date__year=year, date__month=month)
+                .order_by("date", "-amount")
+                .last()
+            )
+
+            if last_transaction is None:
+                continue
+
+            account_balances.append(
+                {
+                    "month": month,
+                    "balance": last_transaction.balance,
+                    "transaction_id": last_transaction.id,
+                }
+            )
+
+        end_month_balances.append(
+            {
+                "account_id": account.id,
+                "account_name": account.name,
+                "balance": account_balances,
+            }
+        )
+
+    return JsonResponse({"end_month_balances": end_month_balances})

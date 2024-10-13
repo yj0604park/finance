@@ -323,7 +323,7 @@ REST_FRAMEWORK = {
 # django-cors-headers - https://github.com/adamchainz/django-cors-headers#setup
 CORS_URLS_REGEX = (
     r"^/api/.*$|^/money/graphql$|^/money/update_balance/.*$|^/money/stock_transaction_create/.*$|"
-    + r"^/money/file_upload/.*$"
+    + r"^/money/file_upload$"
 )
 
 CORS_ALLOWED_ORIGIN_REGEXES = [

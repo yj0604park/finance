@@ -5,10 +5,8 @@
 {% block content %}
 
 <div class="container">
-    <form method="POST" action="{% url 'money:file_upload' %}" enctype="multipart/form-data">
-        {% csrf_token %}
+    <form method="post" enctype="multipart/form-data">
         {% crispy form %}
-        <input type="submit" class="btn btn-primary col-12" value="제출">
     </form>
 </div>
 {% endblock%}

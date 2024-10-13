@@ -216,6 +216,11 @@ urlpatterns = [
         "filter_retailer", view=view_functions.filter_retailer, name="filter_retailer"
     ),
     path("file_upload", view=view_functions.file_upload, name="file_upload"),
+    path(
+        "get_end_month_balance",
+        view=view_functions.get_end_month_balance,
+        name="get_end_month_balance",
+    ),
     path("graphql", GraphQLView.as_view(schema=schema)),
     # endregion
 ]

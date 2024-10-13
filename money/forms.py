@@ -384,3 +384,15 @@ class TransactionFileForm(forms.ModelForm):
     class Meta:
         model = models.TransactionFile
         fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Row(Column("file", css_class="form-group")),
+            Column("date", css_class="form-group"),
+            Column("account", css_class="form-group"),
+            Column("note", css_class="form-group"),
+            Submit("submit", "Submit", css_class="col-12"),
+        )
