@@ -1,4 +1,5 @@
 from django.urls import path
+from django.views.decorators.csrf import csrf_exempt
 from strawberry.django.views import GraphQLView
 
 from money import views
@@ -221,6 +222,6 @@ urlpatterns = [
         view=view_functions.get_end_month_balance,
         name="get_end_month_balance",
     ),
-    path("graphql", GraphQLView.as_view(schema=schema)),
+    path("graphql", csrf_exempt(GraphQLView.as_view(schema=schema))),
     # endregion
 ]
