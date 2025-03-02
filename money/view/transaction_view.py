@@ -29,7 +29,7 @@ from money import forms as money_forms
 from money import helper
 from money.models.accounts import Account, AmountSnapshot
 from money.models.exchanges import Exchange
-from money.models.shippings import AmazonOrder
+from money.models.shoppings import AmazonOrder
 from money.models.stocks import StockTransaction
 from money.models.transactions import Transaction, TransactionCategory
 

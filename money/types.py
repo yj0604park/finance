@@ -3,7 +3,7 @@ import strawberry.django
 from strawberry import auto, relay
 from strawberry.scalars import JSON
 
-from money.models import shippings, stocks
+from money.models import shoppings, stocks
 from money.models.accounts import Account, AmountSnapshot, Bank
 from money.models.incomes import Salary
 from money.models.transactions import Retailer, Transaction
@@ -271,7 +271,7 @@ class StockTransactionNode(relay.Node):
 # region: Amazon Orders
 
 
-@strawberry.django.input(shippings.AmazonOrder)
+@strawberry.django.input(shoppings.AmazonOrder)
 class AmazonOrderInput:
     date: auto
     item: auto
@@ -280,12 +280,12 @@ class AmazonOrderInput:
     return_transaction: TransactionNode | None
 
 
-@strawberry.django.ordering.order(shippings.AmazonOrder)
+@strawberry.django.ordering.order(shoppings.AmazonOrder)
 class AmazonOrderOrder:
     date: auto
 
 
-@strawberry.django.type(shippings.AmazonOrder, order=AmazonOrderOrder)
+@strawberry.django.type(shoppings.AmazonOrder, order=AmazonOrderOrder)
 class AmazonOrderNode(relay.Node):
     id: relay.GlobalID
     date: auto

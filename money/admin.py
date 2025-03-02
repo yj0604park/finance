@@ -1,19 +1,13 @@
 from django import forms
 from django.contrib import admin
 
-from money import choices
+from money.choices import DetailItemCategory, TransactionCategory
 from money.models.accounts import Account, AmountSnapshot, Bank
 from money.models.exchanges import Exchange
 from money.models.incomes import W2, Salary
-from money.models.shippings import AmazonOrder
+from money.models.shoppings import AmazonOrder, DetailItem, Retailer
 from money.models.stocks import Stock, StockPrice, StockTransaction
-from money.models.transactions import (
-    DetailItem,
-    Retailer,
-    Transaction,
-    TransactionDetail,
-    TransactionFile,
-)
+from money.models.transactions import Transaction, TransactionDetail, TransactionFile
 
 
 @admin.register(Bank)
@@ -74,7 +68,7 @@ class DetailItemAdmin(admin.ModelAdmin):
     def formfield_for_choice_field(self, db_field, request, **kwargs):
         if db_field.name == "category":
             # Get the existing choices.
-            choices = choices.DetailItemCategory.choices
+            choices = DetailItemCategory.choices
 
             # Sort the choices in lexicographic order.
             kwargs["choices"] = sorted(choices, key=lambda x: x[1])
@@ -94,7 +88,7 @@ class SalaryAdmin(admin.ModelAdmin):
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "transaction":
             kwargs["queryset"] = (
-                Transaction.objects.filter(type=choices.TransactionCategory.INCOME)
+                Transaction.objects.filter(type=TransactionCategory.INCOME)
                 .prefetch_related("account", "retailer")
                 .order_by("date")
             )

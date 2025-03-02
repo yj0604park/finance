@@ -13,13 +13,11 @@ from money.choices import AccountType, RetailerType, TransactionCategory
 from money.models.accounts import Account
 from money.models.stocks import Stock, StockTransaction
 from money.models.transactions import (
-    DetailItem,
-    Retailer,
     Transaction,
     TransactionDetail,
     TransactionFile,
 )
-from money.models.shippings import AmazonOrder
+from money.models.shoppings import AmazonOrder, DetailItem, Retailer
 from money.models.incomes import Salary
 
 

@@ -5,9 +5,10 @@ from django.utils.translation import gettext_lazy as _
 from django_choices_field import TextChoicesField
 
 from money.choices import AccountType, CurrencyType
+from money.models.base import BaseAmountModel, BaseCurrencyModel
 
 
-class Account(models.Model):
+class Account(BaseAmountModel, BaseCurrencyModel):
     """
     Model for a bank account.
     """
@@ -16,18 +17,13 @@ class Account(models.Model):
     name = models.CharField(max_length=200, db_collation="C")
     alias = models.CharField(max_length=200, blank=True, null=True)
     type = TextChoicesField(
-        choices_enum=AccountType, default=AccountType.CHECKING_ACCOUNT
+        max_length=20, choices_enum=AccountType, default=AccountType.CHECKING_ACCOUNT
     )
-    amount = models.FloatField(default=0)
-    amount_int = models.BigIntegerField(default=0)
 
     last_update = models.DateTimeField(null=True, blank=True)
     last_transaction = models.DateField(null=True, blank=True)
     first_transaction = models.DateField(null=True, blank=True)
     first_added = models.BooleanField(default=False)
-    currency = TextChoicesField(
-        max_length=3, choices_enum=CurrencyType, default=CurrencyType.USD
-    )
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
@@ -55,7 +51,7 @@ class Bank(models.Model):
         sum_dict = defaultdict(float)
 
         for account in Account.objects.filter(bank=self):
-            sum_dict[account.currency] += account.amount
+            sum_dict[account.currency] += float(account.amount)
         return sum_dict
 
 
