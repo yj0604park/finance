@@ -3,9 +3,10 @@ import strawberry.django
 from strawberry import auto, relay
 from strawberry.scalars import JSON
 
-from money.models import models
-from money.models.accounts import Account, Bank, AmountSnapshot
-from money.models.transaction import Retailer, Transaction
+from money.models import shippings, stocks
+from money.models.accounts import Account, AmountSnapshot, Bank
+from money.models.incomes import Salary
+from money.models.transactions import Retailer, Transaction
 
 
 # region Account
@@ -29,7 +30,7 @@ class AccountOrder:
 
 
 @strawberry.django.type(
-    models.Account, filters=AccountFilter, pagination=True, order=AccountOrder
+    Account, filters=AccountFilter, pagination=True, order=AccountOrder
 )
 class AccountNode(relay.Node):
     id: relay.GlobalID
@@ -44,7 +45,7 @@ class AccountNode(relay.Node):
     first_transaction: auto
 
 
-@strawberry.django.input(models.Account)
+@strawberry.django.input(Account)
 class AccountInput:
     name: auto
     bank: "BankNode"
@@ -109,9 +110,7 @@ class TransactionOrder:
     balance: auto
 
 
-@strawberry.django.type(
-    models.Transaction, filters=TransactionFilter, order=TransactionOrder
-)
+@strawberry.django.type(Transaction, filters=TransactionFilter, order=TransactionOrder)
 class TransactionNode(relay.Node):
     id: relay.GlobalID
     amount: auto
@@ -132,7 +131,7 @@ class TransactionNode(relay.Node):
         return self.balance if self.amount >= 0 else -self.balance
 
 
-@strawberry.django.input(models.Transaction)
+@strawberry.django.input(Transaction)
 class TransactionInput:
     amount: auto
     account: AccountNode
@@ -173,13 +172,13 @@ class AmountSnapshotNode(relay.Node):
 
 # endregion
 # region: Stock
-@strawberry.django.filters.filter(models.Stock, lookups=True)
+@strawberry.django.filters.filter(stocks.Stock, lookups=True)
 class StockFilter:
     id: auto
     name: auto
 
 
-@strawberry.django.type(models.Stock, filters=StockFilter)
+@strawberry.django.type(stocks.Stock, filters=StockFilter)
 class Stock:
     id: auto
     name: auto
@@ -189,18 +188,18 @@ class Stock:
 
 # endregion
 # region: Salary
-@strawberry.django.filters.filter(models.Salary, lookups=True)
+@strawberry.django.filters.filter(Salary, lookups=True)
 class SalaryFilter:
     id: auto
     date: auto
 
 
-@strawberry.django.ordering.order(models.Salary)
+@strawberry.django.ordering.order(Salary)
 class SalaryOrder:
     date: auto
 
 
-@strawberry.django.type(models.Salary, filters=SalaryFilter, order=SalaryOrder)
+@strawberry.django.type(Salary, filters=SalaryFilter, order=SalaryOrder)
 class SalaryNode(relay.Node):
     id: relay.GlobalID
     date: auto
@@ -222,14 +221,14 @@ class SalaryNode(relay.Node):
 
 
 # region: Stock
-@strawberry.django.input(models.Stock)
+@strawberry.django.input(stocks.Stock)
 class StockInput:
     ticker: auto
     name: auto
     currency: auto
 
 
-@strawberry.django.type(models.Stock)
+@strawberry.django.type(stocks.Stock)
 class StockNode(relay.Node):
     id: relay.GlobalID
     ticker: auto
@@ -241,7 +240,7 @@ class StockNode(relay.Node):
 
 
 # region: StockTransaction
-@strawberry.django.input(models.StockTransaction)
+@strawberry.django.input(stocks.StockTransaction)
 class StockTransactionInput:
     date: auto
     account: AccountNode
@@ -254,7 +253,7 @@ class StockTransactionInput:
     note: auto
 
 
-@strawberry.django.type(models.StockTransaction)
+@strawberry.django.type(stocks.StockTransaction)
 class StockTransactionNode(relay.Node):
     id: relay.GlobalID
     account: AccountNode
@@ -272,7 +271,7 @@ class StockTransactionNode(relay.Node):
 # region: Amazon Orders
 
 
-@strawberry.django.input(models.AmazonOrder)
+@strawberry.django.input(shippings.AmazonOrder)
 class AmazonOrderInput:
     date: auto
     item: auto
@@ -281,12 +280,12 @@ class AmazonOrderInput:
     return_transaction: TransactionNode | None
 
 
-@strawberry.django.ordering.order(models.AmazonOrder)
+@strawberry.django.ordering.order(shippings.AmazonOrder)
 class AmazonOrderOrder:
     date: auto
 
 
-@strawberry.django.type(models.AmazonOrder, order=AmazonOrderOrder)
+@strawberry.django.type(shippings.AmazonOrder, order=AmazonOrderOrder)
 class AmazonOrderNode(relay.Node):
     id: relay.GlobalID
     date: auto

@@ -27,12 +27,16 @@ from django.views.generic.edit import CreateView
 from money import choices
 from money import forms as money_forms
 from money import helper
-from money.models import models
+from money.models.accounts import Account, AmountSnapshot
+from money.models.exchanges import Exchange
+from money.models.shippings import AmazonOrder
+from money.models.stocks import StockTransaction
+from money.models.transactions import Transaction, TransactionCategory
 
 
 # Transaction related views
 class TransactionListView(LoginRequiredMixin, ListView):
-    model = models.Transaction
+    model = Transaction
     template_name = "transaction/transaction_list.html"
     paginate_by = 20
 
@@ -49,7 +53,7 @@ class TransactionListView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
 
-        date_range = models.Transaction.objects.aggregate(Min("date"), Max("date"))
+        date_range = Transaction.objects.aggregate(Min("date"), Max("date"))
         context["additional_get_query"] = {}
         helper.update_month_info(
             self.request,
@@ -69,13 +73,13 @@ transaction_list_view = TransactionListView.as_view()
 
 
 class TransactionChartListView(LoginRequiredMixin, ListView):
-    model = models.Transaction
+    model = Transaction
     template_name = "transaction/transaction_chart_list.html"
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
 
-        amountsnapshot_list = models.AmountSnapshot.objects.all()
+        amountsnapshot_list = AmountSnapshot.objects.all()
         context["chart"] = {
             "USD": helper.snapshot_chart(amountsnapshot_list, choices.CurrencyType.USD),
             "KRW": helper.snapshot_chart(amountsnapshot_list, choices.CurrencyType.KRW),
@@ -83,7 +87,7 @@ class TransactionChartListView(LoginRequiredMixin, ListView):
 
         selected_year = self.request.GET.get("year", date.today().year)
         monthly_summary = (
-            models.Transaction.objects.filter(is_internal=False)
+            Transaction.objects.filter(is_internal=False)
             .filter(~Q(type=choices.TransactionCategory.STOCK))
             .annotate(month=TruncMonth("date"))
             .values("month", "account__currency")
@@ -123,7 +127,7 @@ transaction_chart_list_view = TransactionChartListView.as_view()
 
 class TransactionCreateView(LoginRequiredMixin, CreateView):
     template_name = "transaction/transaction_create.html"
-    model = models.Transaction
+    model = Transaction
     form_class = money_forms.TransactionForm
 
     def get_success_url(self) -> str:
@@ -142,7 +146,7 @@ class TransactionCreateView(LoginRequiredMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        transaction = models.Transaction.objects.filter(
+        transaction = Transaction.objects.filter(
             account_id=self.kwargs["account_id"]
         ).order_by("-date", "amount", "balance")
 
@@ -157,7 +161,7 @@ class TransactionCreateView(LoginRequiredMixin, CreateView):
             )
 
         context["latest_transaction"] = latest_transaction
-        context["account"] = models.Account.objects.get(pk=self.kwargs["account_id"])
+        context["account"] = Account.objects.get(pk=self.kwargs["account_id"])
         return context
 
 
@@ -166,7 +170,7 @@ transaction_create_view = TransactionCreateView.as_view()
 
 class TransactionUpdateView(UpdateView):
     template_name = "transaction/transaction_update.html"
-    model = models.Transaction
+    model = Transaction
     form_class = money_forms.TransactionUpdateForm
 
 
@@ -178,12 +182,12 @@ class TransactionCategoryView(LoginRequiredMixin, View):
     template_name = "category/category.html"
 
     def get(self, request, *args, **kwargs):
-        query_set = models.Transaction.objects.values("type", "account__currency")
+        query_set = Transaction.objects.values("type", "account__currency")
         query_set = helper.filter_month(request, query_set)
 
         context = {"additional_get_query": {}}
 
-        date_range = models.Transaction.objects.aggregate(Min("date"), Max("date"))
+        date_range = Transaction.objects.aggregate(Min("date"), Max("date"))
         helper.update_month_info(
             request,
             context,
@@ -195,10 +199,10 @@ class TransactionCategoryView(LoginRequiredMixin, View):
             total_amount=-Sum("amount")
         ).order_by("account__currency", "-total_amount")
 
-        label_per_currency = {k[0]: [] for k in models.CurrencyType.choices}
-        data_per_currency = {k[0]: [] for k in models.CurrencyType.choices}
-        income_per_currency = {k[0]: [] for k in models.CurrencyType.choices}
-        spent_per_currency = {k[0]: [] for k in models.CurrencyType.choices}
+        label_per_currency = {k[0]: [] for k in CurrencyType.choices}
+        data_per_currency = {k[0]: [] for k in CurrencyType.choices}
+        income_per_currency = {k[0]: [] for k in CurrencyType.choices}
+        spent_per_currency = {k[0]: [] for k in CurrencyType.choices}
 
         for summary in context["summarization"]:
             if summary["total_amount"] > 0:
@@ -214,7 +218,7 @@ class TransactionCategoryView(LoginRequiredMixin, View):
         context["data"] = data_per_currency
         context["income"] = sorted(income_per_currency.items())
         context["spent"] = sorted(spent_per_currency.items())
-        context["currencies"] = [k[0] for k in models.CurrencyType.choices]
+        context["currencies"] = [k[0] for k in CurrencyType.choices]
 
         return render(request, self.template_name, context)
 
@@ -275,7 +279,7 @@ class YearlySummaryView(LoginRequiredMixin, View):
             .annotate(total=Sum("amount"))
         )
 
-        exchange = models.Exchange.objects.filter(
+        exchange = Exchange.objects.filter(
             date__year=2023, exchange_type=choices.ExchangeType.WIREBARLEY
         ).aggregate(total=Sum("from_amount"))
 
@@ -299,7 +303,7 @@ yearly_summary_view = YearlySummaryView.as_view()
 
 # Transaction review related views
 class ReviewTransactionView(LoginRequiredMixin, ListView):
-    model = models.Transaction
+    model = Transaction
     template_name = "review/review_transaction.html"
     paginate_by = 10
 
@@ -322,7 +326,7 @@ review_transaction_view = ReviewTransactionView.as_view()
 
 
 class ReviewInternalTransactionView(LoginRequiredMixin, ListView):
-    model = models.Transaction
+    model = Transaction
     template_name = "review/review_internal.html"
     paginate_by = 20
 
@@ -333,7 +337,7 @@ class ReviewInternalTransactionView(LoginRequiredMixin, ListView):
 
         qs = (
             qs.filter(reviewed=False)
-            .filter(type=models.TransactionCategory.TRANSFER)
+            .filter(type=TransactionCategory.TRANSFER)
             .annotate(abs_amount=Func(F("amount"), function="ABS"))
             .order_by("-date", "abs_amount")
             .prefetch_related("account", "retailer", "related_transaction")
@@ -352,7 +356,7 @@ class ReviewInternalTransactionView(LoginRequiredMixin, ListView):
         if self.request.GET.get(self.INTERNAL_ONLY_FLAG, False):
             context["additional_get_query"][self.INTERNAL_ONLY_FLAG] = True
 
-        date_range = models.Transaction.objects.aggregate(Min("date"), Max("date"))
+        date_range = Transaction.objects.aggregate(Min("date"), Max("date"))
         helper.update_month_info(
             self.request,
             context,
@@ -366,7 +370,7 @@ review_internal_transaction_view = ReviewInternalTransactionView.as_view()
 
 
 class ReviewDetailTransactionView(LoginRequiredMixin, ListView):
-    model = models.Transaction
+    model = Transaction
     template_name = "review/review_detail.html"
     paginate_by = 20
 
@@ -394,7 +398,7 @@ review_detail_transaction_view = ReviewDetailTransactionView.as_view()
 
 class StockTransactionCreateView(LoginRequiredMixin, CreateView):
     template_name = "stock/stock_transaction_create.html"
-    model = models.StockTransaction
+    model = StockTransaction
     form_class = money_forms.StockTransactionForm
 
     def get_success_url(self) -> str:
@@ -421,7 +425,7 @@ class StockTransactionCreateView(LoginRequiredMixin, CreateView):
         )
 
         # Create account transaction
-        transaction = models.Transaction.objects.create(
+        transaction = Transaction.objects.create(
             account=stock_transaction.account,
             amount=-stock_transaction.amount,
             date=stock_transaction.date,
@@ -443,7 +447,7 @@ class StockTransactionCreateView(LoginRequiredMixin, CreateView):
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         account_id = self.kwargs["account_id"]
-        context["account"] = models.Account.objects.get(pk=account_id)
+        context["account"] = Account.objects.get(pk=account_id)
 
         return context
 
@@ -453,7 +457,7 @@ stock_transaction_create_view = StockTransactionCreateView.as_view()
 
 class StockTransactionView(LoginRequiredMixin, DetailView):
     template_name = "stock/stock_transaction_detail.html"
-    model = models.StockTransaction
+    model = StockTransaction
 
 
 stock_transaction_detail_view = StockTransactionView.as_view()
@@ -461,7 +465,7 @@ stock_transaction_detail_view = StockTransactionView.as_view()
 
 class AmazonListView(LoginRequiredMixin, ListView):
     template_name = "transaction/amazon_list.html"
-    model = models.Transaction
+    model = Transaction
     paginate_by = 20
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
@@ -471,7 +475,7 @@ class AmazonListView(LoginRequiredMixin, ListView):
         return context
 
     def get_queryset(self) -> QuerySet[Any]:
-        amazon = models.Retailer.objects.filter(name="Amazon")
+        amazon = Retailer.objects.filter(name="Amazon")
         if amazon:
             return (
                 super()
@@ -494,7 +498,7 @@ amazon_list_view = AmazonListView.as_view()
 
 class AmazonOrderListView(LoginRequiredMixin, ListView):
     template_name = "transaction/amazon_order_list.html"
-    model = models.AmazonOrder
+    model = AmazonOrder
     paginate_by = 20
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
@@ -512,11 +516,11 @@ class AmazonOrderListView(LoginRequiredMixin, ListView):
                 "transaction",
                 Prefetch(
                     "transaction__account",
-                    queryset=models.Account.objects.all(),
+                    queryset=Account.objects.all(),
                 ),
                 Prefetch(
                     "transaction__retailer",
-                    queryset=models.Retailer.objects.all(),
+                    queryset=Retailer.objects.all(),
                 ),
             )
         )
@@ -532,12 +536,12 @@ amazon_order_list_view = AmazonOrderListView.as_view()
 
 class AmazonOrderCreateView(LoginRequiredMixin, CreateView):
     template_name = "transaction/amazon_create.html"
-    model = models.AmazonOrder
+    model = AmazonOrder
     form_class = money_forms.AmazonOrderForm
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        prev_order = models.AmazonOrder.objects.last()
+        prev_order = AmazonOrder.objects.last()
 
         if prev_order:
             context["form"].initial["date"] = prev_order.date
@@ -555,7 +559,7 @@ amazon_order_create_view = AmazonOrderCreateView.as_view()
 
 class AmazonOrderDetailView(LoginRequiredMixin, DetailView):
     template_name = "transaction/amazon_order_detail.html"
-    model = models.AmazonOrder
+    model = AmazonOrder
 
 
 amazon_order_detail_view = AmazonOrderDetailView.as_view()
@@ -563,7 +567,7 @@ amazon_order_detail_view = AmazonOrderDetailView.as_view()
 
 class TaxView(LoginRequiredMixin, TemplateView):
     template_name = "tax/tax.html"
-    model = models.Transaction
+    model = Transaction
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)

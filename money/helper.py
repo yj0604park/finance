@@ -9,13 +9,15 @@ from django.db.models import Max, Q, Sum
 from django.db.models.functions import TruncMonth
 from django.db.models.query import QuerySet
 
-from money.choices import AccountType, CurrencyType
-from money.models import models
+from money.choices import AccountType, CurrencyType, RetailerType
 from money.models.accounts import AmountSnapshot
+from money.models.incomes import Salary
+from money.models.stocks import StockTransaction
+from money.models.transactions import Retailer, Transaction
 
 
 def get_transaction_chart_data(
-    transaction_list: QuerySet[models.Transaction],
+    transaction_list: QuerySet[Transaction],
     currency,
     recalculate=False,
     reverse=False,
@@ -57,9 +59,9 @@ def get_transaction_chart_data(
 
 
 def create_daily_snapshot() -> None:
-    currency_list = models.CurrencyType.choices
+    currency_list = CurrencyType.choices
     all_transaction_list = (
-        models.Transaction.objects.all().order_by("date").prefetch_related("account")
+        Transaction.objects.all().order_by("date").prefetch_related("account")
     )
 
     for currency in currency_list:
@@ -120,7 +122,7 @@ def snapshot_chart(snapshot_list: QuerySet[AmountSnapshot], currency):
 
 def get_stock_snapshot():
     transaction_list = (
-        models.StockTransaction.objects.filter(account__currency=CurrencyType.USD)
+        StockTransaction.objects.filter(account__currency=CurrencyType.USD)
         .order_by("date", "shares")
         .prefetch_related("stock")
     )
@@ -242,12 +244,8 @@ def update_month_summary(request, context, query_set):
             .order_by("month")
         )
 
-        month_label: dict[str, list[str]] = {
-            k[0]: [] for k in models.CurrencyType.choices
-        }
-        month_data: dict[str, list[str]] = {
-            k[0]: [] for k in models.CurrencyType.choices
-        }
+        month_label: dict[str, list[str]] = {k[0]: [] for k in CurrencyType.choices}
+        month_data: dict[str, list[str]] = {k[0]: [] for k in CurrencyType.choices}
 
         for month in month_detail:
             month_label[month["account__currency"]].append(
@@ -261,8 +259,8 @@ def update_month_summary(request, context, query_set):
 
 
 def update_retailer_summary(context, retailer_list):
-    label: dict[str, list[str]] = {k[0]: [] for k in models.CurrencyType.choices}
-    data: dict[str, list[float]] = {k[0]: [] for k in models.CurrencyType.choices}
+    label: dict[str, list[str]] = {k[0]: [] for k in CurrencyType.choices}
+    data: dict[str, list[float]] = {k[0]: [] for k in CurrencyType.choices}
 
     for retailer in retailer_list:
         label[retailer["account__currency"]].append(str(retailer["retailer__name"]))
@@ -286,7 +284,7 @@ def get_month_list(start_date, end_date):
 
 def get_transaction_summary(account_list):
     sum_dict: dict[str, dict[str, float]] = {
-        k[0]: {"current": 0.0, "prev": 0.0} for k in models.CurrencyType.choices
+        k[0]: {"current": 0.0, "prev": 0.0} for k in CurrencyType.choices
     }
 
     currency_map = {}
@@ -300,7 +298,7 @@ def get_transaction_summary(account_list):
     )
 
     prev_transaction_list_per_account = (
-        models.Transaction.objects.filter(
+        Transaction.objects.filter(
             Q(
                 date__month__lte=last_prev_month_day.month,
                 date__year=last_prev_month_day.year,
@@ -316,7 +314,7 @@ def get_transaction_summary(account_list):
 
     for account in prev_transaction_list_per_account:
         first_transaction = (
-            models.Transaction.objects.filter(account__id=account["account"])
+            Transaction.objects.filter(account__id=account["account"])
             .filter(date=account["last_date"])
             .order_by("balance")
             .first()
@@ -371,7 +369,7 @@ def filter_by_currency(data_list, currency):
 
 def get_saving_interest_tax_summary(target_year: int):
     tax_interest = (
-        models.Transaction.objects.prefetch_related("account")
+        Transaction.objects.prefetch_related("account")
         .filter(
             date__year=target_year,
             account__type=AccountType.INSTALLMENT_SAVING,
@@ -406,10 +404,10 @@ def bank_summary(target_year: int):
     Get all transactions in the year and return summary.
     """
 
-    banks = models.Retailer.objects.filter(type=models.RetailerType.BANK)
+    banks = Retailer.objects.filter(type=RetailerType.BANK)
     bank_interest = (
-        models.Transaction.objects.filter(
-            retailer__type=models.RetailerType.BANK, date__year=target_year
+        Transaction.objects.filter(
+            retailer__type=RetailerType.BANK, date__year=target_year
         )
         .values("retailer__name")
         .annotate(total=Sum("amount"))
@@ -424,7 +422,7 @@ def year_summary(target_year: int):
     Get all transactions in the year and return summary.
     """
     this_year_transactions = (
-        models.Transaction.objects.prefetch_related("account")
+        Transaction.objects.prefetch_related("account")
         .filter(date__year=target_year, account__bank__id=5)
         .order_by("date", "-amount")
     )
@@ -456,7 +454,7 @@ def year_summary(target_year: int):
     account_summary = account_summary.items()
 
     # Salary summary
-    salary = models.Salary.objects.filter(date__year=target_year)
+    salary = Salary.objects.filter(date__year=target_year)
     salary_info = {
         "total_grosspay": 0.0,
         "401(K)": 0.0,

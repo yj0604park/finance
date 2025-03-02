@@ -3,7 +3,7 @@ import datetime
 
 from django import template
 
-from money.models.models import CurrencyType
+from money.choices import CurrencyType
 
 register = template.Library()
 

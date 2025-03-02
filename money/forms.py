@@ -9,14 +9,18 @@ from django.urls import reverse
 from django.utils.safestring import mark_safe
 
 from money import choices
-from money.models import models
-from money.models.transaction import (
+from money.choices import AccountType, RetailerType, TransactionCategory
+from money.models.accounts import Account
+from money.models.stocks import Stock, StockTransaction
+from money.models.transactions import (
     DetailItem,
     Retailer,
     Transaction,
     TransactionDetail,
     TransactionFile,
 )
+from money.models.shippings import AmazonOrder
+from money.models.incomes import Salary
 
 
 class DateTimePickerWidget(forms.TextInput):
@@ -216,20 +220,20 @@ class TransactionUpdateForm(TransactionForm):
 
 class StockTransactionForm(forms.ModelForm):
     class Meta:
-        model = models.StockTransaction
+        model = StockTransaction
         exclude = ["related_transaction", "amount", "balance"]
         widgets = {
             "date": DateTimePickerWidget(attrs={"class": "form-control"}),
-            "stock": RelatedFieldWidgetCanAdd(models.Stock, "money:stock_create"),
+            "stock": RelatedFieldWidgetCanAdd(Stock, "money:stock_create"),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["account"].choices = [
             (account.pk, str(account))
-            for account in models.Account.objects.filter(
-                type=models.AccountType.STOCK
-            ).order_by("name")
+            for account in Account.objects.filter(type=AccountType.STOCK).order_by(
+                "name"
+            )
         ]
 
 
@@ -297,7 +301,7 @@ class RetailerForm(forms.ModelForm):
 
 class SalaryForm(forms.ModelForm):
     class Meta:
-        model = models.Salary
+        model = Salary
         fields = "__all__"
         widgets = {
             "pay_detail": DynamicKeyValueJSONWidget(("Regular HRS",)),
@@ -331,9 +335,9 @@ class SalaryForm(forms.ModelForm):
 
         self.fields["transaction"].choices = [
             (transaction.pk, str(transaction))
-            for transaction in models.Transaction.objects.filter(
-                type=models.TransactionCategory.INCOME,
-                retailer__type=models.RetailerType.INCOME,
+            for transaction in Transaction.objects.filter(
+                type=TransactionCategory.INCOME,
+                retailer__type=RetailerType.INCOME,
                 retailer__id=37,
             )
             .filter(reviewed=False)
@@ -367,13 +371,13 @@ class SalaryForm(forms.ModelForm):
 
 class StockForm(forms.ModelForm):
     class Meta:
-        model = models.Stock
+        model = Stock
         fields = "__all__"
 
 
 class AmazonOrderForm(forms.ModelForm):
     class Meta:
-        model = models.AmazonOrder
+        model = AmazonOrder
         exclude = ("transaction", "return_transaction")
         widgets = {
             "date": DateTimePickerWidget(attrs={"class": "form-control"}),

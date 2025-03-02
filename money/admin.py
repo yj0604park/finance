@@ -1,9 +1,13 @@
 from django import forms
 from django.contrib import admin
 
-from money.models import models
+from money import choices
 from money.models.accounts import Account, AmountSnapshot, Bank
-from money.models.transaction import (
+from money.models.exchanges import Exchange
+from money.models.incomes import W2, Salary
+from money.models.shippings import AmazonOrder
+from money.models.stocks import Stock, StockPrice, StockTransaction
+from money.models.transactions import (
     DetailItem,
     Retailer,
     Transaction,
@@ -70,7 +74,7 @@ class DetailItemAdmin(admin.ModelAdmin):
     def formfield_for_choice_field(self, db_field, request, **kwargs):
         if db_field.name == "category":
             # Get the existing choices.
-            choices = models.DetailItemCategory.choices
+            choices = choices.DetailItemCategory.choices
 
             # Sort the choices in lexicographic order.
             kwargs["choices"] = sorted(choices, key=lambda x: x[1])
@@ -85,36 +89,34 @@ class TransactionDetailAdmin(admin.ModelAdmin):
     list_display = ("id", "item", "amount", "count")
 
 
-@admin.register(models.Salary)
+@admin.register(Salary)
 class SalaryAdmin(admin.ModelAdmin):
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "transaction":
             kwargs["queryset"] = (
-                models.Transaction.objects.filter(
-                    type=models.TransactionCategory.INCOME
-                )
+                Transaction.objects.filter(type=choices.TransactionCategory.INCOME)
                 .prefetch_related("account", "retailer")
                 .order_by("date")
             )
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
-@admin.register(models.Stock)
+@admin.register(Stock)
 class StockAdmin(admin.ModelAdmin):
     list_display = ("id", "ticker", "name", "currency")
 
 
-@admin.register(models.StockPrice)
+@admin.register(StockPrice)
 class StockPriceAdmin(admin.ModelAdmin):
     list_display = ("id", "stock", "date", "price")
 
 
-@admin.register(models.StockTransaction)
+@admin.register(StockTransaction)
 class StockTransactionAdmin(admin.ModelAdmin):
     raw_id_fields = ("related_transaction",)
 
 
-@admin.register(models.AmazonOrder)
+@admin.register(AmazonOrder)
 class AmazonOrderAdmin(admin.ModelAdmin):
     list_display = ["id", "item", "date", "is_returned", "transaction"]
     raw_id_fields = ("transaction", "return_transaction")
@@ -134,7 +136,7 @@ class AmazonOrderAdmin(admin.ModelAdmin):
         )
 
 
-@admin.register(models.Exchange)
+@admin.register(Exchange)
 class ExchangeAdmin(admin.ModelAdmin):
     list_display = ["__str__", "id", "date", "ratio_per_krw", "exchange_type"]
     list_filter = ["exchange_type"]
@@ -148,7 +150,7 @@ class TransactionFileAdmin(admin.ModelAdmin):
     date_hierarchy = "date"
 
 
-@admin.register(models.W2)
+@admin.register(W2)
 class W2Admin(admin.ModelAdmin):
     list_display = ["id", "year", "date"]
     date_hierarchy = "date"

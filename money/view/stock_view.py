@@ -4,12 +4,12 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView
 
 from money import helper
-from money.models import models
+from money.models.stocks import StockTransaction
 
 
 class StockAmountChartView(LoginRequiredMixin, ListView):
     template_name = "stock/stock_chart.html"
-    model = models.StockTransaction
+    model = StockTransaction
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)

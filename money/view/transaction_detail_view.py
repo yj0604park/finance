@@ -10,8 +10,7 @@ from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.edit import CreateView
 
 from money import forms as money_forms
-from money.models import models
-from money.models.transaction import DetailItem, Transaction, TransactionDetail
+from money.models.transactions import DetailItem, Transaction, TransactionDetail
 
 
 class TransactionDetailView(LoginRequiredMixin, DetailView):
@@ -67,7 +66,7 @@ class TransactionDetailCreateView(LoginRequiredMixin, CreateView):
         )
 
     def form_valid(self, form: forms.BaseModelForm) -> HttpResponse:
-        form.instance.transaction = models.Transaction.objects.get(
+        form.instance.transaction = Transaction.objects.get(
             pk=self.kwargs["transaction_id"]
         )
         if form.cleaned_data["amount"] == 0:
@@ -78,9 +77,9 @@ class TransactionDetailCreateView(LoginRequiredMixin, CreateView):
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        transaction = models.Transaction.objects.select_related(
-            "account", "retailer"
-        ).get(pk=self.kwargs["transaction_id"])
+        transaction = Transaction.objects.select_related("account", "retailer").get(
+            pk=self.kwargs["transaction_id"]
+        )
         context["transaction"] = transaction
 
         leftover = -transaction.amount

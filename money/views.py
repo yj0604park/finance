@@ -29,11 +29,13 @@ from django_stubs_ext import WithAnnotations
 from money import helper
 
 # Local application/library specific imports
-from money.choices import CurrencyType
+from money.choices import AccountType, CurrencyType, TransactionCategory
 from money.forms import RetailerForm, SalaryForm, StockForm
-from money.models import models
 from money.models.accounts import Account, AmountSnapshot, Bank
-from money.models.transaction import Retailer, Transaction, TransactionDetail
+from money.models.exchanges import Exchange
+from money.models.incomes import Salary
+from money.models.stocks import Stock, StockPrice, StockTransaction
+from money.models.transactions import Retailer, Transaction, TransactionDetail
 
 
 # Dashboard
@@ -58,7 +60,7 @@ class HomeView(LoginRequiredMixin, TemplateView):
 
         context["account_list"] = account_list
         context["sum_list"] = helper.get_transaction_summary(account_list)
-        context["option_list"] = models.AccountType.choices
+        context["option_list"] = AccountType.choices
 
         return context
 
@@ -67,7 +69,7 @@ home_view = HomeView.as_view()
 
 
 class BarAnnotations(TypedDict):
-    last_stock_transaction: models.StockTransaction
+    last_stock_transaction: StockTransaction
 
 
 # Bank related views
@@ -78,13 +80,13 @@ class BankDetailView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         bank = context["bank"]
-        account_list = models.Account.objects.filter(
-            bank=bank, is_active=True
-        ).order_by("type", "name")
+        account_list = Account.objects.filter(bank=bank, is_active=True).order_by(
+            "type", "name"
+        )
 
         # Get last stock transaction for each account
         last_stock_transaction = (
-            models.StockTransaction.objects.filter(
+            StockTransaction.objects.filter(
                 stock=OuterRef("stock"), account__name=OuterRef("account__name")
             )
             .order_by("-date", "amount")
@@ -93,14 +95,14 @@ class BankDetailView(LoginRequiredMixin, DetailView):
 
         # Get last stock price for each stock
         last_stock_price = (
-            models.StockPrice.objects.filter(stock=OuterRef("stock"))
+            StockPrice.objects.filter(stock=OuterRef("stock"))
             .order_by("-date")
             .values("price")
         )
 
         # Annotate last stock transaction for each account
         last_transactions_per_account: QuerySet[WithAnnotations[Any]] = (
-            models.StockTransaction.objects.filter(account__bank=bank)
+            StockTransaction.objects.filter(account__bank=bank)
             .distinct("stock", "account__name")
             .annotate(
                 last_stock_transaction=Subquery(
@@ -155,7 +157,7 @@ bank_list_view = BankListView.as_view()
 
 # Account related views
 class AccountDetailView(LoginRequiredMixin, DetailView):
-    model = models.Account
+    model = Account
     template_name = "account/account_detail.html"
     objects_per_page = 25
 
@@ -166,7 +168,7 @@ class AccountDetailView(LoginRequiredMixin, DetailView):
             .prefetch_related(
                 Prefetch(
                     "transaction_set",
-                    queryset=models.Transaction.objects.select_related("retailer"),
+                    queryset=Transaction.objects.select_related("retailer"),
                 )
             )
         )
@@ -206,7 +208,7 @@ class AccountDetailView(LoginRequiredMixin, DetailView):
         )
 
         context["stock_list"] = (
-            models.StockTransaction.objects.filter(account=account)
+            StockTransaction.objects.filter(account=account)
             .order_by("-date", "balance")
             .prefetch_related("stock")
         )
@@ -226,14 +228,14 @@ class CategoryDetailView(LoginRequiredMixin, View):
         context["print_all"] = request.GET.get("print_all", False)
 
         transaction_list = (
-            models.Transaction.objects.filter(type=category_type)
+            Transaction.objects.filter(type=category_type)
             .filter(is_internal=False)
             .prefetch_related("retailer", "account")
             .order_by("date", "amount")
         )
         transaction_list = helper.filter_month(request, transaction_list)
 
-        date_range = models.Transaction.objects.aggregate(Min("date"), Max("date"))
+        date_range = Transaction.objects.aggregate(Min("date"), Max("date"))
         helper.update_month_info(
             request,
             context,
@@ -266,7 +268,7 @@ class CategoryDetailView(LoginRequiredMixin, View):
         helper.update_retailer_summary(context, context["retailer_detail"])
 
         context["category_list"] = TransactionCategory.choices
-        context["currencies"] = [k[0] for k in models.CurrencyType.choices]
+        context["currencies"] = [k[0] for k in CurrencyType.choices]
 
         return render(request, self.template_name, context)
 
@@ -287,12 +289,10 @@ class RetailerSummaryView(LoginRequiredMixin, ListView):
     model = Retailer
 
     def get_queryset(self):
-        currency = self.request.GET.get("currency", models.CurrencyType.USD)
+        currency = self.request.GET.get("currency", CurrencyType.USD)
 
         return (
-            models.Transaction.objects.filter(
-                account__currency=currency, is_internal=False
-            )
+            Transaction.objects.filter(account__currency=currency, is_internal=False)
             .values(
                 "retailer__id", "retailer__name", "retailer__type", "retailer__category"
             )
@@ -317,8 +317,8 @@ class RetailerSummaryView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        context["currency"] = self.request.GET.get("currency", models.CurrencyType.USD)
-        context["category_list"] = models.TransactionCategory.choices
+        context["currency"] = self.request.GET.get("currency", CurrencyType.USD)
+        context["category_list"] = TransactionCategory.choices
         label = []
         data = []
 
@@ -372,7 +372,7 @@ retailer_create_view = RetailerCreateView.as_view()
 
 class SalaryListView(LoginRequiredMixin, ListView):
     template_name = "salary/salary_list.html"
-    model = models.Salary
+    model = Salary
 
     def get_queryset(self):
         return super().get_queryset().order_by("date")
@@ -404,7 +404,7 @@ salary_list_view = SalaryListView.as_view()
 
 class SalaryDetailView(LoginRequiredMixin, DetailView):
     template_name = "salary/salary_detail.html"
-    model = models.Salary
+    model = Salary
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
@@ -441,7 +441,7 @@ salary_detail_view = SalaryDetailView.as_view()
 
 class SalaryCreateView(LoginRequiredMixin, CreateView):
     template_name = "salary/salary_create.html"
-    model = models.Salary
+    model = Salary
     form_class = SalaryForm
 
 
@@ -450,7 +450,7 @@ salary_create_view = SalaryCreateView.as_view()
 
 class StockCreateView(LoginRequiredMixin, CreateView):
     template_name = "stock/stock_create.html"
-    model = models.Stock
+    model = Stock
     form_class = StockForm
 
 
@@ -459,7 +459,7 @@ stock_create_view = StockCreateView.as_view()
 
 class StockDetailView(LoginRequiredMixin, DetailView):
     template_name = "stock/stock_detail.html"
-    model = models.Stock
+    model = Stock
 
 
 stock_detail_view = StockDetailView.as_view()
@@ -467,7 +467,7 @@ stock_detail_view = StockDetailView.as_view()
 
 class ExchangeListView(LoginRequiredMixin, ListView):
     template_name = "exchange/exchange_list.html"
-    model = models.Exchange
+    model = Exchange
     paginate_by = 20
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
@@ -476,7 +476,7 @@ class ExchangeListView(LoginRequiredMixin, ListView):
 
         return context
 
-    def get_queryset(self) -> QuerySet[models.Exchange]:
+    def get_queryset(self) -> QuerySet[Exchange]:
         return super().get_queryset().order_by("-date")
 
 
