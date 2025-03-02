@@ -10,7 +10,7 @@ from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.edit import CreateView
 
 from money import forms as money_forms
-from money import models
+from money.models import models
 
 
 class TransactionDetailView(LoginRequiredMixin, DetailView):

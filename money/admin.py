@@ -1,18 +1,24 @@
 from django import forms
 from django.contrib import admin
 
-from money import models
+from money.models import models
+from money.models.accounts import Account, Bank, AmountSnapshot
 
 
-@admin.register(models.Account)
+@admin.register(Bank)
+class BankAdmin(admin.ModelAdmin):
+    list_display = ["name", "id"]
+
+
+@admin.register(Account)
 class AccountAdmin(admin.ModelAdmin):
     list_display = ["name", "id", "bank", "currency", "is_active", "first_added"]
     list_filter = ["is_active", "bank", "first_added"]
 
 
-@admin.register(models.Bank)
-class BankAdmin(admin.ModelAdmin):
-    list_display = ["name", "id"]
+@admin.register(AmountSnapshot)
+class AmountSnapshotAdmin(admin.ModelAdmin):
+    date_hierarchy = "date"
 
 
 class TransactionAdminForm(forms.Form):
@@ -126,11 +132,6 @@ class ExchangeAdmin(admin.ModelAdmin):
     list_display = ["__str__", "id", "date", "ratio_per_krw", "exchange_type"]
     list_filter = ["exchange_type"]
     raw_id_fields = ("from_transaction", "to_transaction")
-    date_hierarchy = "date"
-
-
-@admin.register(models.AmountSnapshot)
-class AmountSnapshotAdmin(admin.ModelAdmin):
     date_hierarchy = "date"
 
 

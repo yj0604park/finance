@@ -9,8 +9,9 @@ from django.db.models import Max, Q, Sum
 from django.db.models.functions import TruncMonth
 from django.db.models.query import QuerySet
 
-from money import models
 from money.choices import AccountType, CurrencyType
+from money.models import models
+from money.models.accounts import AmountSnapshot
 
 
 def get_transaction_chart_data(
@@ -93,18 +94,18 @@ def create_daily_snapshot() -> None:
 
 def create_snapshot(date, currency, amount, summary):
     amount = floor(amount * 100) / 100
-    if models.AmountSnapshot.objects.filter(date=date, currency=currency):
-        snapshot = models.AmountSnapshot.objects.get(date=date, currency=currency)
+    if AmountSnapshot.objects.filter(date=date, currency=currency):
+        snapshot = AmountSnapshot.objects.get(date=date, currency=currency)
         snapshot.amount = amount
         snapshot.summary = summary
     else:
-        snapshot = models.AmountSnapshot(
+        snapshot = AmountSnapshot(
             date=date, currency=currency, amount=amount, summary=summary
         )
     snapshot.save()
 
 
-def snapshot_chart(snapshot_list: QuerySet[models.AmountSnapshot], currency):
+def snapshot_chart(snapshot_list: QuerySet[AmountSnapshot], currency):
     chart_info = []
     snapshot_list = snapshot_list.filter(currency=currency).order_by("date")
     for snapshot in snapshot_list:

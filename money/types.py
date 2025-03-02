@@ -3,11 +3,12 @@ import strawberry.django
 from strawberry import auto, relay
 from strawberry.scalars import JSON
 
-from money import models
+from money.models import models
+from money.models.accounts import Account, Bank, AmountSnapshot
 
 
 # region Account
-@strawberry.django.filters.filter(models.Account, lookups=True)
+@strawberry.django.filters.filter(Account, lookups=True)
 class AccountFilter:
     id: auto
     name: auto
@@ -19,7 +20,7 @@ class AccountFilter:
     is_active: auto
 
 
-@strawberry.django.ordering.order(models.Account)
+@strawberry.django.ordering.order(Account)
 class AccountOrder:
     name: auto
     bank: "BankOrder"
@@ -52,18 +53,18 @@ class AccountInput:
 
 # endregion
 # region: Bank
-@strawberry.django.filters.filter(models.Bank, lookups=True)
+@strawberry.django.filters.filter(Bank, lookups=True)
 class BankFilter:
     id: auto
     name: auto
 
 
-@strawberry.django.ordering.order(models.Bank)
+@strawberry.django.ordering.order(Bank)
 class BankOrder:
     name: auto
 
 
-@strawberry.django.type(models.Bank, filters=BankFilter)
+@strawberry.django.type(Bank, filters=BankFilter)
 class BankNode(relay.Node):
     id: relay.GlobalID
     name: auto
@@ -145,21 +146,21 @@ class TransactionInput:
 
 
 # region: Snapshot
-@strawberry.django.filters.filter(models.AmountSnapshot, lookups=True)
+@strawberry.django.filters.filter(AmountSnapshot, lookups=True)
 class AmountSnapshotFilter:
     id: auto
     date: auto
     currency: auto
 
 
-@strawberry.django.ordering.order(models.AmountSnapshot)
+@strawberry.django.ordering.order(AmountSnapshot)
 class AmountSnapshotOrder:
     name: auto
     date: auto
 
 
 @strawberry.django.type(
-    models.AmountSnapshot, filters=AmountSnapshotFilter, order=AmountSnapshotOrder
+    AmountSnapshot, filters=AmountSnapshotFilter, order=AmountSnapshotOrder
 )
 class AmountSnapshotNode(relay.Node):
     id: relay.GlobalID

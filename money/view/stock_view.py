@@ -3,7 +3,8 @@ from typing import Any
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView
 
-from money import helper, models
+from money import helper
+from money.models import models
 
 
 class StockAmountChartView(LoginRequiredMixin, ListView):

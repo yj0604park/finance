@@ -26,7 +26,8 @@ from django.views.generic.edit import CreateView
 
 from money import choices
 from money import forms as money_forms
-from money import helper, models
+from money import helper
+from money.models import models
 
 
 # Transaction related views

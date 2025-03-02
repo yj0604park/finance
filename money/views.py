@@ -26,11 +26,13 @@ from django.views.generic import DetailView, ListView, TemplateView, View
 from django.views.generic.edit import CreateView
 from django_stubs_ext import WithAnnotations
 
-from money import helper, models
+from money import helper
 
 # Local application/library specific imports
 from money.choices import CurrencyType
 from money.forms import RetailerForm, SalaryForm, StockForm
+from money.models import models
+from money.models.accounts import Account, Bank, AmountSnapshot
 
 
 # Dashboard
@@ -41,7 +43,7 @@ class HomeView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
 
         account_list = (
-            models.Account.objects.filter(is_active=True)
+            Account.objects.filter(is_active=True)
             .prefetch_related("bank")
             .order_by("currency", "bank", "last_transaction", "amount")
             .annotate(
@@ -69,7 +71,7 @@ class BarAnnotations(TypedDict):
 
 # Bank related views
 class BankDetailView(LoginRequiredMixin, DetailView):
-    model = models.Bank
+    model = Bank
     template_name = "bank/bank_detail.html"
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
@@ -140,10 +142,10 @@ bank_detail_view = BankDetailView.as_view()
 
 
 class BankListView(LoginRequiredMixin, ListView):
-    model = models.Bank
+    model = Bank
     template_name = "bank/bank_list.html"
 
-    def get_queryset(self) -> QuerySet[models.Bank]:
+    def get_queryset(self) -> QuerySet[Bank]:
         return super().get_queryset().annotate(count=Count("account")).order_by("name")
 
 
@@ -486,7 +488,7 @@ class AmountSnapshotListView(LoginRequiredMixin, ListView):
     """
 
     template_name = "snapshot/amount_snapshot.html"
-    model = models.AmountSnapshot
+    model = AmountSnapshot
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)

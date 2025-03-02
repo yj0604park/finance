@@ -8,7 +8,8 @@ from django.forms import widgets
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 
-from money import choices, models
+from money import choices
+from money.models import models
 
 
 class DateTimePickerWidget(forms.TextInput):
