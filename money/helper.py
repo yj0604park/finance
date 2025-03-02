@@ -119,7 +119,9 @@ def snapshot_chart(snapshot_list: QuerySet[models.AmountSnapshot], currency):
 
 def get_stock_snapshot():
     transaction_list = (
-        models.StockTransaction.objects.all().order_by("date").prefetch_related("stock")
+        models.StockTransaction.objects.filter(account__currency=CurrencyType.USD)
+        .order_by("date", "shares")
+        .prefetch_related("stock")
     )
     if not transaction_list:
         return []
@@ -127,27 +129,51 @@ def get_stock_snapshot():
     stock_transaction_data = []
     stock_name_set = set()
 
-    total_amount: DefaultDict[str, float] = defaultdict(float)
+    total_balance: DefaultDict[str, float] = defaultdict(float)
+    price_info: DefaultDict[str, float] = defaultdict(float)
     prev_date = transaction_list[0].date
     for transaction in transaction_list:
         stock_name_set.add(transaction.stock.name)
 
         # append prev date data
         if prev_date != transaction.date:
-            stock_transaction_data.append((prev_date, copy(total_amount)))
+            today_total = 0.0
+            for stock_name, stock_amount in total_balance.items():
+                today_total += stock_amount * price_info[stock_name]
+
+            stock_transaction_data.append(
+                {
+                    "date": prev_date.strftime("%Y-%m-%d"),
+                    "balance": copy(total_balance),
+                    "price": copy(price_info),
+                    "total": round(today_total, 2),
+                }
+            )
             prev_date = transaction.date
 
-        amount = total_amount[transaction.stock.name]
+        amount = total_balance[transaction.stock.name]
         amount += transaction.shares
         amount = round(amount, 5)
         if amount == 0.0:
-            del total_amount[transaction.stock.name]
+            del total_balance[transaction.stock.name]
+            del price_info[transaction.stock.name]
         else:
-            total_amount[transaction.stock.name] = amount
+            total_balance[transaction.stock.name] = amount
+            price_info[transaction.stock.name] = transaction.price
 
-    stock_transaction_data.append((prev_date, copy(total_amount)))
+    today_total = 0.0
+    for stock_name, stock_amount in total_balance.items():
+        today_total += stock_amount * price_info[stock_name]
+    stock_transaction_data.append(
+        {
+            "date": prev_date.strftime("%Y-%m-%d"),
+            "balance": copy(total_balance),
+            "price": copy(price_info),
+            "total": round(today_total, 2),
+        }
+    )
 
-    return stock_transaction_data, stock_name_set
+    return stock_transaction_data, list(stock_name_set)
 
 
 def convert_snapshot_to_chart_data(snapshot, stock_set: set):
@@ -487,3 +513,49 @@ def year_summary(target_year: int):
     }
 
     return context
+
+
+def merge_charts(chart_a, chart_b):
+    merged_chart = []
+    current_value = defaultdict(float)
+    pos_a = 0
+    pos_b = 0
+    while True:
+        if pos_a >= len(chart_a) and pos_b >= len(chart_b):
+            break
+
+        if pos_a < len(chart_a) and pos_b < len(chart_b):
+            if chart_a[pos_a]["x"] < chart_b[pos_b]["x"]:
+                current_value["a"] = chart_a[pos_a]["y"]
+
+                merged_chart.append(
+                    {
+                        "x": chart_a[pos_a]["x"],
+                        "y": current_value["a"] + current_value["b"],
+                    }
+                )
+                pos_a += 1
+            else:
+                current_value["b"] = chart_b[pos_b]["y"]
+
+                merged_chart.append(
+                    {
+                        "x": chart_b[pos_b]["x"],
+                        "y": current_value["a"] + current_value["b"],
+                    }
+                )
+                pos_b += 1
+
+        elif pos_a < len(chart_a):
+            merged_chart.append(
+                {"x": chart_a[pos_a]["x"], "y": current_value["a"] + current_value["b"]}
+            )
+            pos_a += 1
+
+        else:
+            merged_chart.append(
+                {"x": chart_b[pos_b]["x"], "y": current_value["a"] + current_value["b"]}
+            )
+            pos_b += 1
+
+    return merged_chart

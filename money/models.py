@@ -160,7 +160,7 @@ class StockTransaction(models.Model):
         return reverse("money:stock_transaction_detail", kwargs={"pk": self.pk})
 
     def __str__(self):
-        return f"{self.date.strftime('%Y-%m-%d')}, Stock {self.stock.pk}, share {self.shares}, price {self.price}"
+        return f"{self.date.strftime('%Y-%m-%d')}, Stock {self.stock}, share {self.shares}, price {self.price}"
 
 
 class StockPrice(models.Model):

@@ -234,9 +234,9 @@ def create_daily_snapshot(request):
 @login_required
 # trunk-ignore(pylint/W0613)
 def get_stock_snapshot(request):
-    stock_snapshot = helper.get_stock_snapshot()
+    stock_snapshot, stock_list = helper.get_stock_snapshot()
 
-    return JsonResponse({"data": stock_snapshot})
+    return JsonResponse({"data": stock_snapshot, "stock_list": stock_list})
 
 
 @login_required

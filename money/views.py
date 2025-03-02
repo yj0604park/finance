@@ -491,15 +491,26 @@ class AmountSnapshotListView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
 
+        stock_snapshot, _ = helper.get_stock_snapshot()
+        stock_chart = [
+            {"x": data["date"], "y": data["total"]} for data in stock_snapshot
+        ]
+        context["stock_data"] = stock_chart
+
+        krw_chart = helper.snapshot_chart(
+            context["amountsnapshot_list"], CurrencyType.KRW
+        )
+        usd_chart = helper.snapshot_chart(
+            context["amountsnapshot_list"], CurrencyType.USD
+        )
+
         # group by currency
         context["chart"] = {
-            "KRW": helper.snapshot_chart(
-                context["amountsnapshot_list"], CurrencyType.KRW
-            ),
-            "USD": helper.snapshot_chart(
-                context["amountsnapshot_list"], CurrencyType.USD
-            ),
+            "KRW": krw_chart,
+            "USD": usd_chart,
         }
+
+        context["merged_chart"] = helper.merge_charts(usd_chart, stock_chart)
 
         return context
 

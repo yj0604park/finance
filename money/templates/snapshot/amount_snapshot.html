@@ -7,17 +7,34 @@
 
 <a href="{% url 'money:update_snapshot' %}">Update Snapshot</a>
 
+
 {% for currency in chart %}
 <h2>{{ currency }}</h2>
+
 <canvas id="myChart_{{ currency }}" width="500" height="300"></canvas>
 {% endfor %}
 
 
 {% for currency in chart %}
+
 {% with data=chart|get_value:currency chartId="myChart_"|add:currency %}
 {% include 'transaction/transaction_chart.html' %}
 {% endwith %}
 {% endfor %}
 
+
+<h2>Stock</h2>
+<canvas id="stock_chart" width="500" height="300"></canvas>
+
+{% with data=stock_data chartId="stock_chart" %}
+{% include 'transaction/transaction_chart.html' %}
+{% endwith %}
+
+<h2>Merged</h2>
+<canvas id="merged_chart" width="500" height="300"></canvas>
+
+{% with data=merged_chart chartId="merged_chart" %}
+{% include 'transaction/transaction_chart.html' %}
+{% endwith %}
 
 {% endblock %}

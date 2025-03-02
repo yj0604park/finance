@@ -4,9 +4,7 @@ from money import models
 
 
 def run():
-    with open(
-        "data/kakaobank_2024_09_2.tsv", encoding="utf-8"
-    ) as f:  # update file name
+    with open("data/kakao_bank_2024_11.tsv", encoding="utf-8") as f:  # update file name
         # 카카오 입출금통장
         account = models.Account.objects.get(pk=9)
 

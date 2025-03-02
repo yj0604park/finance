@@ -138,6 +138,7 @@ MIDDLEWARE = [
     "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -329,8 +330,8 @@ CORS_URLS_REGEX = (
 CORS_ALLOWED_ORIGIN_REGEXES = [
     r"^http://localhost:3000",
     r"^http://localhost:11035",
-    r"^http://192.168.50.13:58000",
-    r"^http://192.168.50.13:3000",
+    r"^http://192.168.50.131:58000",
+    r"^http://192.168.50.131:3000",
     r"^http://192.168.50.12:3000",
 ]
 
