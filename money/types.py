@@ -5,6 +5,7 @@ from strawberry.scalars import JSON
 
 from money.models import models
 from money.models.accounts import Account, Bank, AmountSnapshot
+from money.models.transaction import Retailer, Transaction
 
 
 # region Account
@@ -77,14 +78,14 @@ class BankNode(relay.Node):
 # endregion
 
 
-@strawberry.django.type(models.Retailer)
+@strawberry.django.type(Retailer)
 class RetailerNode(relay.Node):
     id: relay.GlobalID
     name: auto
     category: auto
 
 
-@strawberry.django.input(models.Retailer)
+@strawberry.django.input(Retailer)
 class RetailerInput:
     name: auto
     type: auto
@@ -92,14 +93,14 @@ class RetailerInput:
 
 
 # region: Transaction
-@strawberry.django.filters.filter(models.Transaction, lookups=True)
+@strawberry.django.filters.filter(Transaction, lookups=True)
 class TransactionFilter:
     id: auto
     date: auto
     account: AccountFilter
 
 
-@strawberry.django.ordering.order(models.Transaction)
+@strawberry.django.ordering.order(Transaction)
 class TransactionOrder:
     id: auto
     date: auto
@@ -293,6 +294,9 @@ class AmazonOrderNode(relay.Node):
     is_returned: auto
     transaction: TransactionNode | None
     return_transaction: TransactionNode | None
+
+
+# endregion
 
 
 @strawberry.type()

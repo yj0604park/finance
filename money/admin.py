@@ -2,7 +2,14 @@ from django import forms
 from django.contrib import admin
 
 from money.models import models
-from money.models.accounts import Account, Bank, AmountSnapshot
+from money.models.accounts import Account, AmountSnapshot, Bank
+from money.models.transaction import (
+    DetailItem,
+    Retailer,
+    Transaction,
+    TransactionDetail,
+    TransactionFile,
+)
 
 
 @admin.register(Bank)
@@ -24,11 +31,11 @@ class AmountSnapshotAdmin(admin.ModelAdmin):
 class TransactionAdminForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        sorted_choices = models.Retailer.objects.all().order_by("name").values("name")
+        sorted_choices = Retailer.objects.all().order_by("name").values("name")
         self.fields["retailer"].choices = sorted_choices
 
 
-@admin.register(models.Transaction)
+@admin.register(Transaction)
 class TransactionAdmin(admin.ModelAdmin):
     list_display = [
         "pk",
@@ -49,13 +56,13 @@ class TransactionAdmin(admin.ModelAdmin):
         return super().get_queryset(request).select_related("account", "retailer")
 
 
-@admin.register(models.Retailer)
+@admin.register(Retailer)
 class RetailerAdmin(admin.ModelAdmin):
     list_display = ["id", "name", "type", "category"]
     list_filter = ["type", "category"]
 
 
-@admin.register(models.DetailItem)
+@admin.register(DetailItem)
 class DetailItemAdmin(admin.ModelAdmin):
     list_display = ["id", "name", "category"]
     list_filter = ["category"]
@@ -71,7 +78,7 @@ class DetailItemAdmin(admin.ModelAdmin):
         return super().formfield_for_choice_field(db_field, request, **kwargs)
 
 
-@admin.register(models.TransactionDetail)
+@admin.register(TransactionDetail)
 class TransactionDetailAdmin(admin.ModelAdmin):
     raw_id_fields = ("transaction",)
 
@@ -135,8 +142,8 @@ class ExchangeAdmin(admin.ModelAdmin):
     date_hierarchy = "date"
 
 
-@admin.register(models.TransactionFile)
-class TransactionFile(admin.ModelAdmin):
+@admin.register(TransactionFile)
+class TransactionFileAdmin(admin.ModelAdmin):
     list_display = ["id", "file", "date"]
     date_hierarchy = "date"
 

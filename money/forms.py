@@ -10,6 +10,13 @@ from django.utils.safestring import mark_safe
 
 from money import choices
 from money.models import models
+from money.models.transaction import (
+    DetailItem,
+    Retailer,
+    Transaction,
+    TransactionDetail,
+    TransactionFile,
+)
 
 
 class DateTimePickerWidget(forms.TextInput):
@@ -116,7 +123,7 @@ class DynamicKeyValueJSONWidget(forms.Widget):
 
 class TransactionForm(forms.ModelForm):
     class Meta:
-        model = models.Transaction
+        model = Transaction
         fields = [
             "account",
             "retailer",
@@ -129,9 +136,7 @@ class TransactionForm(forms.ModelForm):
         ]
 
         widgets = {
-            "retailer": RelatedFieldWidgetCanAdd(
-                models.Retailer, "money:retailer_create"
-            ),
+            "retailer": RelatedFieldWidgetCanAdd(Retailer, "money:retailer_create"),
             "date": DateTimePickerWidget(attrs={"class": "form-control"}),
         }
 
@@ -170,7 +175,7 @@ class TransactionForm(forms.ModelForm):
 
 class TransactionUpdateForm(TransactionForm):
     class Meta:
-        model = models.Transaction
+        model = Transaction
         fields = [
             "account",
             "retailer",
@@ -234,12 +239,10 @@ class TransactionDetailForm(forms.ModelForm):
     )
 
     class Meta:
-        model = models.TransactionDetail
+        model = TransactionDetail
         exclude = ["transaction"]
         widgets = {
-            "item": RelatedFieldWidgetCanAdd(
-                models.DetailItem, "money:detail_item_create"
-            ),
+            "item": RelatedFieldWidgetCanAdd(DetailItem, "money:detail_item_create"),
         }
 
     def __init__(self, *args, **kwargs):
@@ -248,7 +251,7 @@ class TransactionDetailForm(forms.ModelForm):
             (x["pk"], x["name"])
             for x in sorted(
                 list(
-                    models.DetailItem.objects.filter(
+                    DetailItem.objects.filter(
                         category=choices.DetailItemCategory.ETC
                     ).values("pk", "name")
                 ),
@@ -276,7 +279,7 @@ class TransactionDetailForm(forms.ModelForm):
 
 class DetailItemForm(forms.ModelForm):
     class Meta:
-        model = models.DetailItem
+        model = DetailItem
         fields = "__all__"
 
     def __init__(self, *args, **kwargs):
@@ -288,7 +291,7 @@ class DetailItemForm(forms.ModelForm):
 
 class RetailerForm(forms.ModelForm):
     class Meta:
-        model = models.Retailer
+        model = Retailer
         fields = "__all__"
 
 
@@ -383,7 +386,7 @@ class AmazonOrderForm(forms.ModelForm):
 
 class TransactionFileForm(forms.ModelForm):
     class Meta:
-        model = models.TransactionFile
+        model = TransactionFile
         fields = "__all__"
 
     def __init__(self, *args, **kwargs):

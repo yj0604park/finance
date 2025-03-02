@@ -11,10 +11,11 @@ from django.views.generic.edit import CreateView
 
 from money import forms as money_forms
 from money.models import models
+from money.models.transaction import DetailItem, Transaction, TransactionDetail
 
 
 class TransactionDetailView(LoginRequiredMixin, DetailView):
-    model = models.Transaction
+    model = Transaction
     template_name = "transaction/transaction_detail.html"
 
     def get_queryset(self) -> QuerySet[Any]:
@@ -30,9 +31,7 @@ class TransactionDetailView(LoginRequiredMixin, DetailView):
             .prefetch_related(
                 Prefetch(
                     "transactiondetail_set",
-                    queryset=models.TransactionDetail.objects.all().select_related(
-                        "item"
-                    ),
+                    queryset=TransactionDetail.objects.all().select_related("item"),
                 )
             )
         )
@@ -58,7 +57,7 @@ transaction_detail_view = TransactionDetailView.as_view()
 
 class TransactionDetailCreateView(LoginRequiredMixin, CreateView):
     template_name = "transaction/transaction_detail_create.html"
-    model = models.TransactionDetail
+    model = TransactionDetail
     form_class = money_forms.TransactionDetailForm
 
     def get_success_url(self) -> str:
@@ -101,11 +100,11 @@ transaction_detail_create_view = TransactionDetailCreateView.as_view()
 
 class DetailItemListView(LoginRequiredMixin, ListView):
     template_name = "detail_item/detail_item_list.html"
-    model = models.DetailItem
+    model = DetailItem
 
     def get_queryset(self) -> QuerySet[Any]:
         group_by_category = (
-            models.DetailItem.objects.all()
+            DetailItem.objects.all()
             .values("category")
             .annotate(name_array=ArrayAgg("name", distinct=False))
             .order_by("category")
@@ -122,7 +121,7 @@ detail_item_list_view = DetailItemListView.as_view()
 
 class DetailItemCreateView(LoginRequiredMixin, CreateView):
     template_name = "detail_item/detail_item_create.html"
-    model = models.DetailItem
+    model = DetailItem
     form_class = money_forms.DetailItemForm
 
     def get_success_url(self) -> str:
@@ -139,9 +138,7 @@ class DetailItemCategoryView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         category = self.kwargs["category"]
         context["category"] = category
-        category_model = models.TransactionDetail.objects.filter(
-            item__category=category
-        )
+        category_model = TransactionDetail.objects.filter(item__category=category)
         context["summary"] = category_model.aggregate(Sum("amount"))
         context["per_item"] = (
             category_model.values("item__name").annotate(Sum("amount")).order_by()

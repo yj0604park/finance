@@ -32,7 +32,8 @@ from money import helper
 from money.choices import CurrencyType
 from money.forms import RetailerForm, SalaryForm, StockForm
 from money.models import models
-from money.models.accounts import Account, Bank, AmountSnapshot
+from money.models.accounts import Account, AmountSnapshot, Bank
+from money.models.transaction import Retailer, Transaction, TransactionDetail
 
 
 # Dashboard
@@ -254,7 +255,7 @@ class CategoryDetailView(LoginRequiredMixin, View):
             .order_by("amount__sum")
         )
         context["detail_item_summary"] = (
-            models.TransactionDetail.objects.filter(
+            TransactionDetail.objects.filter(
                 transaction__in=transaction_list.values("id")
             )
             .values("item__category")
@@ -264,7 +265,7 @@ class CategoryDetailView(LoginRequiredMixin, View):
 
         helper.update_retailer_summary(context, context["retailer_detail"])
 
-        context["category_list"] = models.TransactionCategory.choices
+        context["category_list"] = TransactionCategory.choices
         context["currencies"] = [k[0] for k in models.CurrencyType.choices]
 
         return render(request, self.template_name, context)
@@ -283,7 +284,7 @@ compare_category_view = CompareCategoryView.as_view()
 # Retailer related views
 class RetailerSummaryView(LoginRequiredMixin, ListView):
     template_name = "retailer/retailer_summary.html"
-    model = models.Retailer
+    model = Retailer
 
     def get_queryset(self):
         currency = self.request.GET.get("currency", models.CurrencyType.USD)
@@ -336,11 +337,11 @@ retailer_summary_view = RetailerSummaryView.as_view()
 
 class RetailerDetailView(LoginRequiredMixin, DetailView):
     template_name = "retailer/retailer_detail.html"
-    model = models.Retailer
+    model = Retailer
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        trnasactions = models.Transaction.objects.filter(
+        trnasactions = Transaction.objects.filter(
             retailer_id=self.kwargs["pk"]
         ).order_by("date")
         transactions_by_month = (
@@ -359,7 +360,7 @@ retailer_detail_view = RetailerDetailView.as_view()
 
 class RetailerCreateView(LoginRequiredMixin, CreateView):
     template_name = "retailer/retailer_create.html"
-    model = models.Retailer
+    model = Retailer
     form_class = RetailerForm
 
     def get_success_url(self) -> str:
