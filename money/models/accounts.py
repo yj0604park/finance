@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from django.db import models
 from django.urls import reverse
 
@@ -5,23 +7,12 @@ from money.choices import AccountType
 from money.models.base import BaseAmountModel, BaseCurrencyModel
 
 
-class Bank(models.Model):
-    """
-    Model for a bank.
-    """
-
-    name = models.CharField(max_length=200)
-
-    def __str__(self):
-        return self.name
-
-
 class Account(BaseAmountModel, BaseCurrencyModel):
     """
     Model for a bank account.
     """
 
-    bank = models.ForeignKey(Bank, on_delete=models.CASCADE)
+    bank = models.ForeignKey("Bank", on_delete=models.CASCADE)
     name = models.CharField(max_length=200, db_collation="C")
     alias = models.CharField(max_length=200, blank=True, null=True)
     type = models.CharField(
@@ -44,6 +35,25 @@ class Account(BaseAmountModel, BaseCurrencyModel):
 
     def account_type(self):
         return self.type
+
+
+class Bank(models.Model):
+    """
+    Model for a bank.
+    """
+
+    name = models.CharField(max_length=200)
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def balance(self):
+        sum_dict = defaultdict(float)
+
+        for account in Account.objects.filter(bank=self):
+            sum_dict[account.currency] += account.amount
+        return sum_dict
 
 
 class AmountSnapshot(BaseAmountModel, BaseCurrencyModel):
