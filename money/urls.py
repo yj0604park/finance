@@ -4,12 +4,7 @@ from strawberry.django.views import GraphQLView
 
 from money import views
 from money.schema import schema
-from money.view import (
-    stock_view,
-    transaction_detail_view,
-    transaction_view,
-    view_functions,
-)
+from money.views import transaction_detail_view, transaction_view, view_functions
 
 app_name = "money"
 
@@ -58,7 +53,7 @@ urlpatterns = [
     ),
     path(
         "stock_chart",
-        view=stock_view.stock_amount_chart_view,
+        view=views.stock_amount_chart_view,
         name="stock_chart",
     ),
     # endregion

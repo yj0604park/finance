@@ -13,7 +13,11 @@ from money.views.salaries import (
     salary_list_view,
 )
 from money.views.snapshots import amount_snapshot_list_view
-from money.views.stocks import stock_create_view, stock_detail_view
+from money.views.stocks import (
+    stock_amount_chart_view,
+    stock_create_view,
+    stock_detail_view,
+)
 
 __all__ = [
     "home_view",
@@ -27,6 +31,7 @@ __all__ = [
     "salary_create_view",
     "salary_detail_view",
     "salary_list_view",
+    "stock_amount_chart_view",
     "stock_create_view",
     "stock_detail_view",
     "exchange_list_view",
