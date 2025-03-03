@@ -48,6 +48,8 @@ services:
       - ./config:/app/config:z
       - ./finance:/app/finance:z
       - ./money:/app/money:z
+      - ./people:/app/people:z
+      - ./leetcode:/app/leetcode:z
     ports:
       - "9000:9000"
     command: /start-docs
