@@ -1,6 +1,5 @@
 from django.db import models
 from django.urls import reverse
-from django_choices_field import TextChoicesField
 
 from money.choices import TransactionCategory
 from money.models.accounts import Account
@@ -20,9 +19,9 @@ class Transaction(BaseTimeStampModel, BaseAmountModel, BaseURLModel):
     is_internal = models.BooleanField(default=False)
     requires_detail = models.BooleanField(default=False)
 
-    type = TextChoicesField(
+    type = models.CharField(
         max_length=30,
-        choices_enum=TransactionCategory,
+        choices=TransactionCategory.choices,
         default=TransactionCategory.ETC,
     )
     reviewed = models.BooleanField(default=False)

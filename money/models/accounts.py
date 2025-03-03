@@ -1,10 +1,19 @@
-from collections import defaultdict
-
 from django.db import models
-from django_choices_field import TextChoicesField
+from django.urls import reverse
 
 from money.choices import AccountType
 from money.models.base import BaseAmountModel, BaseCurrencyModel
+
+
+class Bank(models.Model):
+    """
+    Model for a bank.
+    """
+
+    name = models.CharField(max_length=20)
+
+    def __str__(self):
+        return self.name
 
 
 class Account(BaseAmountModel, BaseCurrencyModel):
@@ -12,11 +21,13 @@ class Account(BaseAmountModel, BaseCurrencyModel):
     Model for a bank account.
     """
 
-    bank = models.ForeignKey("Bank", on_delete=models.CASCADE)
-    name = models.CharField(max_length=200, db_collation="C")
+    bank = models.ForeignKey(Bank, on_delete=models.CASCADE)
+    name = models.CharField(max_length=20)
     alias = models.CharField(max_length=200, blank=True, null=True)
-    type = TextChoicesField(
-        max_length=20, choices_enum=AccountType, default=AccountType.CHECKING_ACCOUNT
+    type = models.CharField(
+        max_length=20,
+        choices=AccountType.choices,
+        default=AccountType.CHECKING_ACCOUNT,
     )
 
     last_update = models.DateTimeField(null=True, blank=True)
@@ -26,32 +37,13 @@ class Account(BaseAmountModel, BaseCurrencyModel):
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
-        return self.name
+        return f"{self.bank.name} {self.name}"
+
+    def get_absolute_url(self):
+        return reverse("money:account_detail", kwargs={"pk": self.pk})
 
     def account_type(self):
         return self.type
-
-
-class Bank(models.Model):
-    """
-    Model for a bank.
-    """
-
-    name = models.CharField(max_length=200)
-
-    class Meta:
-        ordering = ["name"]
-
-    def __str__(self):
-        return self.name
-
-    @property
-    def balance(self):
-        sum_dict = defaultdict(float)
-
-        for account in Account.objects.filter(bank=self):
-            sum_dict[account.currency] += float(account.amount)
-        return sum_dict
 
 
 class AmountSnapshot(BaseAmountModel, BaseCurrencyModel):

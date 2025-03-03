@@ -1,6 +1,5 @@
 from django.db import models
 from django.urls import reverse
-from django_choices_field import TextChoicesField
 
 from money.choices import CurrencyType
 
@@ -35,8 +34,10 @@ class BaseURLModel(models.Model):
 
 
 class BaseCurrencyModel(models.Model):
-    currency = TextChoicesField(
-        max_length=3, choices_enum=CurrencyType, default=CurrencyType.USD
+    currency = models.CharField(
+        max_length=3,
+        choices=CurrencyType.choices,
+        default=CurrencyType.USD,
     )
 
     class Meta:

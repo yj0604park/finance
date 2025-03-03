@@ -1,5 +1,4 @@
 from django.db import models
-from django_choices_field import TextChoicesField
 
 from money.choices import CurrencyType, ExchangeType
 from money.models.base import BaseTimeStampModel
@@ -15,14 +14,24 @@ class Exchange(BaseTimeStampModel):
     )
     from_amount = models.DecimalField(max_digits=15, decimal_places=2)
     to_amount = models.DecimalField(max_digits=15, decimal_places=2)
-    from_currency = TextChoicesField(max_length=3, choices_enum=CurrencyType)
-    to_currency = TextChoicesField(max_length=3, choices_enum=CurrencyType)
     ratio_per_krw = models.DecimalField(
         max_digits=10, decimal_places=4, null=True, blank=True
     )
-    exchange_type = TextChoicesField(
-        max_length=10, choices_enum=ExchangeType, default=ExchangeType.ETC
+
+    from_currency = models.CharField(
+        max_length=3,
+        choices=CurrencyType.choices,
+    )
+    to_currency = models.CharField(
+        max_length=3,
+        choices=CurrencyType.choices,
     )
 
-    def __str__(self) -> str:
-        return f"{self.date}: {self.ratio_per_krw}"
+    exchange_type = models.CharField(
+        max_length=20,
+        choices=ExchangeType.choices,
+        default=ExchangeType.ETC,
+    )
+
+    def __str__(self):
+        return f"{self.date}: {self.from_currency} {self.from_amount} -> {self.to_currency} {self.to_amount}"

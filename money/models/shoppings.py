@@ -1,5 +1,4 @@
 from django.db import models
-from django_choices_field import TextChoicesField
 
 from money.choices import DetailItemCategory, RetailerType, TransactionCategory
 from money.models.base import BaseTimeStampModel, BaseURLModel
@@ -7,12 +6,14 @@ from money.models.base import BaseTimeStampModel, BaseURLModel
 
 class Retailer(models.Model):
     name = models.CharField(max_length=30)
-    type = TextChoicesField(
-        max_length=20, choices_enum=RetailerType, default=RetailerType.ETC
+    type = models.CharField(
+        max_length=20,
+        choices=RetailerType.choices,
+        default=RetailerType.ETC,
     )
-    category = TextChoicesField(
+    category = models.CharField(
         max_length=30,
-        choices_enum=TransactionCategory,
+        choices=TransactionCategory.choices,
         default=TransactionCategory.ETC,
     )
 
@@ -25,9 +26,9 @@ class Retailer(models.Model):
 
 class DetailItem(models.Model):
     name = models.CharField(max_length=30)
-    category = TextChoicesField(
+    category = models.CharField(
         max_length=10,
-        choices_enum=DetailItemCategory,
+        choices=DetailItemCategory.choices,
         default=DetailItemCategory.ETC,
     )
 
