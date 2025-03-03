@@ -5,12 +5,13 @@ from strawberry_django import mutations
 from strawberry_django.optimizer import DjangoOptimizerExtension
 from strawberry_django.relay import ListConnectionWithTotalCount
 
-from money import models, types
+from money import types
+from money.models.incomes import Salary
 
 
 def get_salary_years() -> list[int]:
     return list(
-        models.Salary.objects.values_list("date__year", flat=True)
+        Salary.objects.values_list("date__year", flat=True)
         .distinct()
         .order_by("date__year")
     )
@@ -18,7 +19,7 @@ def get_salary_years() -> list[int]:
 
 def get_salary_summary() -> list[types.SalarySummaryNode]:
 
-    query = models.Salary.objects.values("date__year").aggregate(
+    query = Salary.objects.values("date__year").aggregate(
         total_gross_pay=Sum("gross_pay")
     )
 
