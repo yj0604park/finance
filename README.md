@@ -1,11 +1,60 @@
-# finance
+# Finance Manager
 
-Finance Manager
+금융 자산 관리를 위한 웹 애플리케이션
 
 [![Built with Cookiecutter Django](https://img.shields.io/badge/built%20with-Cookiecutter%20Django-ff69b4.svg?logo=cookiecutter)](https://github.com/cookiecutter/cookiecutter-django/)
 [![Black code style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 
-License: MIT
+## 🚀 주요 기능
+
+- 사용자 자산 관리
+- 금융 거래 추적
+- 자산 분석 및 리포트
+- 예산 계획 및 관리
+
+## 🛠 기술 스택
+
+- **Backend**: Django, Python
+- **Database**: PostgreSQL
+- **Task Queue**: Celery
+- **Frontend**: Django Templates, JavaScript
+- **Testing**: pytest
+- **CI/CD**: Azure Pipelines
+
+## 📋 요구사항
+
+- Python 3.8+
+- PostgreSQL
+- Redis (Celery용)
+
+## 🔧 설치 방법
+
+1. 저장소 클론:
+```bash
+git clone [repository-url]
+cd finance
+```
+
+2. 가상환경 생성 및 활성화:
+```bash
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+```
+
+3. 의존성 설치:
+```bash
+pip install -r requirements/local.txt
+```
+
+4. 환경 변수 설정:
+```bash
+cp .env.example .env
+```
+
+5. 데이터베이스 마이그레이션:
+```bash
+python manage.py migrate
+```
 
 ## Settings
 
@@ -79,3 +128,7 @@ The following details how to deploy this application.
 ### Docker
 
 See detailed [cookiecutter-django Docker documentation](http://cookiecutter-django.readthedocs.io/en/latest/deployment-with-docker.html).
+
+## 📚 API 문서
+
+API 문서는 `/api/docs/` 에서 확인할 수 있습니다.
