@@ -32,23 +32,23 @@ class TransactionCategory(models.TextChoices):
     TRANSFER = "TRANSFER", "이체"
     INTEREST = "INTEREST", "이자"
     INCOME = "INCOME", "소득"
-    ETC = "ETC", "ETC"
     STOCK = "STOCK", "주식"
     CASH = "CASH", "현금"
+    ETC = "ETC", "기타"
 
 
 class RetailerType(models.TextChoices):
-    ETC = "ETC"
-    STORE = "STORE"
-    PERSON = "PERSON"
-    BANK = "BANK"
-    SERVICE = "SERVICE"
-    INCOME = "INCOME"
-    RESTAURANT = "RESTAURANT"
+    ETC = "ETC", "기타"
+    STORE = "STORE", "상점"
+    PERSON = "PERSON", "개인"
+    BANK = "BANK", "은행"
+    SERVICE = "SERVICE", "서비스"
+    INCOME = "INCOME", "수입"
+    RESTAURANT = "RESTAURANT", "식당"
 
 
 class DetailItemCategory(models.TextChoices):
-    ETC = "ETC", "ETC"
+    ETC = "ETC", "기타"
     FRUIT = "FRUIT", "과일"
     ALCOHOL = "ALCOHOL", "주류"
     DRINK = "DRINK", "음료"
@@ -61,7 +61,7 @@ class DetailItemCategory(models.TextChoices):
     NOODLE = "NOODLE", "면"
     BREAD = "BREAD", "빵"
     DRUG = "DRUG", "약"
-    TAX = "TAX", "TAX"
+    TAX = "TAX", "세금"
     SEAFOOD = "SEAFOOD", "해산물"
     INGREDIENT = "INGREDIENT", "식재료"
     APPLIANCE = "APPLIANCE", "가전"
@@ -71,13 +71,13 @@ class DetailItemCategory(models.TextChoices):
     COOKER = "COOKER", "주방용품"
     FOOD = "FOOD", "식품"
     CLOTHING = "CLOTHING", "의류"
-    FUNITURE = "FUNITURE", "가구"
+    FURNITURE = "FURNITURE", "가구"
     SPORTING = "SPORTING", "운동용품"
-    UNK = "UNK", "Unknown"
+    UNKNOWN = "UNKNOWN", "알 수 없음"
 
 
 class ExchangeType(models.TextChoices):
-    ETC = "ETC", "ETC"
+    ETC = "ETC", "기타"
     BANK = "BANK", "은행"
     WIREBARLEY = "WIREBARLEY", "와이어바알리"
     CREDITCARD = "CREDITCARD", "신용카드"
