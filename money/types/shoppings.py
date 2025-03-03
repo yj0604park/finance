@@ -2,27 +2,11 @@ import strawberry
 import strawberry.django
 from strawberry import auto, relay
 
-from money.models.shoppings import AmazonOrder, Retailer
+from money.models.shoppings import AmazonOrder
 from money.types.transactions import TransactionNode
 
 
-@strawberry.django.type(Retailer)
-class RetailerNode(relay.Node):
-    id: relay.GlobalID
-    name: auto
-    category: auto
-
-
-@strawberry.django.input(Retailer)
-class RetailerInput:
-    name: auto
-    type: auto
-    category: auto
-
-
 # region: Amazon Orders
-
-
 @strawberry.django.input(AmazonOrder)
 class AmazonOrderInput:
     date: auto

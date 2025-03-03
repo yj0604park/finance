@@ -9,12 +9,8 @@ from money.models.incomes import Salary
 from money.types import types
 from money.types.accounts import AccountInput, AccountNode, AmountSnapshotNode, BankNode
 from money.types.incomes import SalaryNode
-from money.types.shoppings import (
-    AmazonOrderInput,
-    AmazonOrderNode,
-    RetailerInput,
-    RetailerNode,
-)
+from money.types.retailers import RetailerInput, RetailerNode
+from money.types.shoppings import AmazonOrderInput, AmazonOrderNode
 from money.types.stocks import (
     StockInput,
     StockNode,

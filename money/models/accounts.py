@@ -52,7 +52,7 @@ class Bank(models.Model):
         sum_dict = defaultdict(float)
 
         for account in Account.objects.filter(bank=self):
-            sum_dict[account.currency] += account.amount
+            sum_dict[account.currency] += float(account.amount)
         return sum_dict
 
 

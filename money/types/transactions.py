@@ -1,14 +1,10 @@
-from typing import TYPE_CHECKING, Annotated
-
 import strawberry
 import strawberry.django
 from strawberry import auto, relay
 
 from money.models.transactions import Transaction
 from money.types.accounts import AccountFilter, AccountNode, AccountOrder
-
-if TYPE_CHECKING:
-    from money.types.shoppings import RetailerInput, RetailerNode
+from money.types.retailers import RetailerInput, RetailerNode
 
 
 # region: Transaction
@@ -33,9 +29,7 @@ class TransactionNode(relay.Node):
     id: relay.GlobalID
     amount: auto
     account: AccountNode
-    retailer: None | (
-        Annotated["RetailerNode", strawberry.lazy("money.types.shoppings")]
-    )
+    retailer: RetailerNode | None
     date: auto
     type: auto
     is_internal: auto
@@ -55,9 +49,7 @@ class TransactionNode(relay.Node):
 class TransactionInput:
     amount: auto
     account: AccountNode
-    retailer: None | (
-        Annotated["RetailerInput", strawberry.lazy("money.types.shoppings")]
-    )
+    retailer: RetailerInput | None
     date: auto
     type: auto
     is_internal: auto
