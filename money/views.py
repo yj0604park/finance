@@ -491,12 +491,12 @@ class AmountSnapshotListView(LoginRequiredMixin, ListView):
     template_name = "snapshot/amount_snapshot.html"
     model = AmountSnapshot
 
-    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+    def get_context_data(self, **kwargs: Any) -> dict[str, list[Any]]:
         context = super().get_context_data(**kwargs)
 
         stock_snapshot, _ = helper.get_stock_snapshot()
-        stock_chart = [
-            {"x": data["date"], "y": data["total"]} for data in stock_snapshot
+        stock_chart: list[dict[str, str]] = [
+            {"x": str(data["date"]), "y": str(data["total"])} for data in stock_snapshot
         ]
         context["stock_data"] = stock_chart
 

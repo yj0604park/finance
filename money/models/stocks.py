@@ -1,11 +1,13 @@
+from decimal import Decimal
+
 from django.db import models
 
 from money.models.accounts import Account
 from money.models.base import (
-    BaseTimeStampModel,
     BaseAmountModel,
-    BaseURLModel,
     BaseCurrencyModel,
+    BaseTimeStampModel,
+    BaseURLModel,
 )
 from money.models.transactions import Transaction
 
@@ -31,7 +33,7 @@ class StockTransaction(BaseTimeStampModel, BaseAmountModel, BaseURLModel):
     price = models.DecimalField(max_digits=15, decimal_places=2)
     shares = models.DecimalField(max_digits=15, decimal_places=4)
     balance = models.DecimalField(
-        max_digits=15, decimal_places=2, default=0, null=True, blank=True
+        max_digits=15, decimal_places=4, default=Decimal(0), null=True, blank=True
     )
 
     note = models.TextField(null=True, blank=True, default="")

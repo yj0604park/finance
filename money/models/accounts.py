@@ -1,10 +1,9 @@
 from collections import defaultdict
 
 from django.db import models
-from django.utils.translation import gettext_lazy as _
 from django_choices_field import TextChoicesField
 
-from money.choices import AccountType, CurrencyType
+from money.choices import AccountType
 from money.models.base import BaseAmountModel, BaseCurrencyModel
 
 
@@ -55,10 +54,8 @@ class Bank(models.Model):
         return sum_dict
 
 
-class AmountSnapshot(models.Model):
+class AmountSnapshot(BaseAmountModel, BaseCurrencyModel):
     date = models.DateField()
-    currency = TextChoicesField(max_length=3, choices_enum=CurrencyType)
-    amount = models.FloatField()
     summary = models.JSONField(null=True, blank=True)
 
     def __str__(self) -> str:

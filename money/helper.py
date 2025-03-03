@@ -1,6 +1,7 @@
 import datetime
 from collections import defaultdict
 from copy import copy
+from decimal import Decimal
 from math import floor
 from typing import DefaultDict
 
@@ -29,12 +30,12 @@ def get_transaction_chart_data(
     transaction_list = transaction_list.filter(account__currency=currency)
 
     chart_dict = []
-    total = 0.0
+    total = Decimal(0.0)
 
     sampling = transaction_list.count() > sample_threshold
     count = 0
 
-    prev_month: tuple[float | None, float | None] = (None, None)
+    prev_month: tuple[int | None, int | None] = (None, None)
 
     for transaction in transaction_list:
         count += 1
@@ -49,7 +50,7 @@ def get_transaction_chart_data(
             chart_dict.append(
                 {
                     "x": transaction.date.strftime("%Y-%m-%d"),
-                    "y": transaction.balance if not recalculate else total,
+                    "y": str(transaction.balance) if not recalculate else total,
                 }
             )
 
@@ -70,9 +71,9 @@ def create_daily_snapshot() -> None:
             continue
 
         prev_date = transaction_list[0].date
-        total_value = 0.0
+        total_value = Decimal(0.0)
 
-        history: DefaultDict[str, float] = defaultdict(float)
+        history: DefaultDict[str, Decimal] = defaultdict(Decimal)
         for transaction in transaction_list:
             # Save previous date value
             if prev_date != transaction.date:
@@ -81,7 +82,9 @@ def create_daily_snapshot() -> None:
 
             account_id = transaction.account.name
             account_value = history[account_id]
-            account_value = floor((account_value + transaction.amount) * 100) / 100
+            account_value = floor(
+                (account_value + transaction.amount) * Decimal(100)
+            ) / Decimal(100)
 
             # Update value in the map
             if account_value == 0.0:
@@ -94,15 +97,16 @@ def create_daily_snapshot() -> None:
         create_snapshot(prev_date, currency[0], total_value, history)
 
 
-def create_snapshot(date, currency, amount, summary):
-    amount = floor(amount * 100) / 100
+def create_snapshot(date, currency, amount: Decimal, summary):
+    float_summary = {k: str(v) for k, v in summary.items()}
+    amount = floor(amount * Decimal(100)) / Decimal(100)
     if AmountSnapshot.objects.filter(date=date, currency=currency):
         snapshot = AmountSnapshot.objects.get(date=date, currency=currency)
         snapshot.amount = amount
-        snapshot.summary = summary
+        snapshot.summary = float_summary
     else:
         snapshot = AmountSnapshot(
-            date=date, currency=currency, amount=amount, summary=summary
+            date=date, currency=currency, amount=amount, summary=float_summary
         )
     snapshot.save()
 
@@ -114,7 +118,7 @@ def snapshot_chart(snapshot_list: QuerySet[AmountSnapshot], currency):
         chart_info.append(
             {
                 "x": snapshot.date.strftime("%Y-%m-%d"),
-                "y": snapshot.amount,
+                "y": str(snapshot.amount),
             }
         )
     return chart_info
@@ -132,15 +136,15 @@ def get_stock_snapshot():
     stock_transaction_data = []
     stock_name_set = set()
 
-    total_balance: DefaultDict[str, float] = defaultdict(float)
-    price_info: DefaultDict[str, float] = defaultdict(float)
+    total_balance: DefaultDict[str, Decimal] = defaultdict(Decimal)
+    price_info: DefaultDict[str, Decimal] = defaultdict(Decimal)
     prev_date = transaction_list[0].date
     for transaction in transaction_list:
         stock_name_set.add(transaction.stock.name)
 
         # append prev date data
         if prev_date != transaction.date:
-            today_total = 0.0
+            today_total = Decimal(0.0)
             for stock_name, stock_amount in total_balance.items():
                 today_total += stock_amount * price_info[stock_name]
 
@@ -164,7 +168,7 @@ def get_stock_snapshot():
             total_balance[transaction.stock.name] = amount
             price_info[transaction.stock.name] = transaction.price
 
-    today_total = 0.0
+    today_total = Decimal(0.0)
     for stock_name, stock_amount in total_balance.items():
         today_total += stock_amount * price_info[stock_name]
     stock_transaction_data.append(
@@ -283,8 +287,9 @@ def get_month_list(start_date, end_date):
 
 
 def get_transaction_summary(account_list):
-    sum_dict: dict[str, dict[str, float]] = {
-        k[0]: {"current": 0.0, "prev": 0.0} for k in CurrencyType.choices
+    sum_dict: dict[str, dict[str, Decimal]] = {
+        k[0]: {"current": Decimal(0.0), "prev": Decimal(0.0)}
+        for k in CurrencyType.choices
     }
 
     currency_map = {}
@@ -329,7 +334,9 @@ def get_transaction_summary(account_list):
     sum_list = [(k, v) for k, v in sum_dict.items()]
     for _, v in sum_list:
         v["diff"] = v["current"] - v["prev"]
-        v["ratio"] = round(v["diff"] / (v["prev"] if v["prev"] else 1.0) * 100.0, 2)
+        v["ratio"] = round(
+            v["diff"] / (v["prev"] if v["prev"] else Decimal(1.0)) * Decimal(100.0), 2
+        )
     sum_list.sort()
 
     return sum_list
@@ -383,9 +390,9 @@ def get_saving_interest_tax_summary(target_year: int):
     for transaction in tax_interest:
         if transaction.account not in account:
             account[transaction.account] = {
-                "total_interest": 0.0,
-                "total_tax": 0.0,
-                "after_tax": 0.0,
+                "total_interest": Decimal(0.0),
+                "total_tax": Decimal(0.0),
+                "after_tax": Decimal(0.0),
             }
 
         account[transaction.account]["after_tax"] += transaction.amount
@@ -456,7 +463,7 @@ def year_summary(target_year: int):
     # Salary summary
     salary = Salary.objects.filter(date__year=target_year)
     salary_info = {
-        "total_grosspay": 0.0,
+        "total_grosspay": Decimal(0.0),
         "401(K)": 0.0,
         "federal_tax": 0.0,
         "patent_award": 0.0,
@@ -530,7 +537,7 @@ def merge_charts(chart_a, chart_b):
                 merged_chart.append(
                     {
                         "x": chart_a[pos_a]["x"],
-                        "y": current_value["a"] + current_value["b"],
+                        "y": float(current_value["a"]) + float(current_value["b"]),
                     }
                 )
                 pos_a += 1
@@ -540,20 +547,26 @@ def merge_charts(chart_a, chart_b):
                 merged_chart.append(
                     {
                         "x": chart_b[pos_b]["x"],
-                        "y": current_value["a"] + current_value["b"],
+                        "y": float(current_value["a"]) + float(current_value["b"]),
                     }
                 )
                 pos_b += 1
 
         elif pos_a < len(chart_a):
             merged_chart.append(
-                {"x": chart_a[pos_a]["x"], "y": current_value["a"] + current_value["b"]}
+                {
+                    "x": chart_a[pos_a]["x"],
+                    "y": float(current_value["a"]) + float(current_value["b"]),
+                }
             )
             pos_a += 1
 
         else:
             merged_chart.append(
-                {"x": chart_b[pos_b]["x"], "y": current_value["a"] + current_value["b"]}
+                {
+                    "x": chart_b[pos_b]["x"],
+                    "y": float(current_value["a"]) + float(current_value["b"]),
+                }
             )
             pos_b += 1
 

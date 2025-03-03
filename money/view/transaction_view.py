@@ -24,14 +24,14 @@ from django.urls import reverse_lazy
 from django.views.generic import DetailView, ListView, TemplateView, UpdateView, View
 from django.views.generic.edit import CreateView
 
-from money import choices
 from money import forms as money_forms
 from money import helper
+from money.choices import CurrencyType, ExchangeType, TransactionCategory
 from money.models.accounts import Account, AmountSnapshot
 from money.models.exchanges import Exchange
-from money.models.shoppings import AmazonOrder
+from money.models.shoppings import AmazonOrder, Retailer
 from money.models.stocks import StockTransaction
-from money.models.transactions import Transaction, TransactionCategory
+from money.models.transactions import Transaction
 
 
 # Transaction related views
@@ -81,14 +81,14 @@ class TransactionChartListView(LoginRequiredMixin, ListView):
 
         amountsnapshot_list = AmountSnapshot.objects.all()
         context["chart"] = {
-            "USD": helper.snapshot_chart(amountsnapshot_list, choices.CurrencyType.USD),
-            "KRW": helper.snapshot_chart(amountsnapshot_list, choices.CurrencyType.KRW),
+            "USD": helper.snapshot_chart(amountsnapshot_list, CurrencyType.USD),
+            "KRW": helper.snapshot_chart(amountsnapshot_list, CurrencyType.KRW),
         }
 
         selected_year = self.request.GET.get("year", date.today().year)
         monthly_summary = (
             Transaction.objects.filter(is_internal=False)
-            .filter(~Q(type=choices.TransactionCategory.STOCK))
+            .filter(~Q(type=TransactionCategory.STOCK))
             .annotate(month=TruncMonth("date"))
             .values("month", "account__currency")
             .annotate(
@@ -206,9 +206,11 @@ class TransactionCategoryView(LoginRequiredMixin, View):
 
         for summary in context["summarization"]:
             if summary["total_amount"] > 0:
-                label_per_currency[summary["account__currency"]].append(summary["type"])
+                label_per_currency[summary["account__currency"]].append(
+                    str(summary["type"])
+                )
                 data_per_currency[summary["account__currency"]].append(
-                    summary["total_amount"]
+                    str(summary["total_amount"])
                 )
                 spent_per_currency[summary["account__currency"]].append(summary)
             else:
@@ -231,12 +233,12 @@ class YearlySummaryView(LoginRequiredMixin, View):
     template_name = "category/yearly_summary.html"
 
     def get(self, request, *args, **kwargs):
-        usd_query_set = models.Transaction.objects.filter(
+        usd_query_set = Transaction.objects.filter(
             date__year=2023, account__currency="USD"
         )
         usd_income = (
             usd_query_set.filter(
-                type=choices.TransactionCategory.INCOME,
+                type=TransactionCategory.INCOME,
             )
             .values("retailer__name")
             .annotate(total=Sum("amount"))
@@ -244,7 +246,7 @@ class YearlySummaryView(LoginRequiredMixin, View):
 
         usd_housing = (
             usd_query_set.filter(
-                type=choices.TransactionCategory.HOUSING,
+                type=TransactionCategory.HOUSING,
             )
             .values("retailer__name")
             .annotate(total=Sum("amount"))
@@ -252,7 +254,7 @@ class YearlySummaryView(LoginRequiredMixin, View):
 
         usd_car = (
             usd_query_set.filter(
-                type=choices.TransactionCategory.TRANSPORTATION,
+                type=TransactionCategory.TRANSPORTATION,
             )
             .values("retailer__name")
             .annotate(total=Sum("amount"))
@@ -260,11 +262,11 @@ class YearlySummaryView(LoginRequiredMixin, View):
 
         usd_eat_out = (
             usd_query_set.filter(
-                ~Q(type=choices.TransactionCategory.INCOME),
-                ~Q(type=choices.TransactionCategory.HOUSING),
-                ~Q(type=choices.TransactionCategory.TRANSPORTATION),
-                ~Q(type=choices.TransactionCategory.TRANSFER),
-                ~Q(type=choices.TransactionCategory.STOCK),
+                ~Q(type=TransactionCategory.INCOME),
+                ~Q(type=TransactionCategory.HOUSING),
+                ~Q(type=TransactionCategory.TRANSPORTATION),
+                ~Q(type=TransactionCategory.TRANSFER),
+                ~Q(type=TransactionCategory.STOCK),
             )
             .values("type")
             .annotate(total=Sum("amount"))
@@ -272,7 +274,7 @@ class YearlySummaryView(LoginRequiredMixin, View):
 
         usd_transfer = (
             usd_query_set.filter(
-                type=choices.TransactionCategory.TRANSFER,
+                type=TransactionCategory.TRANSFER,
                 is_internal=False,
             )
             .values("retailer__name")
@@ -280,7 +282,7 @@ class YearlySummaryView(LoginRequiredMixin, View):
         )
 
         exchange = Exchange.objects.filter(
-            date__year=2023, exchange_type=choices.ExchangeType.WIREBARLEY
+            date__year=2023, exchange_type=ExchangeType.WIREBARLEY
         ).aggregate(total=Sum("from_amount"))
 
         context = {
@@ -429,7 +431,7 @@ class StockTransactionCreateView(LoginRequiredMixin, CreateView):
             account=stock_transaction.account,
             amount=-stock_transaction.amount,
             date=stock_transaction.date,
-            type=choices.TransactionCategory.STOCK,
+            type=TransactionCategory.STOCK,
             note="{} (price {}, share {}) {}".format(
                 stock_transaction.stock,
                 stock_transaction.price,

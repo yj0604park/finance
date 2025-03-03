@@ -1,6 +1,7 @@
 import datetime
 import json
 from collections import defaultdict
+from decimal import Decimal
 
 import requests
 from django.contrib.auth.decorators import login_required
@@ -8,14 +9,18 @@ from django.db.models import Count, Q
 from django.http import HttpRequest, HttpResponseNotAllowed, JsonResponse
 from django.shortcuts import render
 
-from money import choices, forms, helper, models
+from money import choices, forms, helper
+from money.models.accounts import Account
+from money.models.exchanges import Exchange
+from money.models.shoppings import AmazonOrder, DetailItem, Retailer
+from money.models.transactions import Transaction, TransactionCategory
 
 
 def update_balance(request, account_id):
-    account = models.Account.objects.get(pk=account_id)
+    account = Account.objects.get(pk=account_id)
     transactions = account.transaction_set.all().order_by("date", "-amount")
 
-    total = 0
+    total = Decimal(0)
     first = True
     for transaction in transactions:
         if first:
@@ -52,13 +57,13 @@ def update_balance(request, account_id):
 def update_retailer_type(request):
     # update retailer type based on the transaction type frequency
     result = (
-        models.Transaction.objects.values("type", "retailer__id")
+        Transaction.objects.values("type", "retailer__id")
         .annotate(count=Count("type"))
         .order_by("retailer__id", "count")
     )
     for retailer in result:
         if retailer["retailer__id"]:
-            retailer_model = models.Retailer.objects.get(pk=retailer["retailer__id"])
+            retailer_model = Retailer.objects.get(pk=retailer["retailer__id"])
             retailer_model.category = retailer["type"]
             retailer_model.save()
 
@@ -67,7 +72,7 @@ def update_retailer_type(request):
 
 @login_required
 def get_retailer_type(request, retailer_id):
-    retailer = models.Retailer.objects.get(pk=retailer_id)
+    retailer = Retailer.objects.get(pk=retailer_id)
     return JsonResponse({"retailer_category": retailer.category})
 
 
@@ -81,12 +86,8 @@ def update_related_transaction(request):
                 source_id = int(item[5:])
                 target_id = int(value)
 
-                source: models.Transaction = models.Transaction.objects.get(
-                    id=source_id
-                )
-                target: models.Transaction = models.Transaction.objects.get(
-                    id=target_id
-                )
+                source: Transaction = Transaction.objects.get(id=source_id)
+                target: Transaction = Transaction.objects.get(id=target_id)
 
                 if source.account.currency == target.account.currency:
                     if (
@@ -132,7 +133,7 @@ def update_related_transaction(request):
                         if ratio > 1600 or ratio < 1000:
                             continue
 
-                        exchange = models.Exchange(
+                        exchange = Exchange(
                             date=source.date,
                             from_transaction=source,
                             to_transaction=target,
@@ -158,9 +159,9 @@ def update_related_transaction(request):
 @login_required
 def set_detail_required(request):
     objects = (
-        models.Transaction.objects.filter(
-            Q(type=models.TransactionCategory.DAILY_NECESSITY)
-            | Q(type=models.TransactionCategory.GROCERY)
+        Transaction.objects.filter(
+            Q(type=TransactionCategory.DAILY_NECESSITY)
+            | Q(type=TransactionCategory.GROCERY)
         )
         .filter(reviewed=False)
         .filter(requires_detail=False)
@@ -174,7 +175,7 @@ def set_detail_required(request):
 
 @login_required
 def toggle_reviewed(request, transaction_id):
-    transaction = models.Transaction.objects.get(pk=transaction_id)
+    transaction = Transaction.objects.get(pk=transaction_id)
     transaction.reviewed = not transaction.reviewed
     transaction.save()
 
@@ -185,9 +186,9 @@ def toggle_reviewed(request, transaction_id):
 def get_items_for_category(request: HttpRequest):
     if request.method == "POST":
         post_data = json.loads(request.body.decode())
-        item_list = models.DetailItem.objects.filter(
-            category=post_data["category"]
-        ).values("pk", "name")
+        item_list = DetailItem.objects.filter(category=post_data["category"]).values(
+            "pk", "name"
+        )
         item_list = sorted(list(item_list), key=lambda x: x["name"].lower())
 
         return JsonResponse({"result": item_list})
@@ -198,8 +199,8 @@ def get_items_for_category(request: HttpRequest):
 def update_related_transaction_for_amazon(request: HttpRequest):
     if request.method == "POST":
         post_data = json.loads(request.body.decode())
-        transaction = models.Transaction.objects.get(pk=post_data["transaction_id"])
-        order = models.AmazonOrder.objects.get(pk=post_data["order_id"])
+        transaction = Transaction.objects.get(pk=post_data["transaction_id"])
+        order = AmazonOrder.objects.get(pk=post_data["order_id"])
         order.transaction = transaction
         order.save()
         return JsonResponse(
@@ -242,7 +243,7 @@ def get_stock_snapshot(request):
 @login_required
 def filter_retailer(request):
     keyword = request.GET.get("keyword")
-    filtered = models.Retailer.objects.filter(name__icontains=keyword)
+    filtered = Retailer.objects.filter(name__icontains=keyword)
 
     filtered_obj_list = [
         {"name": obj.name, "id": obj.pk, "str": str(obj)} for obj in filtered
@@ -266,7 +267,7 @@ def file_upload(request):
 
 @login_required
 def get_end_month_balance(request):
-    accounts = models.Account.objects.filter(is_active=True)
+    accounts = Account.objects.filter(is_active=True)
     end_month_balances = []
 
     year = "2024"
