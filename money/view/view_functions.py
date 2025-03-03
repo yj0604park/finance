@@ -229,7 +229,7 @@ def get_exchange_rate(request):
 
 @login_required
 def create_daily_snapshot(request):
-    create_daily_snapshot()
+    snapshots.create_daily_snapshot()
     return JsonResponse({"success": True})
 
 

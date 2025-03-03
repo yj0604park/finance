@@ -7,11 +7,13 @@ from django.db.models.functions.math import Sign
 from django.shortcuts import render
 from django.views.generic import DetailView, View
 
+from money.choices import CurrencyType, TransactionCategory
 from money.helpers.charts import get_transaction_chart_data
+from money.helpers.helper import update_retailer_summary
 from money.helpers.monthly import filter_month, update_month_info, update_month_summary
 from money.models.accounts import Account
 from money.models.stocks import StockTransaction
-from money.models.transactions import Transaction
+from money.models.transactions import Transaction, TransactionDetail
 
 
 class AccountDetailView(LoginRequiredMixin, DetailView):
@@ -106,6 +108,28 @@ class CategoryDetailView(LoginRequiredMixin, View):
         context["category"] = category_type
         context["transaction_list"] = transaction_list
         context["unreviewd"] = transaction_list.filter(reviewed=False)
+
+        context["retailer_detail"] = (
+            transaction_list.values(
+                "retailer__id", "retailer__name", "account__currency"
+            )
+            .annotate(Sum("amount"))
+            .order_by("amount__sum")
+        )
+        context["detail_item_summary"] = (
+            TransactionDetail.objects.filter(
+                transaction__in=transaction_list.values("id")
+            )
+            .values("item__category")
+            .annotate(Sum("amount"))
+            .order_by("-amount__sum")
+        )
+
+        update_retailer_summary(context, context["retailer_detail"])
+
+        context["category_list"] = TransactionCategory.choices
+        context["currencies"] = [k[0] for k in CurrencyType.choices]
+
         return render(request, self.template_name, context)
 
 

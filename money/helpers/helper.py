@@ -144,3 +144,15 @@ def bank_summary(target_year: int):
     )
 
     return {"banks": banks, "bank_interest": bank_interest}
+
+
+def update_retailer_summary(context, retailer_list):
+    label: dict[str, list[str]] = {k[0]: [] for k in CurrencyType.choices}
+    data: dict[str, list[float]] = {k[0]: [] for k in CurrencyType.choices}
+
+    for retailer in retailer_list:
+        label[retailer["account__currency"]].append(str(retailer["retailer__name"]))
+        data[retailer["account__currency"]].append(retailer["amount__sum"])
+
+    context["label"] = label
+    context["data"] = data

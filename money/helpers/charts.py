@@ -1,3 +1,4 @@
+from collections import defaultdict
 from decimal import Decimal
 from typing import Any
 
@@ -89,3 +90,55 @@ def convert_snapshot_to_chart_data(
         )
 
     return labels, ", ".join(datasets)
+
+
+def merge_charts(chart_a, chart_b):
+    merged_chart = []
+    current_value = defaultdict(float)
+    pos_a = 0
+    pos_b = 0
+    while True:
+        if pos_a >= len(chart_a) and pos_b >= len(chart_b):
+            break
+
+        if pos_a < len(chart_a) and pos_b < len(chart_b):
+            if chart_a[pos_a]["x"] < chart_b[pos_b]["x"]:
+                current_value["a"] = chart_a[pos_a]["y"]
+
+                merged_chart.append(
+                    {
+                        "x": chart_a[pos_a]["x"],
+                        "y": float(current_value["a"]) + float(current_value["b"]),
+                    }
+                )
+                pos_a += 1
+            else:
+                current_value["b"] = chart_b[pos_b]["y"]
+
+                merged_chart.append(
+                    {
+                        "x": chart_b[pos_b]["x"],
+                        "y": float(current_value["a"]) + float(current_value["b"]),
+                    }
+                )
+                pos_b += 1
+
+        elif pos_a < len(chart_a):
+            merged_chart.append(
+                {
+                    "x": chart_a[pos_a]["x"],
+                    "y": float(current_value["a"]) + float(current_value["b"]),
+                }
+            )
+            pos_a += 1
+
+        else:
+            merged_chart.append(
+                {
+                    "x": chart_b[pos_b]["x"],
+                    "y": float(current_value["a"]) + float(current_value["b"]),
+                }
+            )
+            pos_b += 1
+
+    return merged_chart

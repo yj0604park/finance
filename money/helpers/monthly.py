@@ -40,7 +40,7 @@ def update_month_info(
 
         context["additional_get_query"]["month"] = selected_month
 
-    context["months"] = get_month_list(start_date, end_date)
+    context["months"] = _get_month_list(start_date, end_date)
 
 
 def update_month_summary(
@@ -59,7 +59,7 @@ def update_month_summary(
         context["month_detail"] = month_detail
 
 
-def get_month_list(start_date: datetime, end_date: datetime) -> list[tuple[str, str]]:
+def _get_month_list(start_date: datetime, end_date: datetime) -> list[tuple[str, str]]:
     month_list = []
     for dt in rrule(MONTHLY, dtstart=start_date, until=end_date):
         month_list.append(

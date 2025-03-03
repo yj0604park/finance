@@ -1,7 +1,6 @@
 from collections import defaultdict
 from copy import copy
 from decimal import Decimal
-from math import floor
 from typing import DefaultDict
 
 from money.choices import CurrencyType
@@ -33,9 +32,7 @@ def create_daily_snapshot() -> None:
 
             account_id = transaction.account.name
             account_value = history[account_id]
-            account_value = floor(
-                (account_value + transaction.amount) * Decimal(100)
-            ) / Decimal(100)
+            account_value = account_value + transaction.amount
 
             # Update value in the map
             if account_value == 0.0:
@@ -52,7 +49,6 @@ def create_snapshot(
     date: str, currency: str, amount: Decimal, summary: DefaultDict[str, Decimal]
 ) -> None:
     float_summary = {k: str(v) for k, v in summary.items()}
-    amount = floor(amount * Decimal(100)) / Decimal(100)
     if AmountSnapshot.objects.filter(date=date, currency=currency):
         snapshot = AmountSnapshot.objects.get(date=date, currency=currency)
         snapshot.amount = amount
