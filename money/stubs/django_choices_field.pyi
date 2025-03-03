@@ -1,6 +1,7 @@
-from typing import TypeVar, Type, Any, Optional
-from django.db.models import Field
 from enum import Enum
+from typing import Any, Optional, Type, TypeVar
+
+from django.db.models import Field
 
 E = TypeVar("E", bound=Enum)
 

@@ -11,14 +11,10 @@ from django.utils.safestring import mark_safe
 from money import choices
 from money.choices import AccountType, RetailerType, TransactionCategory
 from money.models.accounts import Account
-from money.models.stocks import Stock, StockTransaction
-from money.models.transactions import (
-    Transaction,
-    TransactionDetail,
-    TransactionFile,
-)
-from money.models.shoppings import AmazonOrder, DetailItem, Retailer
 from money.models.incomes import Salary
+from money.models.shoppings import AmazonOrder, DetailItem, Retailer
+from money.models.stocks import Stock, StockTransaction
+from money.models.transactions import Transaction, TransactionDetail, TransactionFile
 
 
 class DateTimePickerWidget(forms.TextInput):

@@ -1,5 +1,4 @@
 from django.db import models
-from django.urls import reverse
 from django_choices_field import TextChoicesField
 
 from money.choices import CurrencyType, ExchangeType

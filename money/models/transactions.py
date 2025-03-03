@@ -2,7 +2,7 @@ from django.db import models
 from django.urls import reverse
 from django_choices_field import TextChoicesField
 
-from money.choices import DetailItemCategory, RetailerType, TransactionCategory
+from money.choices import TransactionCategory
 from money.models.accounts import Account
 from money.models.base import BaseAmountModel, BaseTimeStampModel, BaseURLModel
 from money.models.shoppings import DetailItem, Retailer
