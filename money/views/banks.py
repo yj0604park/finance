@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Any
+from typing import Any, cast
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Count, FloatField, OuterRef, QuerySet, Subquery
@@ -86,7 +86,8 @@ class BankListView(LoginRequiredMixin, ListView):
     template_name = "bank/bank_list.html"
 
     def get_queryset(self) -> QuerySet[Bank]:
-        return super().get_queryset().annotate(count=Count("account")).order_by("name")
+        qs = cast(QuerySet[Bank], super().get_queryset())
+        return qs.annotate(count=Count("account")).order_by("name")
 
 
 bank_list_view = BankListView.as_view()

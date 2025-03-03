@@ -1,6 +1,7 @@
-from typing import Any
+from typing import Any, cast
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import QuerySet
 from django.views.generic import DetailView, ListView
 from django.views.generic.edit import CreateView
 
@@ -12,15 +13,17 @@ class SalaryListView(LoginRequiredMixin, ListView):
     template_name = "salary/salary_list.html"
     model = Salary
 
-    def get_queryset(self):
-        return super().get_queryset().order_by("date")
+    def get_queryset(self) -> QuerySet[Salary]:
+        qs = cast(QuerySet[Salary], super().get_queryset())
+        return qs.order_by("date")
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         net_pay = []
         gross_pay = []
         labels = []
-        context["salary_list"] = context["salary_list"].order_by("-date")
+        salary_list = cast(QuerySet[Salary], context["salary_list"])
+        context["salary_list"] = salary_list.order_by("-date")
         for salary in context["salary_list"]:
             labels.append(salary.date.strftime("%Y-%m-%d"))
             gross_pay.append(salary.gross_pay)
