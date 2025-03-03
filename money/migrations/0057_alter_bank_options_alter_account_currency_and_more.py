@@ -23,11 +23,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterField(
             model_name="account",
-            name="name",
-            field=models.CharField(max_length=20),
-        ),
-        migrations.AlterField(
-            model_name="account",
             name="type",
             field=models.CharField(
                 choices=[
@@ -49,11 +44,6 @@ class Migration(migrations.Migration):
             field=models.CharField(
                 choices=[("KRW", "원화"), ("USD", "달러")], default="USD", max_length=3
             ),
-        ),
-        migrations.AlterField(
-            model_name="bank",
-            name="name",
-            field=models.CharField(max_length=20),
         ),
         migrations.AlterField(
             model_name="detailitem",

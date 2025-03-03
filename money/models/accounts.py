@@ -10,7 +10,7 @@ class Bank(models.Model):
     Model for a bank.
     """
 
-    name = models.CharField(max_length=20)
+    name = models.CharField(max_length=200)
 
     def __str__(self):
         return self.name
@@ -22,7 +22,7 @@ class Account(BaseAmountModel, BaseCurrencyModel):
     """
 
     bank = models.ForeignKey(Bank, on_delete=models.CASCADE)
-    name = models.CharField(max_length=20)
+    name = models.CharField(max_length=200, db_collation="C")
     alias = models.CharField(max_length=200, blank=True, null=True)
     type = models.CharField(
         max_length=20,
