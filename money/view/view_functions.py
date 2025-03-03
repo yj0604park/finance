@@ -9,7 +9,8 @@ from django.db.models import Count, Q
 from django.http import HttpRequest, HttpResponseNotAllowed, JsonResponse
 from django.shortcuts import render
 
-from money import choices, forms, helper
+from money import choices, forms
+from money.helpers import snapshots
 from money.models.accounts import Account
 from money.models.exchanges import Exchange
 from money.models.shoppings import AmazonOrder, DetailItem, Retailer
@@ -228,14 +229,14 @@ def get_exchange_rate(request):
 
 @login_required
 def create_daily_snapshot(request):
-    helper.create_daily_snapshot()
+    create_daily_snapshot()
     return JsonResponse({"success": True})
 
 
 @login_required
 # trunk-ignore(pylint/W0613)
 def get_stock_snapshot(request):
-    stock_snapshot, stock_list = helper.get_stock_snapshot()
+    stock_snapshot, stock_list = snapshots.get_stock_snapshot()
 
     return JsonResponse({"data": stock_snapshot, "stock_list": stock_list})
 

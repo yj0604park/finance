@@ -4,8 +4,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Case, Count, When
 from django.views.generic import TemplateView
 
-from money import helper
 from money.choices import AccountType
+from money.helpers.helper import filter_by_get, get_transaction_summary
 from money.models.accounts import Account
 
 
@@ -24,12 +24,11 @@ class HomeView(LoginRequiredMixin, TemplateView):
                 unreviewed_count=Count(Case(When(transaction__reviewed=False, then=1))),
             )
         )
-        account_list = helper.filter_by_get(
-            self.request, account_list, "account_type", "type"
-        )
+
+        account_list = filter_by_get(self.request, account_list, "account_type", "type")
 
         context["account_list"] = account_list
-        context["sum_list"] = helper.get_transaction_summary(account_list)
+        context["sum_list"] = get_transaction_summary(account_list)
         context["option_list"] = AccountType.choices
 
         return context

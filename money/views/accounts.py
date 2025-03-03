@@ -7,7 +7,8 @@ from django.db.models.functions.math import Sign
 from django.shortcuts import render
 from django.views.generic import DetailView, View
 
-from money import helper
+from money.helpers.charts import get_transaction_chart_data
+from money.helpers.monthly import filter_month, update_month_info, update_month_summary
 from money.models.accounts import Account
 from money.models.stocks import StockTransaction
 from money.models.transactions import Transaction
@@ -58,7 +59,7 @@ class AccountDetailView(LoginRequiredMixin, DetailView):
         page = paginator.get_page(page_number)
         context["page_obj"] = page
 
-        context["data"] = helper.get_transaction_chart_data(
+        context["data"] = get_transaction_chart_data(
             ordered_transaction_set,
             account.currency,
             reverse=True,
@@ -90,17 +91,17 @@ class CategoryDetailView(LoginRequiredMixin, View):
             .prefetch_related("retailer", "account")
             .order_by("date", "amount")
         )
-        transaction_list = helper.filter_month(request, transaction_list)
+        transaction_list = filter_month(request, transaction_list)
 
         date_range = Transaction.objects.aggregate(Min("date"), Max("date"))
-        helper.update_month_info(
+        update_month_info(
             request,
             context,
             date_range["date__min"],
             date_range["date__max"],
         )
 
-        helper.update_month_summary(request, context, transaction_list)
+        update_month_summary(request, context, transaction_list)
 
         context["category"] = category_type
         context["transaction_list"] = transaction_list

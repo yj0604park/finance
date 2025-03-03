@@ -6,8 +6,9 @@ from django.urls import reverse_lazy
 from django.views.generic import DetailView, TemplateView
 from django.views.generic.edit import CreateView
 
-from money import helper
 from money.forms import RetailerForm
+from money.helpers.helper import filter_by_get
+from money.helpers.monthly import filter_month, update_month_info, update_month_summary
 from money.models.transactions import Retailer, Transaction
 
 
@@ -17,7 +18,7 @@ class RetailerSummaryView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         retailer_list = Retailer.objects.all().order_by("name")
-        retailer_list = helper.filter_by_get(
+        retailer_list = filter_by_get(
             self.request, retailer_list, "retailer_type", "type"
         )
 
@@ -41,17 +42,17 @@ class RetailerDetailView(LoginRequiredMixin, DetailView):
             .prefetch_related("account")
             .order_by("date", "amount")
         )
-        transaction_list = helper.filter_month(self.request, transaction_list)
+        transaction_list = filter_month(self.request, transaction_list)
 
         date_range = Transaction.objects.aggregate(Min("date"), Max("date"))
-        helper.update_month_info(
+        update_month_info(
             self.request,
             context,
             date_range["date__min"],
             date_range["date__max"],
         )
 
-        helper.update_month_summary(self.request, context, transaction_list)
+        update_month_summary(self.request, context, transaction_list)
 
         context["transaction_list"] = transaction_list
         return context

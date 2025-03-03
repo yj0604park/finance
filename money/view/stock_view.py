@@ -3,7 +3,8 @@ from typing import Any
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView
 
-from money import helper
+from money.helpers.charts import convert_snapshot_to_chart_data
+from money.helpers.snapshots import get_stock_snapshot
 from money.models.stocks import StockTransaction
 
 
@@ -15,8 +16,8 @@ class StockAmountChartView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
 
         # group by currency
-        snapshot, stock_set = helper.get_stock_snapshot()
-        context["labels"], context["datasets"] = helper.convert_snapshot_to_chart_data(
+        snapshot, stock_set = get_stock_snapshot()
+        context["labels"], context["datasets"] = convert_snapshot_to_chart_data(
             snapshot, stock_set
         )
         return context
