@@ -329,6 +329,7 @@ CORS_URLS_REGEX = (
 
 CORS_ALLOWED_ORIGIN_REGEXES = [
     r"^http://localhost:3000",
+    r"^http://localhost:5173",
     r"^http://localhost:11035",
     r"^http://192.168.50.131:58000",
     r"^http://192.168.50.131:3000",

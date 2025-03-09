@@ -5,6 +5,7 @@ from django_choices_field import TextChoicesField
 
 from money.choices import AccountType
 from money.models.base import BaseAmountModel, BaseCurrencyModel
+from money.types.common import BankBalance
 
 
 class Account(BaseAmountModel, BaseCurrencyModel):
@@ -46,12 +47,15 @@ class Bank(models.Model):
         return self.name
 
     @property
-    def balance(self):
+    def balance(self) -> list[BankBalance]:
         sum_dict = defaultdict(float)
 
         for account in Account.objects.filter(bank=self):
             sum_dict[account.currency] += float(account.amount)
-        return sum_dict
+        return [
+            BankBalance(currency=currency, value=balance)
+            for currency, balance in sum_dict.items()
+        ]
 
 
 class AmountSnapshot(BaseAmountModel, BaseCurrencyModel):

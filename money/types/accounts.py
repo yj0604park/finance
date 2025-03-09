@@ -1,7 +1,6 @@
 import strawberry
 import strawberry.django
 from strawberry import auto, relay
-from strawberry.scalars import JSON
 
 from money.models.accounts import Account, AmountSnapshot, Bank
 
@@ -67,7 +66,8 @@ class BankOrder:
 class BankNode(relay.Node):
     id: relay.GlobalID
     name: auto
-    balance: JSON
+    balance: auto
+
     account_set: strawberry.django.relay.ListConnectionWithTotalCount[AccountNode] = (
         strawberry.django.connection()
     )
