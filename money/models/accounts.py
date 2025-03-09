@@ -1,7 +1,7 @@
 from collections import defaultdict
 
 from django.db import models
-from django.urls import reverse
+from django_choices_field import TextChoicesField
 
 from money.choices import AccountType
 from money.models.base import BaseAmountModel, BaseCurrencyModel
@@ -15,10 +15,8 @@ class Account(BaseAmountModel, BaseCurrencyModel):
     bank = models.ForeignKey("Bank", on_delete=models.CASCADE)
     name = models.CharField(max_length=200, db_collation="C")
     alias = models.CharField(max_length=200, blank=True, null=True)
-    type = models.CharField(
-        max_length=20,
-        choices=AccountType.choices,
-        default=AccountType.CHECKING_ACCOUNT,
+    type = TextChoicesField(
+        max_length=20, choices_enum=AccountType, default=AccountType.CHECKING_ACCOUNT
     )
 
     last_update = models.DateTimeField(null=True, blank=True)
@@ -28,10 +26,7 @@ class Account(BaseAmountModel, BaseCurrencyModel):
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
-        return f"{self.bank.name} {self.name}"
-
-    def get_absolute_url(self):
-        return reverse("money:account_detail", kwargs={"pk": self.pk})
+        return self.name
 
     def account_type(self):
         return self.type
@@ -43,6 +38,9 @@ class Bank(models.Model):
     """
 
     name = models.CharField(max_length=200)
+
+    class Meta:
+        ordering = ["name"]
 
     def __str__(self):
         return self.name
