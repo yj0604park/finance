@@ -81,7 +81,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     "finance.users",
     "money",
-    # "people",
+    "people",
     # "leetcode",
     # Your stuff: custom apps go here
 ]
