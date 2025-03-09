@@ -1,4 +1,5 @@
 from collections import defaultdict
+from decimal import Decimal
 
 from django.db import models
 from django_choices_field import TextChoicesField
@@ -48,13 +49,13 @@ class Bank(models.Model):
 
     @property
     def balance(self) -> list[BankBalance]:
-        sum_dict = defaultdict(float)
+        sum_dict = defaultdict(Decimal)
 
         for account in Account.objects.filter(bank=self):
-            sum_dict[account.currency] += float(account.amount)
+            sum_dict[account.currency] += account.amount
         return [
-            BankBalance(currency=currency, value=balance)
-            for currency, balance in sum_dict.items()
+            BankBalance(currency=currency, value=value)
+            for currency, value in sum_dict.items()
         ]
 
 

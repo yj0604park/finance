@@ -3,6 +3,7 @@ import strawberry.django
 from strawberry import auto, relay
 
 from money.models.accounts import Account, AmountSnapshot, Bank
+from money.types.common import BankBalance
 
 
 # region Account
@@ -66,7 +67,7 @@ class BankOrder:
 class BankNode(relay.Node):
     id: relay.GlobalID
     name: auto
-    balance: auto
+    balance: list[BankBalance]
 
     account_set: strawberry.django.relay.ListConnectionWithTotalCount[AccountNode] = (
         strawberry.django.connection()
