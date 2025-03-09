@@ -24,6 +24,6 @@ django_choices_field==2.3.0  # https://github.com/bellini666/django-choices-fiel
 djangorestframework==3.14.0  # https://github.com/encode/django-rest-framework
 django-cors-headers==3.14.0  # https://github.com/adamchainz/django-cors-headers
 # DRF-spectacular for api documentation
-drf-spectacular==0.26.1  # https://github.com/tfranzel/drf-spectacular
+drf-spectacular==0.27.1  # https://github.com/tfranzel/drf-spectacular
 # Graphql
-strawberry-graphql-django==0.48.0
+strawberry-graphql-django==0.57.0

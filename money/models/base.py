@@ -16,14 +16,9 @@ class BaseTimeStampModel(models.Model):
 
 class BaseAmountModel(models.Model):
     amount = models.DecimalField(max_digits=15, decimal_places=2)
-    amount_int = models.BigIntegerField(editable=False)
 
     class Meta:
         abstract = True
-
-    def save(self, *args, **kwargs):
-        self.amount_int = int(float(self.amount) * 100)
-        super().save(*args, **kwargs)
 
 
 class BaseURLModel(models.Model):

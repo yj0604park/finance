@@ -4,7 +4,7 @@ from strawberry import auto, relay
 
 from money.models.transactions import Transaction
 from money.types.accounts import AccountFilter, AccountNode, AccountOrder
-from money.types.retailers import RetailerInput, RetailerNode
+from money.types.retailers import RetailerNode
 
 
 # region: Transaction
@@ -49,7 +49,7 @@ class TransactionNode(relay.Node):
 class TransactionInput:
     amount: auto
     account: AccountNode
-    retailer: RetailerInput | None
+    retailer: RetailerNode | None
     date: auto
     type: auto
     is_internal: auto
