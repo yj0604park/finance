@@ -132,3 +132,33 @@ See detailed [cookiecutter-django Docker documentation](http://cookiecutter-djan
 ## 📚 API 문서
 
 API 문서는 `/api/docs/` 에서 확인할 수 있습니다.
+
+---
+
+## GraphQL 스키마(SDL) 내보내기
+
+Docker 컨테이너에서 Django 설정과 동일한 환경으로 Strawberry 스키마를 내보내려면 아래 절차를 따릅니다.
+
+1) 컨테이너 내부에서 스키마 출력 파일 생성
+
+```bash
+docker compose -f local.yml exec django bash -lc "source /entrypoint && python -c \"import django, os; os.environ.setdefault('DJANGO_SETTINGS_MODULE','config.settings.base'); django.setup(); from money.schema import schema; print(schema.as_str())\" > schema.graphql"
+```
+
+2) 생성된 파일을 호스트로 복사
+
+```bash
+docker cp <django_container_id_or_name>:/app/schema.graphql ./schema.graphql
+```
+
+- 참고: 컨테이너 ID/이름은 `docker ps`로 확인할 수 있습니다. 예: `docker cp 8faa11e00797:/app/schema.graphql .`
+- 결과물 `schema.graphql`은 `backend/` 루트에 위치하게 됩니다.
+
+3) 프론트엔드 코드젠 실행(선택)
+
+```bash
+cd ../frontend
+npm run codegen
+```
+
+- 프론트엔드 `codegen.js`에서 라이브 엔드포인트를 사용하는 설정으로도 코드젠을 수행할 수 있습니다. 인증이 필요한 경우 `GRAPHQL_AUTHORIZATION`/`GRAPHQL_COOKIE`/`GRAPHQL_CSRF_TOKEN` 환경변수를 설정하세요.

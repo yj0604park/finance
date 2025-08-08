@@ -37,6 +37,7 @@ django-extensions==3.2.3  # https://github.com/django-extensions/django-extensio
 django-coverage-plugin==3.1.0  # https://github.com/nedbat/django_coverage_plugin
 pytest-django==4.9.0  # https://github.com/pytest-dev/pytest-django
 
+strawberry-graphql[cli]==0.57.0
 
 # Documentation
 drf-spectacular-sidecar==2024.2.1
