@@ -69,9 +69,9 @@ class BankNode(relay.Node):
     name: auto
     balance: list[BankBalance]
 
-    account_set: strawberry.django.relay.ListConnectionWithTotalCount[AccountNode] = (
-        strawberry.django.connection()
-    )
+    account_set: strawberry.django.relay.ListConnectionWithTotalCount[
+        AccountNode
+    ] = strawberry.django.connection()
 
 
 # endregion

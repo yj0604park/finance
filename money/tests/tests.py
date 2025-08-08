@@ -1,7 +1,7 @@
 # Create your tests here.
 from django.test import TestCase
 
-from .models import Account, Bank
+from money.models.accounts import Account, Bank
 
 
 class AnimalTestCase(TestCase):

@@ -2,6 +2,10 @@
 # ------------------------------------------------------------------------------
 USE_DOCKER=yes
 IPYTHONDIR=/app/.ipython
+# Copy this to .django and update DJANGO_ALLOWED_HOSTS with your actual hosts
+# Comma-separated list of allowed hosts (e.g., localhost,127.0.0.1,your-domain.com)
+DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
+
 # Redis
 # ------------------------------------------------------------------------------
 REDIS_URL=redis://redis:6379/0
@@ -10,5 +14,5 @@ REDIS_URL=redis://redis:6379/0
 # ------------------------------------------------------------------------------
 
 # Flower
-CELERY_FLOWER_USER=xUdzVYuZXTfguASspKbLkbDLoYECbvQj
-CELERY_FLOWER_PASSWORD=xiz3txQWrNEnziZA59GYZBhcfSLDEBwOK9sT8vBoM669LQjJ63mk0Hgp0ZaM4TQi
+CELERY_FLOWER_USER=your_flower_user
+CELERY_FLOWER_PASSWORD=your_flower_password

@@ -11,12 +11,12 @@ SECRET_KEY = env(
     default="tKuijSAM7mqEZXAzFRiJYuWqrD5ti7OxeH7uS60wj5hRHETbhWcH0gOzTj0jJCm8",
 )
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = [
-    "localhost",
-    "127.0.0.1",
-    "192.168.50.12",
-    "192.168.50.131",
-]
+ALLOWED_HOSTS = env.list(
+    "DJANGO_ALLOWED_HOSTS",
+    default=[
+        "localhost",
+    ],
+)
 
 # CACHES
 # ------------------------------------------------------------------------------
@@ -71,3 +71,24 @@ INSTALLED_APPS += ["django_extensions"]  # noqa: F405
 CELERY_TASK_EAGER_PROPAGATES = True
 # Your stuff...
 # ------------------------------------------------------------------------------
+
+# CSRF/CORS (local only)
+# Allow GraphiQL UI and local frontends to make POSTs with CSRF protection
+# GraphiQL runs in the browser and needs to read the CSRF cookie to send the header
+CSRF_COOKIE_HTTPONLY = False
+
+# Trust local development origins (include scheme and port)
+CSRF_TRUSTED_ORIGINS = env.list(
+    "CSRF_TRUSTED_ORIGINS",
+    default=[
+        "http://minitwo.tail591527.ts.net:58000",
+        "http://minitwo.tail591527.ts.net:3001",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:58000",
+        "http://127.0.0.1:58000",
+    ],
+)
+
+# If using the SPA on a different port with session auth, allow credentials
+CORS_ALLOW_CREDENTIALS = True

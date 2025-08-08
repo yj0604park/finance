@@ -1,9 +1,9 @@
+from decimal import Decimal
+
 import strawberry
-import strawberry.django
-from strawberry import auto
 
 
 @strawberry.type()
 class SalarySummaryNode:
-    year: auto
-    total_gross_pay: auto
+    year: int
+    total_gross_pay: Decimal

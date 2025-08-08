@@ -1,7 +1,8 @@
 # PostgreSQL
 # ------------------------------------------------------------------------------
+# Copy this to .postgres and update with your actual database credentials
 POSTGRES_HOST=postgres
 POSTGRES_PORT=5432
 POSTGRES_DB=finance
-POSTGRES_USER=sfYwgWrfpMctUxgAiGOkXvdpCWWELLTO
-POSTGRES_PASSWORD=zGhFkxqu4sUjb67lkQ2DgfWvIEUxKOnrIMjLxyJkbNRrOFsdXg0MscJ6xWRMdqMr
+POSTGRES_USER=your_postgres_user
+POSTGRES_PASSWORD=your_postgres_password
