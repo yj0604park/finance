@@ -1,7 +1,5 @@
-from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.urls import path
-from django.views.decorators.csrf import csrf_exempt
 from strawberry.django.views import GraphQLView
 
 from money import views
@@ -9,12 +7,6 @@ from money.schema import schema
 from money.views import transaction_detail_view, transaction_view, view_functions
 
 app_name = "money"
-
-# Configure GraphQL view with GraphiQL enabled.
-# In DEBUG, exempt from CSRF to allow the built-in UI to function without manual headers.
-graphql_view = GraphQLView.as_view(schema=schema, graphiql=True)
-if settings.DEBUG:
-    graphql_view = csrf_exempt(graphql_view)
 
 urlpatterns = [
     path("", view=views.home_view, name="home"),
@@ -225,6 +217,6 @@ urlpatterns = [
         view=view_functions.get_end_month_balance,
         name="get_end_month_balance",
     ),
-    path("graphql", login_required(graphql_view)),
+    path("graphql", login_required(GraphQLView.as_view(schema=schema, graphiql=True))),
     # endregion
 ]

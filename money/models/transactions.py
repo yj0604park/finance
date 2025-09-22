@@ -39,7 +39,7 @@ class Transaction(BaseTimeStampModel, BaseAmountModel, BaseURLModel):
 
     def __str__(self):
         return (
-            f'{self.pk} {self.date.strftime("%Y-%m-%d")} '
+            f"{self.pk} {self.date.strftime('%Y-%m-%d')} "
             + f"{self.account.name}: "
             + f"{self.retailer.name if self.retailer else None}"
         )

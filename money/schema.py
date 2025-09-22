@@ -46,35 +46,35 @@ def get_salary_summary() -> list[types.SalarySummaryNode]:
 
 @strawberry.type
 class Query:
-    transaction_relay: ListConnectionWithTotalCount[
-        TransactionNode
-    ] = strawberry.django.connection()
+    transaction_relay: ListConnectionWithTotalCount[TransactionNode] = (
+        strawberry.django.connection()
+    )
 
-    retailer_relay: ListConnectionWithTotalCount[
-        RetailerNode
-    ] = strawberry.django.connection()
+    retailer_relay: ListConnectionWithTotalCount[RetailerNode] = (
+        strawberry.django.connection()
+    )
 
     bank_relay: ListConnectionWithTotalCount[BankNode] = strawberry.django.connection()
 
-    account_relay: ListConnectionWithTotalCount[
-        AccountNode
-    ] = strawberry.django.connection()
+    account_relay: ListConnectionWithTotalCount[AccountNode] = (
+        strawberry.django.connection()
+    )
 
-    amountSnapshot_relay: ListConnectionWithTotalCount[
-        AmountSnapshotNode
-    ] = strawberry.django.connection()
+    amountSnapshot_relay: ListConnectionWithTotalCount[AmountSnapshotNode] = (
+        strawberry.django.connection()
+    )
 
-    salary_relay: ListConnectionWithTotalCount[
-        SalaryNode
-    ] = strawberry.django.connection()
+    salary_relay: ListConnectionWithTotalCount[SalaryNode] = (
+        strawberry.django.connection()
+    )
 
-    stock_relay: ListConnectionWithTotalCount[
-        StockNode
-    ] = strawberry.django.connection()
+    stock_relay: ListConnectionWithTotalCount[StockNode] = (
+        strawberry.django.connection()
+    )
 
-    amazon_order_relay: ListConnectionWithTotalCount[
-        AmazonOrderNode
-    ] = strawberry.django.connection()
+    amazon_order_relay: ListConnectionWithTotalCount[AmazonOrderNode] = (
+        strawberry.django.connection()
+    )
 
     salary_years: list[int] = strawberry.field(resolver=get_salary_years)
     salary_summary: list[types.SalarySummaryNode] = strawberry.field(

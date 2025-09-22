@@ -324,11 +324,11 @@ REST_FRAMEWORK = {
 # django-cors-headers - https://github.com/adamchainz/django-cors-headers#setup
 CORS_URLS_REGEX = (
     r"^/api/.*$|^/money/graphql$|^/money/update_balance/.*$|^/money/stock_transaction_create/.*$|"
-    + r"^/money/file_upload$"
+    + r"^/money/file_upload$|^/auth-token/$"
 )
 
 CORS_ALLOWED_ORIGIN_REGEXES = [
-    r"^http://minitwo\.tail591527\.ts\.net:3001$",
+    r"^http://minitwo.tail591527.ts.net:5173$",
     r"^http://localhost:3000$",
     r"^http://127\.0\.0\.1:3000$",
 ]
