@@ -38,7 +38,7 @@ class Migration(migrations.Migration):
                 ),
                 ("medicare_tax", models.DecimalField(decimal_places=2, max_digits=10)),
                 ("box_12", models.JSONField(blank=True, null=True)),
-                ("box_14", models.CharField(blank=True, null=True)),
+                ("box_14", models.CharField(max_length=200, blank=True, null=True)),
             ],
         ),
     ]

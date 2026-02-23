@@ -40,5 +40,17 @@ class UserAdmin(auth_admin.UserAdmin):
         ),
         (_("Important dates"), {"fields": ("last_login", "date_joined")}),
     )
+    # Django 5.0+ added 'usable_password' to the default add_fieldsets.
+    # Our UserAdminCreationForm does not include that field, so we override
+    # add_fieldsets explicitly to keep the form working.
+    add_fieldsets = (
+        (
+            None,
+            {
+                "classes": ("wide",),
+                "fields": ("username", "password1", "password2"),
+            },
+        ),
+    )
     list_display = ["username", "name", "is_superuser"]
     search_fields = ["name"]
