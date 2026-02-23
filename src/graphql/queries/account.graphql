@@ -1,0 +1,82 @@
+query GetAccountList(
+  $after: String!
+  $bankId: ID
+  $isActive: BoolBaseFilterLookup
+) {
+  accountRelay(
+    order: { name: ASC }
+    filters: { isActive: $isActive, bank: { id: { exact: $bankId } } }
+    first: 100
+    after: $after
+  ) {
+    totalCount
+    edges {
+      node {
+        amount
+        name
+        currency
+        bank {
+          id
+          name
+        }
+        lastUpdate
+        id
+        isActive
+        type
+        firstTransaction
+        lastTransaction
+      }
+      cursor
+    }
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      startCursor
+      endCursor
+    }
+  }
+}
+
+query GetSimpleAccountList($bankId: ID) {
+  accountRelay(
+    filters: { bank: { id: { exact: $bankId } } }
+    order: { name: ASC }
+  ) {
+    edges {
+      node {
+        id
+        name
+      }
+    }
+  }
+}
+
+query GetAccountDetail($accountId: ID) {
+  accountRelay(filters: { bank: {}, id: { exact: $accountId } }) {
+    edges {
+      node {
+        amount
+        name
+        currency
+        bank {
+          id
+          name
+        }
+        lastUpdate
+        id
+        isActive
+        type
+        firstTransaction
+        lastTransaction
+      }
+    }
+  }
+}
+
+query GetAccountType {
+  __type(name: "AccountType") {
+    enumValues {
+      name
+    }
+  }
+}

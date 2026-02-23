@@ -1,0 +1,25 @@
+query GetRetailerList($after: String) {
+  retailerRelay(after: $after) {
+    edges {
+      node {
+        id
+        name
+        category
+      }
+    }
+    totalCount
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+  }
+}
+
+query GetRetailerType {
+  __type(name: "RetailerType") {
+    name
+    enumValues {
+      name
+    }
+  }
+}

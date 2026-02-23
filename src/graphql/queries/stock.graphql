@@ -1,0 +1,13 @@
+query GetStockList {
+  stockRelay {
+    edges {
+      node {
+        id
+        ticker
+        name
+        currency
+      }
+    }
+    totalCount
+  }
+}

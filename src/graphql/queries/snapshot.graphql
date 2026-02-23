@@ -1,0 +1,32 @@
+query GetAmountSnapshots($startDate: Date) {
+  krwSnapshot: amountSnapshotRelay(
+    order: { date: ASC }
+    filters: { currency: { exact: KRW }, date: { gte: $startDate } }
+    last: 100
+  ) {
+    edges {
+      node {
+        id
+        amount
+        currency
+        date
+        summary
+      }
+    }
+  }
+  usdSnapshot: amountSnapshotRelay(
+    order: { date: ASC }
+    filters: { currency: { exact: USD }, date: { gte: $startDate } }
+    last: 100
+  ) {
+    edges {
+      node {
+        id
+        amount
+        currency
+        date
+        summary
+      }
+    }
+  }
+}

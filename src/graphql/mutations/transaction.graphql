@@ -1,0 +1,41 @@
+mutation CreateTransaction(
+  $amount: Decimal!
+  $date: Date!
+  $accountId: ID
+  $isInternal: Boolean
+  $note: String
+  $retailerId: ID
+) {
+  createTransaction(
+    data: {
+      amount: $amount
+      date: $date
+      account: { set: $accountId }
+      isInternal: $isInternal
+      note: $note
+      retailer: { set: $retailerId }
+    }
+  ) {
+    id
+  }
+}
+
+mutation CreateTransactionWithoutRetailer(
+  $amount: Decimal!
+  $date: Date!
+  $accountId: ID
+  $isInternal: Boolean
+  $note: String
+) {
+  createTransaction(
+    data: {
+      amount: $amount
+      date: $date
+      account: { set: $accountId }
+      isInternal: $isInternal
+      note: $note
+    }
+  ) {
+    id
+  }
+}

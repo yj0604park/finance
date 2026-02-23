@@ -1,0 +1,63 @@
+query GetSalaryList {
+  salaryRelay(order: { date: ASC }) {
+    edges {
+      node {
+        date
+        grossPay
+        id
+        netPay
+        totalDeduction
+        totalAdjustment
+        totalWithheld
+        transaction {
+          id
+          note
+        }
+        payDetail
+        taxDetail
+        deductionDetail
+        adjustmentDetail
+      }
+    }
+    totalCount
+  }
+}
+
+query GetSalaryFiltered($dateMin: Date, $dateMax: Date) {
+  salaryRelay(
+    order: { date: ASC }
+    filters: { date: { gte: $dateMin, lte: $dateMax } }
+  ) {
+    edges {
+      node {
+        date
+        grossPay
+        id
+        netPay
+        totalDeduction
+        totalAdjustment
+        totalWithheld
+        transaction {
+          id
+          note
+        }
+        payDetail
+        taxDetail
+        deductionDetail
+        adjustmentDetail
+      }
+    }
+    totalCount
+  }
+}
+
+query GetSalaryYears {
+  salaryYears
+}
+
+query GetSalarySummary {
+  salarySummary {
+    year
+    totalGrossPay
+  }
+}

@@ -1,0 +1,39 @@
+query GetBankList {
+  bankRelay {
+    edges {
+      node {
+        balance {
+          currency
+          value
+        }
+        id
+        name
+        accountSet {
+          edges {
+            node {
+              type
+              id
+              currency
+              amount
+              lastUpdate
+              name
+              isActive
+            }
+          }
+          totalCount
+        }
+      }
+    }
+  }
+}
+
+query GetBankSimpleList {
+  bankRelay {
+    edges {
+      node {
+        id
+        name
+      }
+    }
+  }
+}

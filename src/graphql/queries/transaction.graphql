@@ -1,0 +1,99 @@
+query GetAllTransactions($after: String, $first: Int, $accountId: ID, $dateGte: Date, $dateLte: Date) {
+  transactionRelay(
+    first: $first
+    after: $after
+    filters: {
+      account: { bank: {}, id: { exact: $accountId } }
+      date: { gte: $dateGte, lte: $dateLte }
+    }
+    order: { date: DESC, amount: ASC }
+  ) {
+    edges {
+      cursor
+      node {
+        id
+        amount
+        balance
+        date
+        isInternal
+        type
+        note
+        retailer {
+          id
+          name
+        }
+        account {
+          id
+          name
+          currency
+          bank {
+            name
+          }
+        }
+      }
+    }
+    totalCount
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      startCursor
+      endCursor
+    }
+  }
+}
+
+query GetTransactionList($accountId: ID) {
+  transactionRelay(
+    filters: { account: { bank: {}, id: { exact: $accountId } } }
+    order: { date: DESC, amount: ASC, balance: ASC }
+  ) {
+    edges {
+      cursor
+      node {
+        id
+        amount
+        balance
+        date
+        isInternal
+        requiresDetail
+        reviewed
+        note
+        type
+        relatedTransaction {
+          id
+        }
+        retailer {
+          id
+          name
+        }
+      }
+    }
+    totalCount
+  }
+  accountRelay(filters: { bank: {}, id: { exact: $accountId } }) {
+    edges {
+      node {
+        currency
+      }
+    }
+  }
+}
+
+query GetTransactionCategory {
+  __type(name: "TransactionCategory") {
+    name
+    enumValues {
+      name
+    }
+  }
+}
+
+query GetLastTransactionDate {
+  transactionRelay(first: 1, order: { id: DESC }) {
+    edges {
+      node {
+        date
+      }
+    }
+  }
+}
