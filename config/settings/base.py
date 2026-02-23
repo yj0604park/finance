@@ -328,9 +328,11 @@ CORS_URLS_REGEX = (
 )
 
 CORS_ALLOWED_ORIGIN_REGEXES = [
-    r"^http://minitwo.tail591527.ts.net:5173$",
-    r"^http://localhost:3000$",
-    r"^http://127\.0\.0\.1:3000$",
+    r"^http://minitwo\.tail591527\.ts\.net:\d+$",
+    r"^http://claw1:\d+$",
+    r"^http://claw1\..*:\d+$",
+    r"^http://localhost:\d+$",
+    r"^http://127\.0\.0\.1:\d+$",
 ]
 
 # By Default swagger ui is available only to admin user(s). You can change permission classes to change that

@@ -15,6 +15,9 @@ ALLOWED_HOSTS = env.list(
     "DJANGO_ALLOWED_HOSTS",
     default=[
         "localhost",
+        "127.0.0.1",
+        "claw1",
+        ".ts.net",
     ],
 )
 
@@ -83,10 +86,12 @@ CSRF_TRUSTED_ORIGINS = env.list(
     default=[
         "http://minitwo.tail591527.ts.net:58000",
         "http://minitwo.tail591527.ts.net:3001",
+        "http://claw1:3000",
+        "http://claw1:8000",
         "http://localhost:3000",
         "http://127.0.0.1:3000",
-        "http://localhost:58000",
-        "http://127.0.0.1:58000",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
     ],
 )
 
