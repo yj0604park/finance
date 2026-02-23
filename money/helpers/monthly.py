@@ -59,13 +59,18 @@ def update_month_summary(
         context["month_detail"] = month_detail
 
 
-def _get_month_list(start_date: datetime, end_date: datetime) -> list[tuple[str, str]]:
-    month_list = []
+def _get_month_list(
+    start_date: datetime, end_date: datetime
+) -> dict[str, list[tuple[str, str]]]:
+    month_dict: dict[str, list[tuple[str, str]]] = {}
     for dt in rrule(MONTHLY, dtstart=start_date, until=end_date):
-        month_list.append(
+        year = str(dt.year)
+        if year not in month_dict:
+            month_dict[year] = []
+        month_dict[year].append(
             (
                 dt.strftime("%Y-%m"),
                 f"{dt.year}년 {dt.month}월",
             )
         )
-    return month_list
+    return month_dict

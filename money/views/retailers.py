@@ -47,6 +47,7 @@ class RetailerSummaryView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         context["currency"] = self.request.GET.get("currency", CurrencyType.USD)
         context["category_list"] = TransactionCategory.choices
+        context["transaction_list"] = self.get_queryset()
         label = []
         data = []
 
