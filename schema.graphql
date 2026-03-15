@@ -18,6 +18,7 @@ input AccountInput {
   bank: OneToManyInput!
   type: AccountType
   currency: CurrencyType
+  amount: Decimal! = "0"
 }
 
 type AccountNode implements Node {
@@ -518,6 +519,8 @@ type Mutation {
   createStock(data: StockInput!): StockNode!
   createStockTransaction(data: StockTransactionInput!): StockTransactionNode!
   createAmazonOrder(data: AmazonOrderInput!): AmazonOrderNode!
+  createSalary(data: SalaryInput!): SalaryNode!
+  updateSalary(data: SalaryPartialInput!): SalaryNode!
 }
 
 """An object with a Globally Unique ID"""
@@ -743,6 +746,21 @@ input SalaryFilter {
   DISTINCT: Boolean
 }
 
+input SalaryInput {
+  date: Date!
+  currency: CurrencyType
+  grossPay: Decimal!
+  totalAdjustment: Decimal!
+  totalWithheld: Decimal!
+  totalDeduction: Decimal!
+  netPay: Decimal!
+  payDetail: JSON!
+  adjustmentDetail: JSON!
+  taxDetail: JSON!
+  deductionDetail: JSON!
+  transaction: OneToManyInput!
+}
+
 type SalaryNode implements Node {
   id: ID!
   date: Date!
@@ -781,6 +799,22 @@ type SalaryNodeEdge {
 
 input SalaryOrder {
   date: Ordering
+}
+
+input SalaryPartialInput {
+  id: ID!
+  date: Date
+  currency: CurrencyType
+  grossPay: Decimal
+  totalAdjustment: Decimal
+  totalWithheld: Decimal
+  totalDeduction: Decimal
+  netPay: Decimal
+  payDetail: JSON!
+  adjustmentDetail: JSON!
+  taxDetail: JSON!
+  deductionDetail: JSON!
+  transaction: OneToManyInput
 }
 
 type SalarySummaryNode {

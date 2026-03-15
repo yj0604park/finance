@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 import strawberry
 import strawberry.django
 from strawberry import auto, relay
@@ -48,6 +50,7 @@ class AccountInput:
     bank: "BankNode"
     type: auto
     currency: auto
+    amount: Decimal = Decimal("0")
 
 
 # endregion
