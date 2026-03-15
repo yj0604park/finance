@@ -7,7 +7,13 @@ from strawberry_django.relay import ListConnectionWithTotalCount
 
 from money.models.incomes import Salary
 from money.types import types
-from money.types.accounts import AccountInput, AccountNode, AmountSnapshotNode, BankNode
+from money.types.accounts import (
+    AccountInput,
+    AccountNode,
+    AccountPartialInput,
+    AmountSnapshotNode,
+    BankNode,
+)
 from money.types.incomes import SalaryInput, SalaryNode, SalaryPartialInput
 from money.types.retailers import RetailerInput, RetailerNode
 from money.types.shoppings import AmazonOrderInput, AmazonOrderNode
@@ -100,6 +106,7 @@ class Query:
 @strawberry.type
 class Mutation:
     create_account: AccountNode = mutations.create(AccountInput)
+    update_account: AccountNode = mutations.update(AccountPartialInput)
     create_transaction: TransactionNode = mutations.create(TransactionInput)
     create_retailer: RetailerNode = mutations.create(RetailerInput)
     create_stock: StockNode = mutations.create(StockInput)

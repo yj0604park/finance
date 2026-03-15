@@ -40,6 +40,7 @@ class AccountNode(relay.Node):
     currency: auto
     last_update: auto
     is_active: auto
+    first_added: auto
     last_transaction: auto
     first_transaction: auto
 
@@ -51,6 +52,15 @@ class AccountInput:
     type: auto
     currency: auto
     amount: Decimal = Decimal("0")
+
+
+@strawberry.django.input(Account, partial=True)
+class AccountPartialInput:
+    id: relay.GlobalID
+    name: auto
+    type: auto
+    is_active: auto
+    first_added: auto
 
 
 # endregion

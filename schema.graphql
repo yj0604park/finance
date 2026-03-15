@@ -30,6 +30,7 @@ type AccountNode implements Node {
   currency: CurrencyType!
   lastUpdate: DateTime
   isActive: Boolean!
+  firstAdded: Boolean!
   lastTransaction: Date
   firstTransaction: Date
 }
@@ -512,8 +513,17 @@ The `JSON` scalar type represents JSON values as specified by [ECMA-404](https:/
 """
 scalar JSON @specifiedBy(url: "https://ecma-international.org/wp-content/uploads/ECMA-404_2nd_edition_december_2017.pdf")
 
+input AccountPartialInput {
+  id: ID!
+  name: String
+  type: AccountType
+  isActive: Boolean
+  firstAdded: Boolean
+}
+
 type Mutation {
   createAccount(data: AccountInput!): AccountNode!
+  updateAccount(data: AccountPartialInput!): AccountNode!
   createTransaction(data: TransactionInput!): TransactionNode!
   createRetailer(data: RetailerInput!): RetailerNode!
   createStock(data: StockInput!): StockNode!
