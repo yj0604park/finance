@@ -11,11 +11,14 @@ from money.types.accounts import AccountInput, AccountNode, AmountSnapshotNode, 
 from money.types.incomes import SalaryInput, SalaryNode, SalaryPartialInput
 from money.types.retailers import RetailerInput, RetailerNode
 from money.types.shoppings import AmazonOrderInput, AmazonOrderNode
+from money.types.exchanges import ExchangeNode
 from money.types.stocks import (
     StockInput,
     StockNode,
     StockTransactionInput,
     StockTransactionNode,
+    StockPriceInput,
+    StockPriceNode,
 )
 from money.types.transactions import TransactionInput, TransactionNode
 
@@ -72,7 +75,19 @@ class Query:
         strawberry.django.connection()
     )
 
+    stock_transaction_relay: ListConnectionWithTotalCount[StockTransactionNode] = (
+        strawberry.django.connection()
+    )
+
+    stock_price_relay: ListConnectionWithTotalCount[StockPriceNode] = (
+        strawberry.django.connection()
+    )
+
     amazon_order_relay: ListConnectionWithTotalCount[AmazonOrderNode] = (
+        strawberry.django.connection()
+    )
+
+    exchange_relay: ListConnectionWithTotalCount[ExchangeNode] = (
         strawberry.django.connection()
     )
 
@@ -91,6 +106,7 @@ class Mutation:
     create_stock_transaction: StockTransactionNode = mutations.create(
         StockTransactionInput
     )
+    create_stock_price: StockPriceNode = mutations.create(StockPriceInput)
     create_amazon_order: AmazonOrderNode = mutations.create(AmazonOrderInput)
     create_salary: SalaryNode = mutations.create(SalaryInput)
     update_salary: SalaryNode = mutations.update(SalaryPartialInput)

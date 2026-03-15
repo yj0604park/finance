@@ -41,6 +41,19 @@ class StockNode(relay.Node):
 
 
 # region: StockTransaction
+@strawberry.django.filters.filter(stocks.StockTransaction, lookups=True)
+class StockTransactionFilter:
+    id: auto
+    stock: StockFilter
+    date: auto
+
+
+@strawberry.django.ordering.order(stocks.StockTransaction)
+class StockTransactionOrder:
+    date: auto
+    price: auto
+
+
 @strawberry.django.input(stocks.StockTransaction)
 class StockTransactionInput:
     date: auto
@@ -54,9 +67,12 @@ class StockTransactionInput:
     note: auto
 
 
-@strawberry.django.type(stocks.StockTransaction)
+@strawberry.django.type(
+    stocks.StockTransaction, filters=StockTransactionFilter, order=StockTransactionOrder
+)
 class StockTransactionNode(relay.Node):
     id: relay.GlobalID
+    date: auto
     account: AccountNode
     stock: StockNode
     related_transaction: TransactionNode
@@ -64,7 +80,42 @@ class StockTransactionNode(relay.Node):
     price: auto
     amount: auto
     shares: auto
+    balance: auto
     note: auto
+
+
+# endregion
+
+
+# region: StockPrice
+@strawberry.django.filters.filter(stocks.StockPrice, lookups=True)
+class StockPriceFilter:
+    id: auto
+    stock: StockFilter
+    date: auto
+
+
+@strawberry.django.ordering.order(stocks.StockPrice)
+class StockPriceOrder:
+    date: auto
+    price: auto
+
+
+@strawberry.django.input(stocks.StockPrice)
+class StockPriceInput:
+    date: auto
+    stock: StockNode
+    price: auto
+
+
+@strawberry.django.type(
+    stocks.StockPrice, filters=StockPriceFilter, order=StockPriceOrder
+)
+class StockPriceNode(relay.Node):
+    id: relay.GlobalID
+    date: auto
+    stock: StockNode
+    price: auto
 
 
 # endregion

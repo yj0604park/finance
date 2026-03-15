@@ -13,6 +13,7 @@ class TransactionFilter:
     id: auto
     date: auto
     account: AccountFilter
+    reviewed: auto
 
 
 @strawberry.django.ordering.order(Transaction)
