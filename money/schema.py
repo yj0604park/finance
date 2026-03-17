@@ -23,6 +23,7 @@ from money.types.stocks import (
     StockNode,
     StockTransactionInput,
     StockTransactionNode,
+    StockTransactionPartialInput,
     StockPriceInput,
     StockPriceNode,
 )
@@ -112,6 +113,9 @@ class Mutation:
     create_stock: StockNode = mutations.create(StockInput)
     create_stock_transaction: StockTransactionNode = mutations.create(
         StockTransactionInput
+    )
+    update_stock_transaction: StockTransactionNode = mutations.update(
+        StockTransactionPartialInput
     )
     create_stock_price: StockPriceNode = mutations.create(StockPriceInput)
     create_amazon_order: AmazonOrderNode = mutations.create(AmazonOrderInput)

@@ -1156,6 +1156,8 @@ input TransactionFilter {
   date: DateDateFilterLookup
   account: AccountFilter!
   reviewed: BoolBaseFilterLookup
+  isInternal: BoolBaseFilterLookup
+  type: TransactionCategoryFilterLookup
   AND: TransactionFilter
   OR: TransactionFilter
   NOT: TransactionFilter

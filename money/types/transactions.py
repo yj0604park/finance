@@ -14,6 +14,8 @@ class TransactionFilter:
     date: auto
     account: AccountFilter
     reviewed: auto
+    is_internal: auto
+    type: auto
 
 
 @strawberry.django.ordering.order(Transaction)

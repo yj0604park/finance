@@ -3,7 +3,7 @@ import strawberry.django
 from strawberry import auto, relay
 
 from money.models import stocks
-from money.types.accounts import AccountNode
+from money.types.accounts import AccountFilter, AccountNode
 from money.types.transactions import TransactionNode
 
 
@@ -45,6 +45,7 @@ class StockNode(relay.Node):
 class StockTransactionFilter:
     id: auto
     stock: StockFilter
+    account: AccountFilter
     date: auto
 
 
@@ -82,6 +83,12 @@ class StockTransactionNode(relay.Node):
     shares: auto
     balance: auto
     note: auto
+
+
+@strawberry.django.input(stocks.StockTransaction, partial=True)
+class StockTransactionPartialInput:
+    id: relay.GlobalID
+    related_transaction: TransactionNode | None
 
 
 # endregion
