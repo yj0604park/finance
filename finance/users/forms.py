@@ -20,6 +20,10 @@ class UserAdminCreationForm(admin_forms.UserCreationForm):
 
     class Meta(admin_forms.UserCreationForm.Meta):
         model = User
+        # Django 5.x added a virtual 'usable_password' field to UserCreationForm.
+        # Explicitly listing only the fields we need prevents modelform_factory
+        # from complaining about that field not existing on the model.
+        fields = ("username",)
 
         error_messages = {
             "username": {"unique": _("This username has already been taken.")}
