@@ -217,6 +217,6 @@ urlpatterns = [
         view=view_functions.get_end_month_balance,
         name="get_end_month_balance",
     ),
-    path("graphql", login_required(GraphQLView.as_view(schema=schema, graphiql=True))),
+    path("graphql", login_required(GraphQLView.as_view(schema=schema))),
     # endregion
 ]

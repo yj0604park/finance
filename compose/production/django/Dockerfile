@@ -55,6 +55,7 @@ COPY --from=python-build-stage /usr/src/app/wheels  /wheels/
 
 # use wheels to install python dependencies
 RUN pip install --no-cache-dir --no-index --find-links=/wheels/ /wheels/* \
+  && pip install --no-cache-dir "setuptools<70" \
   && rm -rf /wheels/
 
 
