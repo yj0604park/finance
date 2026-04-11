@@ -328,9 +328,6 @@ CORS_URLS_REGEX = (
 )
 
 CORS_ALLOWED_ORIGIN_REGEXES = [
-    r"^http://minitwo\.tail591527\.ts\.net:\d+$",
-    r"^http://claw1:\d+$",
-    r"^http://claw1\..*:\d+$",
     r"^http://localhost:\d+$",
     r"^http://127\.0\.0\.1:\d+$",
 ]
