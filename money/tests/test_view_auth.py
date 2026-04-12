@@ -2,6 +2,7 @@
 모든 money 앱 뷰가 LoginRequiredMixin으로 보호되는지 검증.
 미인증 요청은 로그인 페이지로 리다이렉트되어야 한다.
 """
+
 import datetime
 from decimal import Decimal
 
@@ -53,7 +54,9 @@ class ViewAuthenticationTests(TestCase):
     # --- Bank views ---
     def test_bank_list_requires_login(self):
         res = self.client.get("/money/bank_list")
-        self.assertTrue(_redirect_to_login(res), f"Expected redirect, got {res.status_code}")
+        self.assertTrue(
+            _redirect_to_login(res), f"Expected redirect, got {res.status_code}"
+        )
 
     def test_bank_detail_requires_login(self):
         res = self.client.get(f"/money/bank_detail/{self.bank.pk}")
@@ -118,10 +121,11 @@ class ViewAccessAuthenticatedTests(TestCase):
         pytest.importorskip("django.db").connection.vendor == "sqlite"
         if False  # 실제 체크는 런타임에서 진행
         else False,
-        reason="DISTINCT ON은 PostgreSQL 전용"
+        reason="DISTINCT ON은 PostgreSQL 전용",
     )
     def test_bank_detail_accessible_when_authenticated(self):
         from django.db import connection
+
         if connection.vendor == "sqlite":
             pytest.skip("BankDetailView uses DISTINCT ON (PostgreSQL only)")
         res = self.client.get(f"/money/bank_detail/{self.bank.pk}")

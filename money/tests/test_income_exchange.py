@@ -2,6 +2,7 @@
 Salary, W2, Exchange 모델 단위 테스트.
 기존 test_models.py에서 누락된 재무 계산 관련 모델 보강.
 """
+
 import datetime
 from decimal import Decimal
 

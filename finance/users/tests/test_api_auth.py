@@ -4,12 +4,11 @@ Tests for finance/users/api_views.py:
   - api_logout_view (POST /api/auth/logout/)
   - api_me_view     (GET  /api/auth/me/)
 """
+
 import json
 
-import pytest
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
-from django.urls import reverse
 
 User = get_user_model()
 
@@ -67,7 +66,9 @@ class LoginViewTests(TestCase):
 
     def test_valid_credentials_return_200_and_authenticated(self):
         """올바른 자격증명은 200과 authenticated=true를 반환해야 한다."""
-        res = _post_json(self.client, LOGIN_URL, {"username": "bob", "password": "pass1234"})
+        res = _post_json(
+            self.client, LOGIN_URL, {"username": "bob", "password": "pass1234"}
+        )
         self.assertEqual(res.status_code, 200)
         data = json.loads(res.content)
         self.assertTrue(data["authenticated"])
@@ -83,14 +84,18 @@ class LoginViewTests(TestCase):
 
     def test_wrong_password_returns_401(self):
         """잘못된 비밀번호는 401을 반환해야 한다."""
-        res = _post_json(self.client, LOGIN_URL, {"username": "bob", "password": "wrong"})
+        res = _post_json(
+            self.client, LOGIN_URL, {"username": "bob", "password": "wrong"}
+        )
         self.assertEqual(res.status_code, 401)
         data = json.loads(res.content)
         self.assertIn("error", data)
 
     def test_nonexistent_user_returns_401(self):
         """존재하지 않는 사용자는 401을 반환해야 한다."""
-        res = _post_json(self.client, LOGIN_URL, {"username": "nobody", "password": "pass"})
+        res = _post_json(
+            self.client, LOGIN_URL, {"username": "nobody", "password": "pass"}
+        )
         self.assertEqual(res.status_code, 401)
 
     def test_missing_username_returns_400(self):
@@ -107,7 +112,9 @@ class LoginViewTests(TestCase):
 
     def test_empty_username_returns_400(self):
         """빈 문자열 username은 400을 반환해야 한다 (공백 trim 포함)."""
-        res = _post_json(self.client, LOGIN_URL, {"username": "   ", "password": "pass1234"})
+        res = _post_json(
+            self.client, LOGIN_URL, {"username": "   ", "password": "pass1234"}
+        )
         self.assertEqual(res.status_code, 400)
 
     def test_malformed_json_returns_400(self):
@@ -126,7 +133,9 @@ class LoginViewTests(TestCase):
 
     def test_username_is_stripped(self):
         """username 주변 공백은 trim되어야 한다."""
-        res = _post_json(self.client, LOGIN_URL, {"username": "  bob  ", "password": "pass1234"})
+        res = _post_json(
+            self.client, LOGIN_URL, {"username": "  bob  ", "password": "pass1234"}
+        )
         self.assertEqual(res.status_code, 200)
 
 
