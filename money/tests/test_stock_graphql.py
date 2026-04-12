@@ -83,28 +83,23 @@ class TestStockTransactionRelayFilter:
         self.client.login(username="stocktestuser", password="testpassword")
 
     @pytest.mark.django_db
-    def test_filter_by_stock_id_returns_only_matching_transactions(
-        self, stock_txn_a, stock_txn_b, stock_a
-    ):
+    def test_filter_by_stock_id_returns_only_matching_transactions(self, stock_txn_a, stock_txn_b, stock_a):
         """stockTransactionRelay with { stock: { id: { exact: <id> } } } returns
         only transactions for that stock."""
-        query = (
-            """
-        query {
+        query = f"""
+        query {{
           stockTransactionRelay(
-            filters: { stock: { id: { exact: "%s" } } }
-          ) {
-            edges {
-              node {
+            filters: {{ stock: {{ id: {{ exact: "{stock_a.id}" }} }} }}
+          ) {{
+            edges {{
+              node {{
                 id
-              }
-            }
+              }}
+            }}
             totalCount
-          }
-        }
+          }}
+        }}
         """
-            % stock_a.id
-        )
 
         response = self.client.post(
             "/money/graphql",
@@ -113,32 +108,25 @@ class TestStockTransactionRelayFilter:
         )
         self.assert_no_errors(response)
         data = response.json()["data"]["stockTransactionRelay"]
-        assert data["totalCount"] == 1, (
-            f"Expected 1 transaction for stock_a, got {data['totalCount']}"
-        )
+        assert data["totalCount"] == 1, f"Expected 1 transaction for stock_a, got {data['totalCount']}"
 
     @pytest.mark.django_db
-    def test_filter_with_exact_stock_id_excludes_other_stocks(
-        self, stock_txn_a, stock_txn_b, stock_b
-    ):
+    def test_filter_with_exact_stock_id_excludes_other_stocks(self, stock_txn_a, stock_txn_b, stock_b):
         """Filtering by stock_b's id does not return stock_a's transactions."""
-        query = (
-            """
-        query {
+        query = f"""
+        query {{
           stockTransactionRelay(
-            filters: { stock: { id: { exact: "%s" } } }
-          ) {
-            edges {
-              node {
+            filters: {{ stock: {{ id: {{ exact: "{stock_b.id}" }} }} }}
+          ) {{
+            edges {{
+              node {{
                 id
-              }
-            }
+              }}
+            }}
             totalCount
-          }
-        }
+          }}
+        }}
         """
-            % stock_b.id
-        )
 
         response = self.client.post(
             "/money/graphql",

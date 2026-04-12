@@ -26,9 +26,7 @@ def api_login_view(request):
         login(request, user)
         return JsonResponse({"username": user.username, "authenticated": True})
 
-    return JsonResponse(
-        {"error": "아이디 또는 비밀번호가 올바르지 않습니다."}, status=401
-    )
+    return JsonResponse({"error": "아이디 또는 비밀번호가 올바르지 않습니다."}, status=401)
 
 
 @require_http_methods(["POST", "GET"])

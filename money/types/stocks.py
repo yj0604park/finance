@@ -68,9 +68,7 @@ class StockTransactionInput:
     note: auto
 
 
-@strawberry.django.type(
-    stocks.StockTransaction, filters=StockTransactionFilter, order=StockTransactionOrder
-)
+@strawberry.django.type(stocks.StockTransaction, filters=StockTransactionFilter, order=StockTransactionOrder)
 class StockTransactionNode(relay.Node):
     id: relay.GlobalID
     date: auto
@@ -115,9 +113,7 @@ class StockPriceInput:
     price: auto
 
 
-@strawberry.django.type(
-    stocks.StockPrice, filters=StockPriceFilter, order=StockPriceOrder
-)
+@strawberry.django.type(stocks.StockPrice, filters=StockPriceFilter, order=StockPriceOrder)
 class StockPriceNode(relay.Node):
     id: relay.GlobalID
     date: auto

@@ -25,9 +25,7 @@ class UserAdminCreationForm(admin_forms.UserCreationForm):
         # from complaining about that field not existing on the model.
         fields = ("username",)
 
-        error_messages = {
-            "username": {"unique": _("This username has already been taken.")}
-        }
+        error_messages = {"username": {"unique": _("This username has already been taken.")}}
 
 
 class UserSignupForm(SignupForm):

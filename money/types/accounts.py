@@ -28,9 +28,7 @@ class AccountOrder:
     last_update: auto
 
 
-@strawberry.django.type(
-    Account, filters=AccountFilter, pagination=True, order=AccountOrder
-)
+@strawberry.django.type(Account, filters=AccountFilter, pagination=True, order=AccountOrder)
 class AccountNode(relay.Node):
     id: relay.GlobalID
     name: auto
@@ -82,9 +80,7 @@ class BankNode(relay.Node):
     name: auto
     balance: list[BankBalance]
 
-    account_set: strawberry.django.relay.ListConnectionWithTotalCount[AccountNode] = (
-        strawberry.django.connection()
-    )
+    account_set: strawberry.django.relay.ListConnectionWithTotalCount[AccountNode] = strawberry.django.connection()
 
 
 # endregion
@@ -104,9 +100,7 @@ class AmountSnapshotOrder:
     date: auto
 
 
-@strawberry.django.type(
-    AmountSnapshot, filters=AmountSnapshotFilter, order=AmountSnapshotOrder
-)
+@strawberry.django.type(AmountSnapshot, filters=AmountSnapshotFilter, order=AmountSnapshotOrder)
 class AmountSnapshotNode(relay.Node):
     id: relay.GlobalID
     date: auto

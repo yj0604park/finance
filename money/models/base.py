@@ -30,9 +30,7 @@ class BaseURLModel(models.Model):
 
 
 class BaseCurrencyModel(models.Model):
-    currency = TextChoicesField(
-        max_length=3, choices_enum=CurrencyType, default=CurrencyType.USD
-    )
+    currency = TextChoicesField(max_length=3, choices_enum=CurrencyType, default=CurrencyType.USD)
 
     class Meta:
         abstract = True

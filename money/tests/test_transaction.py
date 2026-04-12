@@ -23,7 +23,6 @@ from money.models.accounts import Account, Bank
 from money.models.shoppings import Retailer
 from money.models.transactions import Transaction
 
-
 # ---------------------------------------------------------------------------
 # View-based tests (Django TestCase — requires login/session)
 # ---------------------------------------------------------------------------
@@ -55,9 +54,7 @@ class TransactionCreateViewTest(TestCase):
 
     def test_transaction_create_view_get(self):
         """GET renders the transaction creation template."""
-        url = reverse(
-            "money:transaction_create", kwargs={"account_id": self.account.id}
-        )
+        url = reverse("money:transaction_create", kwargs={"account_id": self.account.id})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "transaction/transaction_create.html")
@@ -66,9 +63,7 @@ class TransactionCreateViewTest(TestCase):
     def test_transaction_create_requires_login(self):
         """Unauthenticated GET redirects to the login page."""
         self.client.logout()
-        url = reverse(
-            "money:transaction_create", kwargs={"account_id": self.account.id}
-        )
+        url = reverse("money:transaction_create", kwargs={"account_id": self.account.id})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 302)
         self.assertIn("/accounts/", response["Location"])
@@ -77,9 +72,7 @@ class TransactionCreateViewTest(TestCase):
 
     def test_transaction_create_view_post(self):
         """Successful POST creates a transaction (redirect expected)."""
-        url = reverse(
-            "money:transaction_create", kwargs={"account_id": self.account.id}
-        )
+        url = reverse("money:transaction_create", kwargs={"account_id": self.account.id})
         data = {
             "account": self.account.id,
             "date": timezone.now().date(),
@@ -131,53 +124,41 @@ class TransactionAPITest(TestCase):
 
     def test_create_transaction_mutation(self):
         """createTransaction mutation persists the record."""
-        query = (
-            """
-        mutation {
-          createTransaction(data: {
+        query = f"""
+        mutation {{
+          createTransaction(data: {{
             amount: 500,
             date: "2023-01-01",
-            account: {set: "%s"},
+            account: {{set: "{self.account.id}"}},
             note: "GraphQL Test Transaction",
             isInternal: false
-          }) {
+          }}) {{
             id
-          }
-        }
+          }}
+        }}
         """
-            % self.account.id
-        )
-        response = self.client.post(
-            "/money/graphql", {"query": query}, content_type="application/json"
-        )
+        response = self.client.post("/money/graphql", {"query": query}, content_type="application/json")
         self.assertEqual(response.status_code, 200)
         content = response.json()
         self.assertNotIn("errors", content)
-        self.assertTrue(
-            Transaction.objects.filter(note="GraphQL Test Transaction").exists()
-        )
+        self.assertTrue(Transaction.objects.filter(note="GraphQL Test Transaction").exists())
 
     def test_create_transaction_without_retailer(self):
         """createTransaction without retailer stores null for that field."""
-        query = (
-            """
-        mutation {
-          createTransaction(data: {
+        query = f"""
+        mutation {{
+          createTransaction(data: {{
             amount: -200,
             date: "2023-01-02",
-            account: {set: "%s"},
+            account: {{set: "{self.account.id}"}},
             isInternal: false,
             note: "No Retailer Transaction"
-          }) {
+          }}) {{
             id
-          }
-        }
+          }}
+        }}
         """
-            % self.account.id
-        )
-        response = self.client.post(
-            "/money/graphql", {"query": query}, content_type="application/json"
-        )
+        response = self.client.post("/money/graphql", {"query": query}, content_type="application/json")
         self.assertEqual(response.status_code, 200)
         content = response.json()
         self.assertNotIn("errors", content)

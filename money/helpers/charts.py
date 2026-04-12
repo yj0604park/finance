@@ -50,9 +50,7 @@ def get_transaction_chart_data(
     return chart_dict
 
 
-def snapshot_chart(
-    snapshot_list: QuerySet[AmountSnapshot], currency: str
-) -> list[dict[str, str]]:
+def snapshot_chart(snapshot_list: QuerySet[AmountSnapshot], currency: str) -> list[dict[str, str]]:
     chart_info = []
     snapshot_list = snapshot_list.filter(currency=currency).order_by("date")
     for snapshot in snapshot_list:
@@ -65,9 +63,7 @@ def snapshot_chart(
     return chart_info
 
 
-def convert_snapshot_to_chart_data(
-    snapshot: list[Any], stock_set: set[str]
-) -> tuple[list[str], str]:
+def convert_snapshot_to_chart_data(snapshot: list[Any], stock_set: set[str]) -> tuple[list[str], str]:
     from collections import defaultdict
 
     converted_data: defaultdict[str, list[str]] = defaultdict(list)  # Stock: Amount
@@ -85,9 +81,7 @@ def convert_snapshot_to_chart_data(
     datasets = []
     for stock in stock_list:
         data_string = ", ".join([str(x) for x in converted_data[stock]])
-        datasets.append(
-            f"{{label: '{stock}', data: [{data_string}], fill: false, tension: 0.1}}"
-        )
+        datasets.append(f"{{label: '{stock}', data: [{data_string}], fill: false, tension: 0.1}}")
 
     return labels, ", ".join(datasets)
 

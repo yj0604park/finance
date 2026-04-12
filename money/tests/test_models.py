@@ -22,7 +22,6 @@ from money.models.shoppings import AmazonOrder, DetailItem, Retailer
 from money.models.stocks import Stock, StockTransaction
 from money.models.transactions import Transaction, TransactionDetail
 
-
 # ---------------------------------------------------------------------------
 # Bank
 # ---------------------------------------------------------------------------
@@ -203,9 +202,7 @@ class TestDetailItemModel:
         assert str(detail_item) == "ETC-Apple"
 
     def test_detail_item_with_category(self, db):
-        item = DetailItem.objects.create(
-            name="Banana", category=DetailItemCategory.FRUIT
-        )
+        item = DetailItem.objects.create(name="Banana", category=DetailItemCategory.FRUIT)
         assert str(item) == "FRUIT-Banana"
 
     def test_detail_item_ordering(self, db):

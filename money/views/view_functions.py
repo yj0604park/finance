@@ -38,11 +38,7 @@ def update_balance(request, account_id):
     account.last_update = datetime.datetime.now()
     account.save()
 
-    stocks = (
-        account.stocktransaction_set.all()
-        .order_by("date", "-amount")
-        .prefetch_related("stock")
-    )
+    stocks = account.stocktransaction_set.all().order_by("date", "-amount").prefetch_related("stock")
 
     stock_sum = defaultdict(int)
 
@@ -160,10 +156,7 @@ def update_related_transaction(request):
 @login_required
 def set_detail_required(request):
     objects = (
-        Transaction.objects.filter(
-            Q(type=TransactionCategory.DAILY_NECESSITY)
-            | Q(type=TransactionCategory.GROCERY)
-        )
+        Transaction.objects.filter(Q(type=TransactionCategory.DAILY_NECESSITY) | Q(type=TransactionCategory.GROCERY))
         .filter(reviewed=False)
         .filter(requires_detail=False)
     )
@@ -187,9 +180,7 @@ def toggle_reviewed(request, transaction_id):
 def get_items_for_category(request: HttpRequest):
     if request.method == "POST":
         post_data = json.loads(request.body.decode())
-        item_list = DetailItem.objects.filter(category=post_data["category"]).values(
-            "pk", "name"
-        )
+        item_list = DetailItem.objects.filter(category=post_data["category"]).values("pk", "name")
         item_list = sorted(list(item_list), key=lambda x: x["name"].lower())
 
         return JsonResponse({"result": item_list})
@@ -246,9 +237,7 @@ def filter_retailer(request):
     keyword = request.GET.get("keyword")
     filtered = Retailer.objects.filter(name__icontains=keyword)
 
-    filtered_obj_list = [
-        {"name": obj.name, "id": obj.pk, "str": str(obj)} for obj in filtered
-    ]
+    filtered_obj_list = [{"name": obj.name, "id": obj.pk, "str": str(obj)} for obj in filtered]
     return JsonResponse({"filtered_list": filtered_obj_list})
 
 
@@ -277,9 +266,7 @@ def get_end_month_balance(request):
         account_balances = []
         for month in range(1, 13):
             last_transaction = (
-                account.transaction_set.filter(date__year=year, date__month=month)
-                .order_by("date", "-amount")
-                .last()
+                account.transaction_set.filter(date__year=year, date__month=month).order_by("date", "-amount").last()
             )
 
             if last_transaction is None:

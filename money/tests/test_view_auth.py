@@ -11,7 +11,7 @@ from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 
 from money.choices import AccountType, CurrencyType, TransactionCategory
-from money.models.accounts import Bank, Account
+from money.models.accounts import Account, Bank
 from money.models.shoppings import Retailer
 from money.models.transactions import Transaction
 
@@ -21,8 +21,7 @@ User = get_user_model()
 def _redirect_to_login(response) -> bool:
     """응답이 로그인 페이지 리다이렉트인지 확인."""
     return response.status_code == 302 and (
-        "/accounts/login/" in response["Location"]
-        or "/accounts/" in response["Location"]
+        "/accounts/login/" in response["Location"] or "/accounts/" in response["Location"]
     )
 
 
@@ -54,9 +53,7 @@ class ViewAuthenticationTests(TestCase):
     # --- Bank views ---
     def test_bank_list_requires_login(self):
         res = self.client.get("/money/bank_list")
-        self.assertTrue(
-            _redirect_to_login(res), f"Expected redirect, got {res.status_code}"
-        )
+        self.assertTrue(_redirect_to_login(res), f"Expected redirect, got {res.status_code}")
 
     def test_bank_detail_requires_login(self):
         res = self.client.get(f"/money/bank_detail/{self.bank.pk}")

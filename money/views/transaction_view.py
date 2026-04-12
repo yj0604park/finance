@@ -133,9 +133,7 @@ class TransactionCreateView(LoginRequiredMixin, CreateView):
     form_class = money_forms.TransactionForm
 
     def get_success_url(self) -> str:
-        return reverse_lazy(
-            "money:transaction_create", kwargs={"account_id": self.kwargs["account_id"]}
-        )
+        return reverse_lazy("money:transaction_create", kwargs={"account_id": self.kwargs["account_id"]})
 
     def get_form(self) -> forms.BaseModelForm:
         form = super().get_form()
@@ -148,9 +146,9 @@ class TransactionCreateView(LoginRequiredMixin, CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        transaction = Transaction.objects.filter(
-            account_id=self.kwargs["account_id"]
-        ).order_by("-date", "amount", "balance")
+        transaction = Transaction.objects.filter(account_id=self.kwargs["account_id"]).order_by(
+            "-date", "amount", "balance"
+        )
 
         if len(transaction) > 0:
             latest_transaction = transaction[0]
@@ -158,9 +156,7 @@ class TransactionCreateView(LoginRequiredMixin, CreateView):
             latest_transaction = None
 
         if latest_transaction:
-            context["form"].initial["date"] = latest_transaction.date.strftime(
-                "%Y-%m-%d"
-            )
+            context["form"].initial["date"] = latest_transaction.date.strftime("%Y-%m-%d")
 
         context["latest_transaction"] = latest_transaction
         context["account"] = Account.objects.get(pk=self.kwargs["account_id"])
@@ -197,9 +193,9 @@ class TransactionCategoryView(LoginRequiredMixin, View):
             date_range["date__max"],
         )
 
-        context["summarization"] = query_set.annotate(
-            total_amount=-Sum("amount")
-        ).order_by("account__currency", "-total_amount")
+        context["summarization"] = query_set.annotate(total_amount=-Sum("amount")).order_by(
+            "account__currency", "-total_amount"
+        )
 
         label_per_currency = {k[0]: [] for k in CurrencyType.choices}
         data_per_currency = {k[0]: [] for k in CurrencyType.choices}
@@ -208,12 +204,8 @@ class TransactionCategoryView(LoginRequiredMixin, View):
 
         for summary in context["summarization"]:
             if summary["total_amount"] > 0:
-                label_per_currency[summary["account__currency"]].append(
-                    str(summary["type"])
-                )
-                data_per_currency[summary["account__currency"]].append(
-                    str(summary["total_amount"])
-                )
+                label_per_currency[summary["account__currency"]].append(str(summary["type"]))
+                data_per_currency[summary["account__currency"]].append(str(summary["total_amount"]))
                 spent_per_currency[summary["account__currency"]].append(summary)
             else:
                 income_per_currency[summary["account__currency"]].append(summary)
@@ -235,9 +227,7 @@ class YearlySummaryView(LoginRequiredMixin, View):
     template_name = "category/yearly_summary.html"
 
     def get(self, request, *args, **kwargs):
-        usd_query_set = Transaction.objects.filter(
-            date__year=2023, account__currency="USD"
-        )
+        usd_query_set = Transaction.objects.filter(date__year=2023, account__currency="USD")
         usd_income = (
             usd_query_set.filter(
                 type=TransactionCategory.INCOME,
@@ -283,14 +273,12 @@ class YearlySummaryView(LoginRequiredMixin, View):
             .annotate(total=Sum("amount"))
         )
 
-        exchange = Exchange.objects.filter(
-            date__year=2023, exchange_type=ExchangeType.WIREBARLEY
-        ).aggregate(total=Sum("from_amount"))
+        exchange = Exchange.objects.filter(date__year=2023, exchange_type=ExchangeType.WIREBARLEY).aggregate(
+            total=Sum("from_amount")
+        )
 
         context = {
-            "usd_transactions": usd_query_set.values("type").annotate(
-                total=Sum("amount")
-            ),
+            "usd_transactions": usd_query_set.values("type").annotate(total=Sum("amount")),
             "usd_income": usd_income,
             "usd_housing": usd_housing,
             "usd_car": usd_car,
@@ -313,11 +301,7 @@ class ReviewTransactionView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         qs = super().get_queryset()
-        qs = (
-            qs.filter(reviewed=False)
-            .order_by("-date", "amount")
-            .prefetch_related("account", "retailer")
-        )
+        qs = qs.filter(reviewed=False).order_by("-date", "amount").prefetch_related("account", "retailer")
         return qs
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
@@ -424,9 +408,7 @@ class StockTransactionCreateView(LoginRequiredMixin, CreateView):
     @transaction.atomic
     def form_valid(self, form):
         stock_transaction = form.save(commit=False)
-        stock_transaction.amount = round(
-            form.cleaned_data["price"] * form.cleaned_data["shares"], 2
-        )
+        stock_transaction.amount = round(form.cleaned_data["price"] * form.cleaned_data["shares"], 2)
 
         # Create account transaction
         transaction = Transaction.objects.create(
@@ -434,12 +416,7 @@ class StockTransactionCreateView(LoginRequiredMixin, CreateView):
             amount=-stock_transaction.amount,
             date=stock_transaction.date,
             type=TransactionCategory.STOCK,
-            note="{} (price {}, share {}) {}".format(
-                stock_transaction.stock,
-                stock_transaction.price,
-                stock_transaction.shares,
-                stock_transaction.note,
-            ),
+            note=f"{stock_transaction.stock} (price {stock_transaction.price}, share {stock_transaction.shares}) {stock_transaction.note}",
         )
         transaction.save()
 

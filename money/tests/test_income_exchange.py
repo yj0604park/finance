@@ -10,7 +10,7 @@ import pytest
 
 from money.choices import CurrencyType, ExchangeType
 from money.models.exchanges import Exchange
-from money.models.incomes import Salary, W2
+from money.models.incomes import W2, Salary
 
 
 # ---------------------------------------------------------------------------

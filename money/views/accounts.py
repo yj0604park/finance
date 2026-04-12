@@ -51,9 +51,7 @@ class AccountDetailView(LoginRequiredMixin, DetailView):
         context["additional_get_query"] = {}
         filter_reviewed = self.request.GET.get("reviewed")
         if filter_reviewed:
-            ordered_transaction_set = ordered_transaction_set.filter(
-                reviewed=filter_reviewed
-            )
+            ordered_transaction_set = ordered_transaction_set.filter(reviewed=filter_reviewed)
             context["additional_get_query"]["reviewed"] = filter_reviewed
 
         paginator = Paginator(ordered_transaction_set, self.objects_per_page)
@@ -68,9 +66,7 @@ class AccountDetailView(LoginRequiredMixin, DetailView):
         )
 
         context["stock_list"] = (
-            StockTransaction.objects.filter(account=account)
-            .order_by("-date", "balance")
-            .prefetch_related("stock")
+            StockTransaction.objects.filter(account=account).order_by("-date", "balance").prefetch_related("stock")
         )
 
         return context
@@ -110,16 +106,12 @@ class CategoryDetailView(LoginRequiredMixin, View):
         context["unreviewd"] = transaction_list.filter(reviewed=False)
 
         context["retailer_detail"] = (
-            transaction_list.values(
-                "retailer__id", "retailer__name", "account__currency"
-            )
+            transaction_list.values("retailer__id", "retailer__name", "account__currency")
             .annotate(Sum("amount"))
             .order_by("amount__sum")
         )
         context["detail_item_summary"] = (
-            TransactionDetail.objects.filter(
-                transaction__in=transaction_list.values("id")
-            )
+            TransactionDetail.objects.filter(transaction__in=transaction_list.values("id"))
             .values("item__category")
             .annotate(Sum("amount"))
             .order_by("-amount__sum")

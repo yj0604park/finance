@@ -17,8 +17,7 @@ def filter_by_get(request, query_set, get_key_name, query_key_name):
 
 def get_transaction_summary(account_list):
     sum_dict: dict[str, dict[str, Decimal]] = {
-        k[0]: {"current": Decimal(0.0), "prev": Decimal(0.0)}
-        for k in CurrencyType.choices
+        k[0]: {"current": Decimal(0.0), "prev": Decimal(0.0)} for k in CurrencyType.choices
     }
 
     currency_map = {}
@@ -27,9 +26,7 @@ def get_transaction_summary(account_list):
         sum_dict[account.currency]["current"] += account.amount
 
     # compare with last month
-    last_prev_month_day = datetime.date.today().replace(day=1) - datetime.timedelta(
-        days=1
-    )
+    last_prev_month_day = datetime.date.today().replace(day=1) - datetime.timedelta(days=1)
 
     prev_transaction_list_per_account = (
         Transaction.objects.filter(
@@ -63,9 +60,7 @@ def get_transaction_summary(account_list):
     sum_list = [(k, v) for k, v in sum_dict.items()]
     for _, v in sum_list:
         v["diff"] = v["current"] - v["prev"]
-        v["ratio"] = round(
-            v["diff"] / (v["prev"] if v["prev"] else Decimal(1.0)) * Decimal(100.0), 2
-        )
+        v["ratio"] = round(v["diff"] / (v["prev"] if v["prev"] else Decimal(1.0)) * Decimal(100.0), 2)
     sum_list.sort()
 
     return sum_list
@@ -80,18 +75,10 @@ def filter_by_currency(data_list, currency):
     return {
         "filtered_list": sorted(
             filtered_list,
-            key=lambda x: (
-                x[0].first_transaction
-                if x[0].first_transaction
-                else datetime.date.today()
-            ),
+            key=lambda x: (x[0].first_transaction if x[0].first_transaction else datetime.date.today()),
         ),
-        "total_last_value_positive": sum(
-            [x[1]["last_value"] for x in filtered_list if x[1]["last_value"] > 0]
-        ),
-        "total_max_value_positive": sum(
-            [x[1]["max_value"] for x in filtered_list if x[1]["max_value"] > 0]
-        ),
+        "total_last_value_positive": sum([x[1]["last_value"] for x in filtered_list if x[1]["last_value"] > 0]),
+        "total_max_value_positive": sum([x[1]["max_value"] for x in filtered_list if x[1]["max_value"] > 0]),
         "count": len(filtered_list),
     }
 
@@ -135,9 +122,7 @@ def bank_summary(target_year: int):
 
     banks = Retailer.objects.filter(type=RetailerType.BANK)
     bank_interest = (
-        Transaction.objects.filter(
-            retailer__type=RetailerType.BANK, date__year=target_year
-        )
+        Transaction.objects.filter(retailer__type=RetailerType.BANK, date__year=target_year)
         .values("retailer__name")
         .annotate(total=Sum("amount"))
         .order_by("retailer")

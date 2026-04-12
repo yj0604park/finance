@@ -21,9 +21,7 @@ class RetailerSummaryView(LoginRequiredMixin, TemplateView):
 
         return (
             Transaction.objects.filter(account__currency=currency, is_internal=False)
-            .values(
-                "retailer__id", "retailer__name", "retailer__type", "retailer__category"
-            )
+            .values("retailer__id", "retailer__name", "retailer__type", "retailer__category")
             .annotate(
                 minus_sum=Sum(
                     Case(
@@ -70,9 +68,7 @@ class RetailerDetailView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        trnasactions = Transaction.objects.filter(
-            retailer_id=self.kwargs["pk"]
-        ).order_by("date")
+        trnasactions = Transaction.objects.filter(retailer_id=self.kwargs["pk"]).order_by("date")
         transactions_by_month = (
             trnasactions.annotate(month=TruncMonth("date"))
             .values("month", "account__currency")

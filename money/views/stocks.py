@@ -36,9 +36,7 @@ class StockAmountChartView(LoginRequiredMixin, ListView):
 
         # group by currency
         snapshot, stock_set = get_stock_snapshot()
-        context["labels"], context["datasets"] = convert_snapshot_to_chart_data(
-            snapshot, stock_set
-        )
+        context["labels"], context["datasets"] = convert_snapshot_to_chart_data(snapshot, stock_set)
         return context
 
 

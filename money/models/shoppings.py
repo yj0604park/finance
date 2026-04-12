@@ -8,9 +8,7 @@ from money.models.base import BaseTimeStampModel, BaseURLModel
 
 class Retailer(models.Model):
     name = models.CharField(max_length=30)
-    type = TextChoicesField(
-        max_length=20, choices_enum=RetailerType, default=RetailerType.ETC
-    )
+    type = TextChoicesField(max_length=20, choices_enum=RetailerType, default=RetailerType.ETC)
     category = TextChoicesField(
         max_length=30,
         choices_enum=TransactionCategory,

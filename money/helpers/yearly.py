@@ -36,9 +36,7 @@ def year_summary(target_year: int):
             current_max = account_summary[account]["max_value"]
 
             if current_max < transaction.balance:
-                account_summary[account]["max_value"] = max(
-                    current_max, transaction.balance
-                )
+                account_summary[account]["max_value"] = max(current_max, transaction.balance)
                 account_summary[account]["max_date"] = transaction.date
 
             account_summary[account]["last_value"] = transaction.balance
