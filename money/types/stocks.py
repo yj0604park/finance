@@ -1,6 +1,8 @@
+from typing import Optional
+
 import strawberry
 import strawberry.django
-from strawberry import auto, relay
+from strawberry import UNSET, auto, relay
 
 from money.models import stocks
 from money.types.accounts import AccountFilter, AccountNode
@@ -44,8 +46,8 @@ class StockNode(relay.Node):
 @strawberry.django.filters.filter(stocks.StockTransaction, lookups=True)
 class StockTransactionFilter:
     id: auto
-    stock: StockFilter
-    account: AccountFilter
+    stock: Optional[StockFilter] = UNSET
+    account: Optional[AccountFilter] = UNSET
     date: auto
 
 
