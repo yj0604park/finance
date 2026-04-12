@@ -16,6 +16,7 @@ class RetailerFilter:
 class RetailerNode(relay.Node):
     id: relay.GlobalID
     name: auto
+    type: auto
     category: auto
 
 

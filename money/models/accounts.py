@@ -17,9 +17,7 @@ class Account(BaseAmountModel, BaseCurrencyModel):
     bank = models.ForeignKey("Bank", on_delete=models.CASCADE)
     name = models.CharField(max_length=200, db_collation="C")
     alias = models.CharField(max_length=200, blank=True, null=True)
-    type = TextChoicesField(
-        max_length=20, choices_enum=AccountType, default=AccountType.CHECKING_ACCOUNT
-    )
+    type = TextChoicesField(max_length=20, choices_enum=AccountType, default=AccountType.CHECKING_ACCOUNT)
 
     last_update = models.DateTimeField(null=True, blank=True)
     last_transaction = models.DateField(null=True, blank=True)
@@ -53,10 +51,7 @@ class Bank(models.Model):
 
         for account in Account.objects.filter(bank=self):
             sum_dict[account.currency] += account.amount
-        return [
-            BankBalance(currency=currency, value=value)
-            for currency, value in sum_dict.items()
-        ]
+        return [BankBalance(currency=currency, value=value) for currency, value in sum_dict.items()]
 
 
 class AmountSnapshot(BaseAmountModel, BaseCurrencyModel):

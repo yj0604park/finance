@@ -12,11 +12,11 @@ from drf_spectacular.views import (
 )
 from rest_framework.authtoken.views import obtain_auth_token
 
+from finance.users.api_views import api_login_view, api_logout_view, api_me_view
+
 urlpatterns = [
     path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
-    path(
-        "about/", TemplateView.as_view(template_name="pages/about.html"), name="about"
-    ),
+    path("about/", TemplateView.as_view(template_name="pages/about.html"), name="about"),
     # Django Admin, use {% url 'admin:index' %}
     path(settings.ADMIN_URL, admin.site.urls),
     # User management
@@ -37,6 +37,10 @@ urlpatterns += [
     path("api/", include("config.api_router")),
     # DRF auth token
     path("auth-token/", obtain_auth_token),
+    # JSON session auth (프론트엔드 로그인용)
+    path("api/auth/login/", api_login_view, name="api_login"),
+    path("api/auth/logout/", api_logout_view, name="api_logout"),
+    path("api/auth/me/", api_me_view, name="api_me"),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path(
         "api/docs/",

@@ -26,15 +26,11 @@ class Stock(BaseURLModel, BaseCurrencyModel):
 class StockTransaction(BaseTimeStampModel, BaseAmountModel, BaseURLModel):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
-    related_transaction = models.ForeignKey(
-        Transaction, on_delete=models.CASCADE, null=True, blank=True
-    )
+    related_transaction = models.ForeignKey(Transaction, on_delete=models.CASCADE, null=True, blank=True)
 
     price = models.DecimalField(max_digits=15, decimal_places=2)
     shares = models.DecimalField(max_digits=15, decimal_places=4)
-    balance = models.DecimalField(
-        max_digits=15, decimal_places=4, default=Decimal(0), null=True, blank=True
-    )
+    balance = models.DecimalField(max_digits=15, decimal_places=4, default=Decimal(0), null=True, blank=True)
 
     note = models.TextField(null=True, blank=True, default="")
 

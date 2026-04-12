@@ -15,6 +15,9 @@ ALLOWED_HOSTS = env.list(
     "DJANGO_ALLOWED_HOSTS",
     default=[
         "localhost",
+        "127.0.0.1",
+        "claw1",
+        "minitwo",
     ],
 )
 
@@ -31,9 +34,7 @@ CACHES = {
 # EMAIL
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
-EMAIL_BACKEND = env(
-    "DJANGO_EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend"
-)
+EMAIL_BACKEND = env("DJANGO_EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend")
 
 # WhiteNoise
 # ------------------------------------------------------------------------------
@@ -81,14 +82,25 @@ CSRF_COOKIE_HTTPONLY = False
 CSRF_TRUSTED_ORIGINS = env.list(
     "CSRF_TRUSTED_ORIGINS",
     default=[
-        "http://minitwo.tail591527.ts.net:58000",
-        "http://minitwo.tail591527.ts.net:3001",
+        "http://minitwo:58000",
+        "http://minitwo:3001",
+        "http://claw1:3000",
+        "http://claw1:8000",
         "http://localhost:3000",
         "http://127.0.0.1:3000",
-        "http://localhost:58000",
-        "http://127.0.0.1:58000",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
     ],
 )
 
 # If using the SPA on a different port with session auth, allow credentials
 CORS_ALLOW_CREDENTIALS = True
+
+# Allow minitwo short hostname for local dev (Tailscale)
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^http://minitwo:\d+$",
+    r"^http://minitwo\.tail591527\.ts\.net:\d+$",
+    r"^http://claw1:\d+$",
+    r"^http://localhost:\d+$",
+    r"^http://127\.0\.0\.1:\d+$",
+]

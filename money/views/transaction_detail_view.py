@@ -66,9 +66,7 @@ class TransactionDetailCreateView(LoginRequiredMixin, CreateView):
         )
 
     def form_valid(self, form: forms.BaseModelForm) -> HttpResponse:
-        form.instance.transaction = Transaction.objects.get(
-            pk=self.kwargs["transaction_id"]
-        )
+        form.instance.transaction = Transaction.objects.get(pk=self.kwargs["transaction_id"])
         if form.cleaned_data["amount"] == 0:
             form.add_error("amount", "Value must not be 0.")
             return self.form_invalid(form)
@@ -77,9 +75,7 @@ class TransactionDetailCreateView(LoginRequiredMixin, CreateView):
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        transaction = Transaction.objects.select_related("account", "retailer").get(
-            pk=self.kwargs["transaction_id"]
-        )
+        transaction = Transaction.objects.select_related("account", "retailer").get(pk=self.kwargs["transaction_id"])
         context["transaction"] = transaction
 
         leftover = -transaction.amount
@@ -139,9 +135,7 @@ class DetailItemCategoryView(LoginRequiredMixin, TemplateView):
         context["category"] = category
         category_model = TransactionDetail.objects.filter(item__category=category)
         context["summary"] = category_model.aggregate(Sum("amount"))
-        context["per_item"] = (
-            category_model.values("item__name").annotate(Sum("amount")).order_by()
-        )
+        context["per_item"] = category_model.values("item__name").annotate(Sum("amount")).order_by()
         return context
 
 

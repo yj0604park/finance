@@ -63,10 +63,7 @@ class SalaryDetailView(LoginRequiredMixin, DetailView):
             valid[key] = (diff, abs(diff) < 0.01)
 
         summary_diff = salary.net_pay - (
-            salary.gross_pay
-            + salary.total_adjustment
-            + salary.total_withheld
-            + salary.total_deduction
+            salary.gross_pay + salary.total_adjustment + salary.total_withheld + salary.total_deduction
         )
         valid["Summary"] = (summary_diff, abs(summary_diff) < 0.01)
         valid["Transaction"] = (

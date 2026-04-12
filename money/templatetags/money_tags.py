@@ -93,9 +93,7 @@ def days_ago(date):
     if date is None:
         return "Unk"
     try:
-        diff = datetime.datetime.today().replace(tzinfo=None) - date.replace(
-            tzinfo=None
-        )
+        diff = datetime.datetime.today().replace(tzinfo=None) - date.replace(tzinfo=None)
     # trunk-ignore(pylint/W0718)
     except Exception:
         diff = datetime.datetime.today().date() - date

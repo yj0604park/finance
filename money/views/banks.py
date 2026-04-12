@@ -17,25 +17,17 @@ class BankDetailView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         bank = context["bank"]
-        account_list = Account.objects.filter(bank=bank, is_active=True).order_by(
-            "type", "name"
-        )
+        account_list = Account.objects.filter(bank=bank, is_active=True).order_by("type", "name")
 
         # Get last stock transaction for each account
         last_stock_transaction = (
-            StockTransaction.objects.filter(
-                stock=OuterRef("stock"), account__name=OuterRef("account__name")
-            )
+            StockTransaction.objects.filter(stock=OuterRef("stock"), account__name=OuterRef("account__name"))
             .order_by("-date", "amount")
             .values("balance")
         )
 
         # Get last stock price for each stock
-        last_stock_price = (
-            StockPrice.objects.filter(stock=OuterRef("stock"))
-            .order_by("-date")
-            .values("price")
-        )
+        last_stock_price = StockPrice.objects.filter(stock=OuterRef("stock")).order_by("-date").values("price")
 
         # Annotate last stock transaction for each account
         last_transactions_per_account: QuerySet[WithAnnotations[Any]] = (
@@ -56,10 +48,7 @@ class BankDetailView(LoginRequiredMixin, DetailView):
         stock_balance_map = defaultdict(list)
         stock_value_map = defaultdict(float)
         for data in last_transactions_per_account:
-            if (
-                data.last_stock_transaction > 0.01
-                or data.last_stock_transaction < -0.01
-            ):
+            if data.last_stock_transaction > 0.01 or data.last_stock_transaction < -0.01:
                 stock_balance_map[data.account.pk].append(
                     (
                         data.stock.name,
@@ -68,9 +57,7 @@ class BankDetailView(LoginRequiredMixin, DetailView):
                     )
                 )
                 if data.last_stock_price is not None:
-                    stock_value_map[data.account.pk] += (
-                        data.last_stock_transaction * data.last_stock_price
-                    )
+                    stock_value_map[data.account.pk] += data.last_stock_transaction * data.last_stock_price
 
         context["account_list"] = account_list
         context["stock_balance_map"] = stock_balance_map

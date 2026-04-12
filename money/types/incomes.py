@@ -1,5 +1,6 @@
 import strawberry
 import strawberry.django
+import strawberry_django
 from strawberry import auto, relay
 from strawberry.scalars import JSON
 
@@ -35,6 +36,38 @@ class SalaryNode(relay.Node):
     deduction_detail: JSON
 
     transaction: TransactionNode
+
+
+@strawberry.django.input(Salary)
+class SalaryInput:
+    date: auto
+    currency: auto
+    gross_pay: auto
+    total_adjustment: auto
+    total_withheld: auto
+    total_deduction: auto
+    net_pay: auto
+    pay_detail: JSON
+    adjustment_detail: JSON
+    tax_detail: JSON
+    deduction_detail: JSON
+    transaction: TransactionNode
+
+
+@strawberry.django.partial(Salary)
+class SalaryPartialInput(strawberry_django.NodeInput):
+    date: auto
+    currency: auto
+    gross_pay: auto
+    total_adjustment: auto
+    total_withheld: auto
+    total_deduction: auto
+    net_pay: auto
+    pay_detail: JSON
+    adjustment_detail: JSON
+    tax_detail: JSON
+    deduction_detail: JSON
+    transaction: auto
 
 
 # endregion

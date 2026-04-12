@@ -10,12 +10,8 @@ from money.models.shoppings import DetailItem, Retailer
 
 class Transaction(BaseTimeStampModel, BaseAmountModel, BaseURLModel):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
-    retailer = models.ForeignKey(
-        Retailer, on_delete=models.SET_NULL, blank=True, null=True
-    )
-    balance = models.DecimalField(
-        max_digits=15, decimal_places=2, null=True, blank=True
-    )
+    retailer = models.ForeignKey(Retailer, on_delete=models.SET_NULL, blank=True, null=True)
+    balance = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
     note = models.TextField(null=True, blank=True)
     is_internal = models.BooleanField(default=False)
     requires_detail = models.BooleanField(default=False)
@@ -27,9 +23,7 @@ class Transaction(BaseTimeStampModel, BaseAmountModel, BaseURLModel):
     )
     reviewed = models.BooleanField(default=False)
 
-    related_transaction = models.ForeignKey(
-        "self", on_delete=models.SET_NULL, blank=True, null=True
-    )
+    related_transaction = models.ForeignKey("self", on_delete=models.SET_NULL, blank=True, null=True)
 
     def get_absolute_url(self):
         return reverse("money:transaction_detail", kwargs={"pk": self.pk})
@@ -54,9 +48,7 @@ class TransactionDetail(BaseAmountModel):
 
 class TransactionFile(BaseTimeStampModel):
     file = models.FileField(upload_to="transaction_files/")
-    account = models.ForeignKey(
-        Account, on_delete=models.SET_NULL, null=True, blank=True
-    )
+    account = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True, blank=True)
     note = models.TextField(null=True, blank=True)
     is_processed = models.BooleanField(default=False)
     processed_date = models.DateTimeField(null=True, blank=True)

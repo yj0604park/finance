@@ -29,11 +29,7 @@ def run():
             transaction.is_internal = True
             transaction.save()
 
-        if (
-            "티플러스" in note["retailer"]
-            or "KT98729577" in note["retailer"]
-            or "KT통신요금" in note["retailer"]
-        ):
+        if "티플러스" in note["retailer"] or "KT98729577" in note["retailer"] or "KT통신요금" in note["retailer"]:
             retailer = models.Retailer.objects.get(name="Communication Cost")
             transaction.retailer = retailer
             transaction.type = models.TransactionCategory.SERVICE

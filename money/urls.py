@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.urls import path
+from django.views.decorators.csrf import csrf_exempt
 from strawberry.django.views import GraphQLView
 
 from money import views
@@ -12,9 +13,7 @@ urlpatterns = [
     path("", view=views.home_view, name="home"),
     path("bank_detail/<int:pk>", view=views.bank_detail_view, name="bank_detail"),
     path("bank_list", view=views.bank_list_view, name="bank_list"),
-    path(
-        "account_detail/<int:pk>", view=views.account_detail_view, name="account_detail"
-    ),
+    path("account_detail/<int:pk>", view=views.account_detail_view, name="account_detail"),
     path(
         "category_detail/<str:category_type>",
         view=views.category_detail_view,
@@ -208,15 +207,16 @@ urlpatterns = [
         view=view_functions.update_related_transaction_for_amazon,
         name="update_related_transaction_for_amazon",
     ),
-    path(
-        "filter_retailer", view=view_functions.filter_retailer, name="filter_retailer"
-    ),
+    path("filter_retailer", view=view_functions.filter_retailer, name="filter_retailer"),
     path("file_upload", view=view_functions.file_upload, name="file_upload"),
     path(
         "get_end_month_balance",
         view=view_functions.get_end_month_balance,
         name="get_end_month_balance",
     ),
-    path("graphql", login_required(GraphQLView.as_view(schema=schema))),
+    path(
+        "graphql",
+        csrf_exempt(login_required(GraphQLView.as_view(schema=schema))),
+    ),
     # endregion
 ]

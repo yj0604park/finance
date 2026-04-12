@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 import strawberry
 import strawberry.django
 from strawberry import auto, relay
@@ -26,9 +28,7 @@ class AccountOrder:
     last_update: auto
 
 
-@strawberry.django.type(
-    Account, filters=AccountFilter, pagination=True, order=AccountOrder
-)
+@strawberry.django.type(Account, filters=AccountFilter, pagination=True, order=AccountOrder)
 class AccountNode(relay.Node):
     id: relay.GlobalID
     name: auto
@@ -38,6 +38,7 @@ class AccountNode(relay.Node):
     currency: auto
     last_update: auto
     is_active: auto
+    first_added: auto
     last_transaction: auto
     first_transaction: auto
 
@@ -48,6 +49,16 @@ class AccountInput:
     bank: "BankNode"
     type: auto
     currency: auto
+    amount: Decimal = Decimal("0")
+
+
+@strawberry.django.input(Account, partial=True)
+class AccountPartialInput:
+    id: relay.GlobalID
+    name: auto
+    type: auto
+    is_active: auto
+    first_added: auto
 
 
 # endregion
@@ -69,9 +80,7 @@ class BankNode(relay.Node):
     name: auto
     balance: list[BankBalance]
 
-    account_set: strawberry.django.relay.ListConnectionWithTotalCount[AccountNode] = (
-        strawberry.django.connection()
-    )
+    account_set: strawberry.django.relay.ListConnectionWithTotalCount[AccountNode] = strawberry.django.connection()
 
 
 # endregion
@@ -91,9 +100,7 @@ class AmountSnapshotOrder:
     date: auto
 
 
-@strawberry.django.type(
-    AmountSnapshot, filters=AmountSnapshotFilter, order=AmountSnapshotOrder
-)
+@strawberry.django.type(AmountSnapshot, filters=AmountSnapshotFilter, order=AmountSnapshotOrder)
 class AmountSnapshotNode(relay.Node):
     id: relay.GlobalID
     date: auto

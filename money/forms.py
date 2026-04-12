@@ -39,7 +39,7 @@ class RelatedFieldWidgetCanAdd(widgets.Select):
         if not related_url:
             rel_to = related_model
             info = (rel_to._meta.app_label, rel_to._meta.object_name.lower())
-            related_url = "admin:%s_%s_add" % info
+            related_url = "admin:{}_{}_add".format(*info)
 
         # Be careful that here "reverse" is not allowed
         self.related_url = related_url
@@ -62,9 +62,7 @@ class DynamicKeyValueJSONWidget(forms.Widget):
 
     def __init__(self, initialize_value=None, *args, **kwargs):
         self.subwidget_key_form = kwargs.pop("subwidget_key_form", forms.TextInput)
-        self.subwidget_value_form = kwargs.pop(
-            "subwidget_value_form", forms.NumberInput
-        )
+        self.subwidget_value_form = kwargs.pop("subwidget_value_form", forms.NumberInput)
         self.initialize_value = initialize_value
         super().__init__(*args, **kwargs)
 
@@ -93,9 +91,7 @@ class DynamicKeyValueJSONWidget(forms.Widget):
             subwidgets.append(
                 (
                     widget[0].get_context(name + "_key", item, widget_attrs)["widget"],
-                    widget[1].get_context(name + "_value", item, widget_attrs)[
-                        "widget"
-                    ],
+                    widget[1].get_context(name + "_value", item, widget_attrs)["widget"],
                 )
             )
 
@@ -140,9 +136,7 @@ class TransactionForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["retailer"].choices = sorted(
-            self.fields["retailer"].choices, key=lambda x: x[1].lower()
-        )
+        self.fields["retailer"].choices = sorted(self.fields["retailer"].choices, key=lambda x: x[1].lower())
         self.fields["date"].initial = date.today()
 
         for field_key, field in self.fields.items():
@@ -224,17 +218,12 @@ class StockTransactionForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["account"].choices = [
-            (account.pk, str(account))
-            for account in Account.objects.filter(type=AccountType.STOCK).order_by(
-                "name"
-            )
+            (account.pk, str(account)) for account in Account.objects.filter(type=AccountType.STOCK).order_by("name")
         ]
 
 
 class TransactionDetailForm(forms.ModelForm):
-    category = forms.ChoiceField(
-        label="Item Category", choices=choices.DetailItemCategory.choices
-    )
+    category = forms.ChoiceField(label="Item Category", choices=choices.DetailItemCategory.choices)
 
     class Meta:
         model = TransactionDetail
@@ -248,17 +237,11 @@ class TransactionDetailForm(forms.ModelForm):
         self.fields["item"].choices = [
             (x["pk"], x["name"])
             for x in sorted(
-                list(
-                    DetailItem.objects.filter(
-                        category=choices.DetailItemCategory.ETC
-                    ).values("pk", "name")
-                ),
+                list(DetailItem.objects.filter(category=choices.DetailItemCategory.ETC).values("pk", "name")),
                 key=lambda x: x["name"].lower(),
             )
         ]
-        self.fields["category"].choices = sorted(
-            self.fields["category"].choices, key=lambda x: x[1].lower()
-        )
+        self.fields["category"].choices = sorted(self.fields["category"].choices, key=lambda x: x[1].lower())
 
         self.helper = FormHelper()
         self.helper.layout = Layout(
@@ -282,9 +265,7 @@ class DetailItemForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["category"].choices = sorted(
-            self.fields["category"].choices, key=lambda x: x[1].lower()
-        )
+        self.fields["category"].choices = sorted(self.fields["category"].choices, key=lambda x: x[1].lower())
 
 
 class RetailerForm(forms.ModelForm):
@@ -299,9 +280,7 @@ class SalaryForm(forms.ModelForm):
         fields = "__all__"
         widgets = {
             "pay_detail": DynamicKeyValueJSONWidget(("Regular HRS",)),
-            "adjustment_detail": DynamicKeyValueJSONWidget(
-                ("401(K)", "Disability ins", "Healthcare FSA deduction")
-            ),
+            "adjustment_detail": DynamicKeyValueJSONWidget(("401(K)", "Disability ins", "Healthcare FSA deduction")),
             "tax_detail": DynamicKeyValueJSONWidget(
                 (
                     "Federal income tax",

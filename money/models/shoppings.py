@@ -1,4 +1,5 @@
 from django.db import models
+from django.urls import reverse
 from django_choices_field import TextChoicesField
 
 from money.choices import DetailItemCategory, RetailerType, TransactionCategory
@@ -7,9 +8,7 @@ from money.models.base import BaseTimeStampModel, BaseURLModel
 
 class Retailer(models.Model):
     name = models.CharField(max_length=30)
-    type = TextChoicesField(
-        max_length=20, choices_enum=RetailerType, default=RetailerType.ETC
-    )
+    type = TextChoicesField(max_length=20, choices_enum=RetailerType, default=RetailerType.ETC)
     category = TextChoicesField(
         max_length=30,
         choices_enum=TransactionCategory,
@@ -57,6 +56,9 @@ class AmazonOrder(BaseTimeStampModel, BaseURLModel):
 
     class Meta:
         ordering = ["date"]
+
+    def get_absolute_url(self):
+        return reverse("money:amazon_order_detail", kwargs={"pk": self.pk})
 
     def __str__(self):
         return f"{self.date.strftime('%Y-%m-%d')} {self.item}"
