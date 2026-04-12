@@ -63,7 +63,7 @@ def snapshot_chart(snapshot_list: QuerySet[AmountSnapshot], currency: str) -> li
     return chart_info
 
 
-def convert_snapshot_to_chart_data(snapshot: list[Any], stock_set: set[str]) -> tuple[list[str], str]:
+def convert_snapshot_to_chart_data(snapshot: list[Any], stock_set: list[str] | set[str]) -> tuple[list[str], str]:
     from collections import defaultdict
 
     converted_data: defaultdict[str, list[str]] = defaultdict(list)  # Stock: Amount

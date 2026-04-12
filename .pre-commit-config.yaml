@@ -16,20 +16,11 @@ repos:
         args: [--fix]
       - id: ruff-format
 
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.11.2
+  - repo: https://github.com/RobertCraigie/pyright-python
+    rev: v1.1.399
     hooks:
-      - id: mypy
-        args: ["--config=mypy-precommit.ini", "--show-error-codes", "--no-error-summary"]
-        additional_dependencies:
-          - django-stubs
-          - djangorestframework-stubs
-          - celery==5.4.0
-          - django-environ==0.11.2
-          - django==5.1.2
-          - djangorestframework==3.14.0
-        verbose: true
-        stages: [manual]  # 자동으로 실행되지 않고 수동으로만 실행
+      - id: pyright
+        stages: [manual]  # 수동으로만 실행: pre-commit run --hook-stage manual pyright
 
 
 # sets up .pre-commit-ci.yaml to ensure pre-commit dependencies stay up to date

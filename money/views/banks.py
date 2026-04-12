@@ -4,7 +4,6 @@ from typing import Any, cast
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Count, FloatField, OuterRef, QuerySet, Subquery
 from django.views.generic import DetailView, ListView
-from django_stubs_ext import WithAnnotations
 
 from money.models.accounts import Account, Bank
 from money.models.stocks import StockPrice, StockTransaction
@@ -30,7 +29,7 @@ class BankDetailView(LoginRequiredMixin, DetailView):
         last_stock_price = StockPrice.objects.filter(stock=OuterRef("stock")).order_by("-date").values("price")
 
         # Annotate last stock transaction for each account
-        last_transactions_per_account: QuerySet[WithAnnotations[Any]] = (
+        last_transactions_per_account: QuerySet[Any] = (
             StockTransaction.objects.filter(account__bank=bank)
             .distinct("stock", "account__name")
             .annotate(
