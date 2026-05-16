@@ -229,3 +229,24 @@ class TestTransactionModel:
             note="Salary",
         )
         assert txn.amount == Decimal("3000.00")
+
+    def test_account_last_transaction_updates_on_save_and_delete(self, db, account):
+        older = Transaction.objects.create(
+            account=account,
+            date=datetime.date(2024, 4, 1),
+            amount=Decimal("-1000.00"),
+            type=TransactionCategory.GROCERY,
+        )
+        newer = Transaction.objects.create(
+            account=account,
+            date=datetime.date(2024, 4, 2),
+            amount=Decimal("-2000.00"),
+            type=TransactionCategory.GROCERY,
+        )
+
+        account.refresh_from_db()
+        assert account.last_transaction == newer.date
+
+        newer.delete()
+        account.refresh_from_db()
+        assert account.last_transaction == older.date
