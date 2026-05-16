@@ -1080,8 +1080,8 @@ input StockPriceOrder {
 
 input StockTransactionFilter {
   id: IDBaseFilterLookup
-  stock: StockFilter!
-  account: AccountFilter!
+  stock: StockFilter
+  account: AccountFilter
   date: DateDateFilterLookup
   AND: StockTransactionFilter
   OR: StockTransactionFilter
