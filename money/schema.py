@@ -27,7 +27,11 @@ from money.types.stocks import (
     StockTransactionNode,
     StockTransactionPartialInput,
 )
-from money.types.transactions import TransactionInput, TransactionNode
+from money.types.transactions import (
+    TransactionInput,
+    TransactionNode,
+    TransactionPartialInput,
+)
 
 
 def get_salary_years() -> list[int]:
@@ -79,6 +83,7 @@ class Mutation:
     create_account: AccountNode = mutations.create(AccountInput)
     update_account: AccountNode = mutations.update(AccountPartialInput)
     create_transaction: TransactionNode = mutations.create(TransactionInput)
+    update_transaction: TransactionNode = mutations.update(TransactionPartialInput)
     create_retailer: RetailerNode = mutations.create(RetailerInput)
     create_stock: StockNode = mutations.create(StockInput)
     create_stock_transaction: StockTransactionNode = mutations.create(StockTransactionInput)

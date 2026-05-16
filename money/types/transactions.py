@@ -59,4 +59,14 @@ class TransactionInput:
     note: auto
 
 
+@strawberry.django.input(Transaction, partial=True)
+class TransactionPartialInput:
+    id: relay.GlobalID
+    date: auto
+    type: auto
+    retailer: RetailerNode | None
+    note: auto
+    is_internal: auto
+
+
 # endregion
