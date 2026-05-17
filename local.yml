@@ -9,6 +9,7 @@ services:
       dockerfile: ./compose/local/django/Dockerfile
     image: finance_local_django
     container_name: finance_local_django
+    restart: unless-stopped
     depends_on:
       - postgres
       - redis
@@ -27,6 +28,7 @@ services:
       dockerfile: ./compose/production/postgres/Dockerfile
     image: finance_production_postgres
     container_name: finance_local_postgres
+    restart: unless-stopped
     volumes:
       - finance_local_postgres_data:/var/lib/postgresql/data
       - finance_local_postgres_data_backups:/backups
@@ -36,6 +38,7 @@ services:
   docs:
     image: finance_local_docs
     container_name: finance_local_docs
+    restart: unless-stopped
     build:
       context: .
       dockerfile: ./compose/local/docs/Dockerfile
@@ -55,6 +58,7 @@ services:
   redis:
     image: redis:6
     container_name: finance_local_redis
+    restart: unless-stopped
 
   celeryworker:
     <<: *django
@@ -94,3 +98,16 @@ services:
       - ADMINER_DESIGN=pepa-linha-dark
     ports:
       - "58001:8080"
+
+  frontend:
+    image: node:20-alpine
+    container_name: finance_local_frontend
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ../frontend-v2:/app
+    ports:
+      - "58080:3000"
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    environment:
+      - VITE_API_URL=http://django:8000
