@@ -8,6 +8,7 @@ from money.models.incomes import W2, Salary
 from money.models.shoppings import AmazonOrder, DetailItem, Retailer
 from money.models.stocks import Stock, StockPrice, StockTransaction
 from money.models.transactions import Transaction, TransactionDetail, TransactionFile
+from money.models.credit_cards import CreditCard, CreditCardBenefit
 
 
 @admin.register(Bank)
@@ -150,3 +151,15 @@ class W2Admin(admin.ModelAdmin):
     date_hierarchy = "date"
     list_filter = ["year"]
     search_fields = ["year"]
+
+
+class CreditCardBenefitInline(admin.TabularInline):
+    model = CreditCardBenefit
+    extra = 1
+
+
+@admin.register(CreditCard)
+class CreditCardAdmin(admin.ModelAdmin):
+    list_display = ["account", "annual_fee", "issue_date", "expiry_date"]
+    inlines = [CreditCardBenefitInline]
+    raw_id_fields = ("account",)

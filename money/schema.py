@@ -14,6 +14,12 @@ from money.types.accounts import (
     AmountSnapshotNode,
     BankNode,
 )
+from money.types.credit_cards import (
+    CreditCardBenefitInput,
+    CreditCardBenefitNode,
+    CreditCardInput,
+    CreditCardNode,
+)
 from money.types.exchanges import ExchangeNode
 from money.types.incomes import SalaryInput, SalaryNode, SalaryPartialInput
 from money.types.retailers import RetailerInput, RetailerNode
@@ -70,6 +76,8 @@ class Query:
 
     exchange_relay: ListConnectionWithTotalCount[ExchangeNode] = strawberry.django.connection()
 
+    credit_card_relay: ListConnectionWithTotalCount[CreditCardNode] = strawberry.django.connection()
+
     salary_years: list[int] = strawberry.field(resolver=get_salary_years)
     salary_summary: list[types.SalarySummaryNode] = strawberry.field(resolver=get_salary_summary)
 
@@ -85,6 +93,8 @@ class Mutation:
     update_stock_transaction: StockTransactionNode = mutations.update(StockTransactionPartialInput)
     create_stock_price: StockPriceNode = mutations.create(StockPriceInput)
     create_amazon_order: AmazonOrderNode = mutations.create(AmazonOrderInput)
+    create_credit_card: CreditCardNode = mutations.create(CreditCardInput)
+    create_credit_card_benefit: CreditCardBenefitNode = mutations.create(CreditCardBenefitInput)
     create_salary: SalaryNode = mutations.create(SalaryInput)
     update_salary: SalaryNode = mutations.update(SalaryPartialInput)
 
