@@ -183,7 +183,7 @@ class TransactionCategoryView(LoginRequiredMixin, View):
         query_set = Transaction.objects.values("type", "account__currency")
         query_set = filter_month(request, query_set)
 
-        context = {"additional_get_query": {}}
+        context: dict[str, Any] = {"additional_get_query": {}}
 
         date_range = Transaction.objects.aggregate(Min("date"), Max("date"))
         update_month_info(
@@ -471,7 +471,7 @@ class AmazonListView(LoginRequiredMixin, ListView):
                 .order_by("-date")
             )
         else:
-            return None
+            return Transaction.objects.none()
 
 
 amazon_list_view = AmazonListView.as_view()
