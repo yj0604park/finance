@@ -5,7 +5,9 @@ class CreditCard(models.Model):
     """Credit card info with benefits linked to an Account."""
 
     account = models.OneToOneField(
-        "Account", on_delete=models.CASCADE, related_name="credit_card",
+        "Account",
+        on_delete=models.CASCADE,
+        related_name="credit_card",
         limit_choices_to={"type": "CREDIT_CARD"},
     )
     annual_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -34,8 +36,12 @@ class CreditCardBenefit(models.Model):
     category = models.CharField(max_length=20, choices=BenefitCategory.choices, default=BenefitCategory.DISCOUNT)
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True, default="")
-    rate = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, help_text="Percentage (e.g. 5.00 = 5%)")
-    cap_amount = models.DecimalField(max_digits=10, decimal_places=0, null=True, blank=True, help_text="Monthly cap in KRW")
+    rate = models.DecimalField(
+        max_digits=5, decimal_places=2, null=True, blank=True, help_text="Percentage (e.g. 5.00 = 5%)"
+    )
+    cap_amount = models.DecimalField(
+        max_digits=10, decimal_places=0, null=True, blank=True, help_text="Monthly cap in KRW"
+    )
     conditions = models.TextField(blank=True, default="", help_text="Conditions to qualify")
 
     class Meta:

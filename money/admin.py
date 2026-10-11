@@ -3,12 +3,12 @@ from django.contrib import admin
 
 from money.choices import DetailItemCategory, TransactionCategory
 from money.models.accounts import Account, AmountSnapshot, Bank
+from money.models.credit_cards import CreditCard, CreditCardBenefit
 from money.models.exchanges import Exchange
 from money.models.incomes import W2, Salary
 from money.models.shoppings import AmazonOrder, DetailItem, Retailer
 from money.models.stocks import Stock, StockPrice, StockTransaction
 from money.models.transactions import Transaction, TransactionDetail, TransactionFile
-from money.models.credit_cards import CreditCard, CreditCardBenefit
 
 
 @admin.register(Bank)

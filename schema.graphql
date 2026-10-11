@@ -699,6 +699,7 @@ type Mutation {
   createAccount(data: AccountInput!): AccountNode!
   updateAccount(data: AccountPartialInput!): AccountNode!
   createTransaction(data: TransactionInput!): TransactionNode!
+  updateTransaction(data: TransactionPartialInput!): TransactionNode!
   createRetailer(data: RetailerInput!): RetailerNode!
   createStock(data: StockInput!): StockNode!
   createStockTransaction(data: StockTransactionInput!): StockTransactionNode!
@@ -1420,4 +1421,13 @@ input TransactionOrder {
   account: AccountOrder
   amount: Ordering
   balance: Ordering
+}
+
+input TransactionPartialInput {
+  id: ID!
+  date: Date
+  type: TransactionCategory
+  retailer: OneToManyInput
+  note: String
+  isInternal: Boolean
 }
