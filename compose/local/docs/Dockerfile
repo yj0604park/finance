@@ -1,5 +1,5 @@
 # define an alias for the specfic python version used in this file.
-FROM python:3.10.10-slim-bullseye as python
+FROM python:3.10-slim-bookworm as python
 
 
 # Python build stage
