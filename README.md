@@ -98,6 +98,13 @@ Moved to [Live reloading and SASS compilation](https://cookiecutter-django.readt
 
 This app comes with Celery.
 
+In `local.yml`, Redis, the Celery worker, beat, and Flower are behind the `celery` compose profile and the Sphinx docs server is behind the `docs` profile, so a plain `docker compose -f local.yml up -d` does not start them. Enable them only when needed:
+
+``` bash
+docker compose -f local.yml --profile celery up -d
+docker compose -f local.yml --profile docs up -d
+```
+
 To run a celery worker:
 
 ``` bash
